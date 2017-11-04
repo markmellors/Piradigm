@@ -17,17 +17,17 @@ def setup_environment():
         os.environ[var_name] = val
 
 
-# define function for printing text in a specific place and
-# with a specific colour and adding a border
 def make_button(text, xpo, ypo, colour):
+    """Make a text button at the specified x, y coordinates
+    with the specified colour. Also adds a border (not configurable)"""
     font = pygame.font.Font(None, 24)
     label = font.render(str(text), 1, (colour))
     screen.blit(label, (xpo, ypo))
     pygame.draw.rect(screen, cream, (xpo - 5, ypo - 5, 100, 65), 1)
 
 
-# define function that checks for mouse location
 def on_click(mousepos):
+    """Click handling function to check mouse location"""
     click_pos = (mousepos)
     # check to see if exit has been pressed
     if 15 <= click_pos[0] <= 115 and 5 <= click_pos[1] <= 70:
@@ -67,8 +67,9 @@ def on_click(mousepos):
         button(8)
 
 
-# define action on pressing buttons
 def button(number):
+    """Button action handler. Currently differentiates between
+    exit and other buttons only"""
     print "You pressed button ", number
     if number == 0:    # specific script when exiting
         time.sleep(1)
