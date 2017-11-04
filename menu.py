@@ -18,7 +18,7 @@ def make_button(text, xpo, ypo, colour):
     font = pygame.font.Font(None, 24)
     label = font.render(str(text), 1, (colour))
     screen.blit(label, (xpo, ypo))
-    pygame.draw.rect(screen, cream, (xpo - 5, ypo - 5, 100, 5), 1)
+    pygame.draw.rect(screen, cream, (xpo - 5, ypo - 5, 100, 65), 1)
 
 
 # define function that checks for mouse location
@@ -99,7 +99,7 @@ make_button("RC", 125, 220, white)
 make_button("Exit", 20, 290, white)
 
 # While loop to manage touch screen inputs
-while 1:
+while True:
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
             print "screen pressed"  # for debugging purposes
