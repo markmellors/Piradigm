@@ -5,6 +5,17 @@ import time
 import pygame
 from pygame.locals import *
 
+# Global variables
+
+# screen size
+size = width, height = 240, 320
+
+# colours
+blue = 26, 0, 255
+cream = 254, 255, 250
+black = 0, 0, 0
+white = 255, 255, 255
+
 
 def setup_environment():
     """Set up all the required environment variables"""
@@ -15,6 +26,24 @@ def setup_environment():
     ]
     for var_name, val in env_vars:
         os.environ[var_name] = val
+
+
+def setup_menu(surface, background_colour=blue):
+    """Set up the menu on the specified surface"""
+    # flood fill the surface with the background colour
+    surface.fill(background_colour)
+
+    # set up the fixed items on the menu
+    # Add buttons and labels
+    make_button("Speed", 20, 10, white)
+    make_button("Maze", 125, 10, white)
+    make_button("Rainbow", 20, 80, white)
+    make_button("Golf", 125, 80, white)
+    make_button("Pi Noon", 20, 150, white)
+    make_button("Obstacle", 125, 150, white)
+    make_button("Shooting", 20, 220, white)
+    make_button("RC", 125, 220, white)
+    make_button("Exit", 20, 290, white)
 
 
 def make_button(text, xpo, ypo, colour):
@@ -79,33 +108,13 @@ def button(number):
         sys.exit()
 
 
-pygame.init()
 setup_environment()
 
-# set size of the screen
-size = width, height = 240, 320
 
-# define colours
-blue = 26, 0, 255
-cream = 254, 255, 250
-black = 0, 0, 0
-white = 255, 255, 255
+pygame.init()
 
 screen = pygame.display.set_mode(size)
-
-# set up the fixed items on the menu
-screen.fill(blue)  # change the colours if needed
-
-# Add buttons and labels
-make_button("Speed", 20, 10, white)
-make_button("Maze", 125, 10, white)
-make_button("Rainbow", 20, 80, white)
-make_button("Golf", 125, 80, white)
-make_button("Pi Noon", 20, 150, white)
-make_button("Obstacle", 125, 150, white)
-make_button("Shooting", 20, 220, white)
-make_button("RC", 125, 220, white)
-make_button("Exit", 20, 290, white)
+setup_menu(screen)
 
 # While loop to manage touch screen inputs
 while True:
