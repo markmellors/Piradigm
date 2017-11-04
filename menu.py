@@ -5,11 +5,16 @@ import time
 import pygame
 from pygame.locals import *
 
-os.environ["SDL_FBDEV"] = "/dev/fb1"
-os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
-os.environ["SDL_MOUSEDRV"] = "TSLIB"
 
-pygame.init()
+def setup_environment():
+    """Set up all the required environment variables"""
+    env_vars = [
+        ("SDL_FBDEV", "/dev/fb1"),
+        ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
+        ("SDL_MOUSEDRV", "TSLIB"),
+    ]
+    for var_name, val in env_vars:
+        os.environ[var_name] = val
 
 
 # define function for printing text in a specific place and
@@ -72,6 +77,9 @@ def button(number):
         time.sleep(1)  # do something interesting here
         sys.exit()
 
+
+pygame.init()
+setup_environment()
 
 # set size of the screen
 size = width, height = 240, 320
