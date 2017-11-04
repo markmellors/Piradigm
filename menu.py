@@ -8,13 +8,13 @@ from pygame.locals import *
 # Global variables
 
 # screen size
-size = width, height = 240, 320
+SCREEN_SIZE = width, height = 240, 320
 
 # colours
-blue = 26, 0, 255
-cream = 254, 255, 250
-black = 0, 0, 0
-white = 255, 255, 255
+BLUE = 26, 0, 255
+CREAM = 254, 255, 250
+BLACK = 0, 0, 0
+WHITE = 255, 255, 255
 
 
 def setup_environment():
@@ -28,22 +28,22 @@ def setup_environment():
         os.environ[var_name] = val
 
 
-def setup_menu(surface, background_colour=blue):
+def setup_menu(surface, background_colour=BLUE):
     """Set up the menu on the specified surface"""
     # flood fill the surface with the background colour
     surface.fill(background_colour)
 
     # set up the fixed items on the menu
     # Add buttons and labels
-    make_button("Speed", 20, 10, white)
-    make_button("Maze", 125, 10, white)
-    make_button("Rainbow", 20, 80, white)
-    make_button("Golf", 125, 80, white)
-    make_button("Pi Noon", 20, 150, white)
-    make_button("Obstacle", 125, 150, white)
-    make_button("Shooting", 20, 220, white)
-    make_button("RC", 125, 220, white)
-    make_button("Exit", 20, 290, white)
+    make_button("Speed", 20, 10, WHITE)
+    make_button("Maze", 125, 10, WHITE)
+    make_button("Rainbow", 20, 80, WHITE)
+    make_button("Golf", 125, 80, WHITE)
+    make_button("Pi Noon", 20, 150, WHITE)
+    make_button("Obstacle", 125, 150, WHITE)
+    make_button("Shooting", 20, 220, WHITE)
+    make_button("RC", 125, 220, WHITE)
+    make_button("Exit", 20, 290, WHITE)
 
 
 def make_button(text, xpo, ypo, colour):
@@ -52,7 +52,7 @@ def make_button(text, xpo, ypo, colour):
     font = pygame.font.Font(None, 24)
     label = font.render(str(text), 1, (colour))
     screen.blit(label, (xpo, ypo))
-    pygame.draw.rect(screen, cream, (xpo - 5, ypo - 5, 100, 65), 1)
+    pygame.draw.rect(screen, CREAM, (xpo - 5, ypo - 5, 100, 65), 1)
 
 
 def on_click(mousepos):
@@ -113,7 +113,7 @@ setup_environment()
 
 pygame.init()
 
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode(SCREEN_SIZE)
 setup_menu(screen)
 
 # While loop to manage touch screen inputs
@@ -124,7 +124,7 @@ while True:
             pos = (event.pos[0], event.pos[1])
             # for debugging purposes - adds a small dot
             # where the screen is pressed
-            # pygame.draw.circle(screen, white, pos, 2, 0)
+            # pygame.draw.circle(screen, WHITE, pos, 2, 0)
             on_click(pos)
 
 # ensure there is always a safe way to end the program
