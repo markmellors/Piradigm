@@ -42,70 +42,64 @@ def setup_menu(surface, background_colour=BLUE):
 
     # set up the fixed items on the menu
     # Add buttons and labels
-    make_button("Speed", 20, 10, WHITE)
-    make_button("Maze", 125, 10, WHITE)
-    make_button("Rainbow", 20, 80, WHITE)
-    make_button("Golf", 125, 80, WHITE)
-    make_button("Pi Noon", 20, 150, WHITE)
-    make_button("Obstacle", 125, 150, WHITE)
-    make_button("Shooting", 20, 220, WHITE)
-    make_button("RC", 125, 220, WHITE)
-    make_button("Exit", 20, 290, WHITE)
+    menu_config = [
+        ("Speed", 20, 10, WHITE),
+        ("Maze", 125, 10, WHITE),
+        ("Rainbow", 20, 80, WHITE),
+        ("Golf", 125, 80, WHITE),
+        ("Pi Noon", 20, 150, WHITE),
+        ("Obstacle", 125, 150, WHITE),
+        ("Shooting", 20, 220, WHITE),
+        ("RC", 125, 220, WHITE),
+        ("Exit", 20, 290, WHITE),
+    ]
+
+    # perform list comprehension on menu_config, wherein we call
+    # make_button with the index, and individual item arguments
+    # note *item performs unpacking of the tuple and provides them
+    # as individual arguments to make_button
+    return [
+        make_button(index, *item)
+        for index, item
+        in enumerate(menu_config)
+    ]
 
 
-def make_button(text, xpo, ypo, colour):
+def make_button(index, text, xpo, ypo, colour):
     """Make a text button at the specified x, y coordinates
     with the specified colour. Also adds a border (not configurable)"""
     logging.debug("Making button with text '%s' at (%d, %d)", text, xpo, ypo)
     font = pygame.font.Font(None, 24)
     label = font.render(str(text), 1, (colour))
     screen.blit(label, (xpo, ypo))
-    pygame.draw.rect(screen, CREAM, (xpo - 5, ypo - 5, 100, 65), 1)
+    return dict(
+        index=index,
+        label=text,
+        rect=pygame.draw.rect(screen, CREAM, (xpo - 5, ypo - 5, 100, 65), 1)
+    )
 
 
 def on_click(mousepos):
     """Click handling function to check mouse location"""
     logging.debug("on_click: %s", mousepos)
-    click_pos = (mousepos)
-    # check to see if exit has been pressed
-    if 15 <= click_pos[0] <= 115 and 5 <= click_pos[1] <= 70:
-        logging.info("Straight Line challenge launched")
-        button(0)
-    # now check to see if button 1 was pressed
-    if 15 <= click_pos[0] <= 115 and 75 <= click_pos[1] <= 140:
-        logging.info("Rainbow challenge launched")
-        button(1)
-    # now check to see if button 2 was pressed
-    if 15 <= click_pos[0] <= 115 and 145 <= click_pos[1] <= 210:
-        logging.info("Pi Noon challenge launched")
-        button(2)
-    # now check to see if button 3 was pressed
-    if 15 <= click_pos[0] <= 115 and 215 <= click_pos[1] <= 280:
-        logging.info("Duck Shoot challenge launched")
-        button(3)
-    # now check to see if button 4 was pressed
-    if 120 <= click_pos[0] <= 220 and 5 <= click_pos[1] <= 70:
-        logging.info("Minimal Maze challenge launched")
-        button(4)
-    # now check to see if button 5 was pressed
-    if 120 <= click_pos[0] <= 220 and 75 <= click_pos[1] <= 140:
-        logging.info("Golf challenge launched")
-        button(5)
-    # now check to see if button 6 was pressed
-    if 120 <= click_pos[0] <= 220 and 145 <= click_pos[1] <= 210:
-        logging.info("Obstacle Course challenge launched")
-        button(6)
-    # now check to see if button 7 was pressed
-    if 120 <= click_pos[0] <= 220 and 215 <= click_pos[1] <= 280:
-        logging.info("Radio control mode launched")
-        button(7)
-    # now check to see if button 8 was pressed
-    if 15 <= click_pos[0] <= 115 and 285 <= click_pos[1] <= 320:
-        logging.info("Exit selected")
-        button(8)
+    # Iterate through our list of buttons and get the first one
+    # whose rect returns True for pygame.Rect.collidepoint()
+    try:
+        button = next(obj for obj in buttons if obj['rect'].collidepoint(mousepos))
+        logging.info(
+            "%s clicked - launching %d",
+            button["label"], button["index"]
+        )
+        # Call button_handler with the matched button's index value
+        button_handler(button['index'])
+    except StopIteration:
+        logging.debug(
+            "Click at pos %s did not interact with any button",
+            mousepos
+        )
 
 
-def button(number):
+def button_handler(number):
     """Button action handler. Currently differentiates between
     exit and other buttons only"""
     logging.debug("button %d pressed", number)
@@ -128,7 +122,7 @@ pygame.mouse.set_visible(False)
 
 logging.info("Setting screen size to %s", SCREEN_SIZE)
 screen = pygame.display.set_mode(SCREEN_SIZE)
-setup_menu(screen)
+buttons = setup_menu(screen)
 
 # While loop to manage touch screen inputs
 while True:
@@ -141,8 +135,8 @@ while True:
             # pygame.draw.circle(screen, WHITE, pos, 2, 0)
             on_click(pos)
 
-# ensure there is always a safe way to end the program
-# if the touch screen fails
+        # ensure there is always a safe way to end the program
+        # if the touch screen fails
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 sys.exit()
