@@ -43,15 +43,15 @@ def setup_menu(surface, background_colour=BLUE):
     # set up the fixed items on the menu
     # Add buttons and labels
     menu_config = [
-        ("Speed", 20, 10, WHITE),
-        ("Maze", 125, 10, WHITE),
-        ("Rainbow", 20, 80, WHITE),
-        ("Golf", 125, 80, WHITE),
-        ("Pi Noon", 20, 150, WHITE),
-        ("Obstacle", 125, 150, WHITE),
-        ("Shooting", 20, 220, WHITE),
-        ("RC", 125, 220, WHITE),
-        ("Exit", 20, 290, WHITE),
+        ("Speed", 20, 10, 62, 100, WHITE),
+        ("Maze", 130, 10, 62, 100, WHITE),
+        ("Rainbow", 20, 77, 62, 100, WHITE),
+        ("Golf", 130, 77, 62, 100, WHITE),
+        ("Pi Noon", 20, 144, 62, 100, WHITE),
+        ("Obstacle", 130, 144, 62, 100, WHITE),
+        ("Shooting", 20, 211, 62, 100, WHITE),
+        ("RC", 130, 211, 62, 100, WHITE),
+        ("Exit", 20, 278, 40, 210, WHITE),
     ]
 
     # perform list comprehension on menu_config, wherein we call
@@ -65,7 +65,7 @@ def setup_menu(surface, background_colour=BLUE):
     ]
 
 
-def make_button(index, text, xpo, ypo, colour):
+def make_button(index, text, xpo, ypo, height, width, colour):
     """Make a text button at the specified x, y coordinates
     with the specified colour. Also adds a border (not configurable)"""
     logging.debug("Making button with text '%s' at (%d, %d)", text, xpo, ypo)
@@ -75,7 +75,7 @@ def make_button(index, text, xpo, ypo, colour):
     return dict(
         index=index,
         label=text,
-        rect=pygame.draw.rect(screen, CREAM, (xpo - 5, ypo - 5, 100, 65), 1)
+        rect=pygame.draw.rect(screen, CREAM, (xpo - 5, ypo - 5, width, height), 1)
     )
 
 
