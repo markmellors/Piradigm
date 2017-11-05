@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import time
@@ -15,6 +16,12 @@ BLUE = 26, 0, 255
 CREAM = 254, 255, 250
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
+
+logging.basicConfig(
+    filename='piradigm.log',
+    level=logging.DEBUG,
+    format='%(asctime)s %(message)s'
+)
 
 
 def setup_environment():
@@ -49,6 +56,7 @@ def setup_menu(surface, background_colour=BLUE):
 def make_button(text, xpo, ypo, colour):
     """Make a text button at the specified x, y coordinates
     with the specified colour. Also adds a border (not configurable)"""
+    logging.debug("Making button with text '%s' at (%d, %d)", text, xpo, ypo)
     font = pygame.font.Font(None, 24)
     label = font.render(str(text), 1, (colour))
     screen.blit(label, (xpo, ypo))
@@ -57,62 +65,65 @@ def make_button(text, xpo, ypo, colour):
 
 def on_click(mousepos):
     """Click handling function to check mouse location"""
+    logging.debug("on_click: %s", mousepos)
     click_pos = (mousepos)
     # check to see if exit has been pressed
     if 15 <= click_pos[0] <= 115 and 5 <= click_pos[1] <= 70:
-        print "Straight Line challenge launched"
+        logging.info("Straight Line challenge launched")
         button(0)
     # now check to see if button 1 was pressed
     if 15 <= click_pos[0] <= 115 and 75 <= click_pos[1] <= 140:
-        print "Rainbow challenge launched"
+        logging.info("Rainbow challenge launched")
         button(1)
     # now check to see if button 2 was pressed
     if 15 <= click_pos[0] <= 115 and 145 <= click_pos[1] <= 210:
-        print "Pi Noon challenge launched"
+        logging.info("Pi Noon challenge launched")
         button(2)
     # now check to see if button 3 was pressed
     if 15 <= click_pos[0] <= 115 and 215 <= click_pos[1] <= 280:
-        print "Duck Shoot challnge launched"
+        logging.info("Duck Shoot challenge launched")
         button(3)
     # now check to see if button 4 was pressed
     if 120 <= click_pos[0] <= 220 and 5 <= click_pos[1] <= 70:
-        print "Minimal Maze challenge launched"
+        logging.info("Minimal Maze challenge launched")
         button(4)
     # now check to see if button 5 was pressed
     if 120 <= click_pos[0] <= 220 and 75 <= click_pos[1] <= 140:
-        print "Golf challenge launched"
+        logging.info("Golf challenge launched")
         button(5)
     # now check to see if button 6 was pressed
     if 120 <= click_pos[0] <= 220 and 145 <= click_pos[1] <= 210:
-        print "Obstacle Course challenge launched"
+        logging.info("Obstacle Course challenge launched")
         button(6)
     # now check to see if button 7 was pressed
     if 120 <= click_pos[0] <= 220 and 215 <= click_pos[1] <= 280:
-        print "Radio control mode launched"
+        logging.info("Radio control mode launched")
         button(7)
     # now check to see if button 8 was pressed
     if 15 <= click_pos[0] <= 115 and 285 <= click_pos[1] <= 320:
-        print "Exit selected"
+        logging.info("Exit selected")
         button(8)
 
 
 def button(number):
     """Button action handler. Currently differentiates between
     exit and other buttons only"""
-    print "You pressed button ", number
+    logging.debug("button %d pressed", number)
     if number == 0:    # specific script when exiting
         time.sleep(1)
 
     if number == 8:
         time.sleep(1)  # do something interesting here
+        logging.info("Exit button pressed. Exiting now.")
         sys.exit()
 
 
 setup_environment()
 
-
+logging.info("Initialising pygame")
 pygame.init()
 
+logging.info("Setting screen size to %s", SCREEN_SIZE)
 screen = pygame.display.set_mode(SCREEN_SIZE)
 setup_menu(screen)
 
@@ -120,7 +131,7 @@ setup_menu(screen)
 while True:
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print "screen pressed"  # for debugging purposes
+            logging.debug("screen pressed: %s", event.pos)
             pos = (event.pos[0], event.pos[1])
             # for debugging purposes - adds a small dot
             # where the screen is pressed
@@ -129,7 +140,6 @@ while True:
 
 # ensure there is always a safe way to end the program
 # if the touch screen fails
-
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 sys.exit()
