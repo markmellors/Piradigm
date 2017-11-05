@@ -85,7 +85,7 @@ def on_click(mousepos):
     # Iterate through our list of buttons and get the first one
     # whose rect returns True for pygame.Rect.collidepoint()
     try:
-        button = next(obj for obj in buttons if obj['rect'].collidepoint(pos))
+        button = next(obj for obj in buttons if obj['rect'].collidepoint(mousepos))
         logging.info(
             "%s clicked - launching %d",
             button["label"], button["index"]
