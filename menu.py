@@ -123,6 +123,9 @@ setup_environment()
 logging.info("Initialising pygame")
 pygame.init()
 
+logging.info("Hiding Cursor")
+pygame.mouse.set_visible(False)
+
 logging.info("Setting screen size to %s", SCREEN_SIZE)
 screen = pygame.display.set_mode(SCREEN_SIZE)
 setup_menu(screen)
