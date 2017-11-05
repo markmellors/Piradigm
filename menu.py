@@ -5,24 +5,58 @@ import time
 import pygame
 from pygame.locals import *
 
-os.environ["SDL_FBDEV"] = "/dev/fb1"
-os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
-os.environ["SDL_MOUSEDRV"] = "TSLIB"
+# Global variables
 
-pygame.init()
+# screen size
+SCREEN_SIZE = width, height = 240, 320
+
+# colours
+BLUE = 26, 0, 255
+CREAM = 254, 255, 250
+BLACK = 0, 0, 0
+WHITE = 255, 255, 255
 
 
-# define function for printing text in a specific place and
-# with a specific colour and adding a border
+def setup_environment():
+    """Set up all the required environment variables"""
+    env_vars = [
+        ("SDL_FBDEV", "/dev/fb1"),
+        ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
+        ("SDL_MOUSEDRV", "TSLIB"),
+    ]
+    for var_name, val in env_vars:
+        os.environ[var_name] = val
+
+
+def setup_menu(surface, background_colour=BLUE):
+    """Set up the menu on the specified surface"""
+    # flood fill the surface with the background colour
+    surface.fill(background_colour)
+
+    # set up the fixed items on the menu
+    # Add buttons and labels
+    make_button("Speed", 20, 10, WHITE)
+    make_button("Maze", 125, 10, WHITE)
+    make_button("Rainbow", 20, 80, WHITE)
+    make_button("Golf", 125, 80, WHITE)
+    make_button("Pi Noon", 20, 150, WHITE)
+    make_button("Obstacle", 125, 150, WHITE)
+    make_button("Shooting", 20, 220, WHITE)
+    make_button("RC", 125, 220, WHITE)
+    make_button("Exit", 20, 290, WHITE)
+
+
 def make_button(text, xpo, ypo, colour):
+    """Make a text button at the specified x, y coordinates
+    with the specified colour. Also adds a border (not configurable)"""
     font = pygame.font.Font(None, 24)
     label = font.render(str(text), 1, (colour))
     screen.blit(label, (xpo, ypo))
-    pygame.draw.rect(screen, cream, (xpo - 5, ypo - 5, 100, 65), 1)
+    pygame.draw.rect(screen, CREAM, (xpo - 5, ypo - 5, 100, 65), 1)
 
 
-# define function that checks for mouse location
 def on_click(mousepos):
+    """Click handling function to check mouse location"""
     click_pos = (mousepos)
     # check to see if exit has been pressed
     if 15 <= click_pos[0] <= 115 and 5 <= click_pos[1] <= 70:
@@ -62,8 +96,9 @@ def on_click(mousepos):
         button(8)
 
 
-# define action on pressing buttons
 def button(number):
+    """Button action handler. Currently differentiates between
+    exit and other buttons only"""
     print "You pressed button ", number
     if number == 0:    # specific script when exiting
         time.sleep(1)
@@ -73,30 +108,13 @@ def button(number):
         sys.exit()
 
 
-# set size of the screen
-size = width, height = 240, 320
+setup_environment()
 
-# define colours
-blue = 26, 0, 255
-cream = 254, 255, 250
-black = 0, 0, 0
-white = 255, 255, 255
 
-screen = pygame.display.set_mode(size)
+pygame.init()
 
-# set up the fixed items on the menu
-screen.fill(blue)  # change the colours if needed
-
-# Add buttons and labels
-make_button("Speed", 20, 10, white)
-make_button("Maze", 125, 10, white)
-make_button("Rainbow", 20, 80, white)
-make_button("Golf", 125, 80, white)
-make_button("Pi Noon", 20, 150, white)
-make_button("Obstacle", 125, 150, white)
-make_button("Shooting", 20, 220, white)
-make_button("RC", 125, 220, white)
-make_button("Exit", 20, 290, white)
+screen = pygame.display.set_mode(SCREEN_SIZE)
+setup_menu(screen)
 
 # While loop to manage touch screen inputs
 while True:
@@ -106,7 +124,7 @@ while True:
             pos = (event.pos[0], event.pos[1])
             # for debugging purposes - adds a small dot
             # where the screen is pressed
-            # pygame.draw.circle(screen, white, pos, 2, 0)
+            # pygame.draw.circle(screen, WHITE, pos, 2, 0)
             on_click(pos)
 
 # ensure there is always a safe way to end the program
