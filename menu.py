@@ -81,7 +81,7 @@ def on_click(mousepos):
         button(2)
     # now check to see if button 3 was pressed
     if 15 <= click_pos[0] <= 115 and 215 <= click_pos[1] <= 280:
-        logging.info("Duck Shoot challnge launched")
+        logging.info("Duck Shoot challenge launched")
         button(3)
     # now check to see if button 4 was pressed
     if 120 <= click_pos[0] <= 220 and 5 <= click_pos[1] <= 70:
