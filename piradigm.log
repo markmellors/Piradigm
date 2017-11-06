@@ -269,3 +269,161 @@
 2017-11-05 22:53:10,829 Exit clicked - launching 8
 2017-11-05 22:53:10,829 button 8 pressed
 2017-11-05 22:53:11,831 Exit button pressed. Exiting now.
+2017-11-05 23:05:06,002 Initialising pygame
+2017-11-05 23:05:06,139 Hiding Cursor
+2017-11-05 23:05:06,139 Setting screen size to (240, 320)
+2017-11-05 23:05:06,313 Making button with text 'Speed' at (20, 10)
+2017-11-05 23:05:06,315 Making button with text 'Maze' at (130, 10)
+2017-11-05 23:05:06,318 Making button with text 'Rainbow' at (20, 77)
+2017-11-05 23:05:06,320 Making button with text 'Golf' at (130, 77)
+2017-11-05 23:05:06,322 Making button with text 'Pi Noon' at (20, 144)
+2017-11-05 23:05:06,324 Making button with text 'Obstacle' at (130, 144)
+2017-11-05 23:05:06,327 Making button with text 'Shooting' at (20, 211)
+2017-11-05 23:05:06,330 Making button with text 'RC' at (130, 211)
+2017-11-05 23:05:06,331 Making button with text 'Exit' at (20, 278)
+2017-11-05 23:05:09,853 screen pressed: (75, 287)
+2017-11-05 23:05:09,854 on_click: (75, 287)
+2017-11-05 23:05:09,854 Exit clicked - launching 8
+2017-11-05 23:05:09,855 button 8 pressed
+2017-11-05 23:05:10,856 Exit button pressed. Exiting now.
+2017-11-05 23:58:57,092 Initialising pygame
+2017-11-05 23:58:57,229 Hiding Cursor
+2017-11-05 23:58:57,229 Setting screen size to (240, 320)
+2017-11-05 23:58:57,402 Making button with text 'Speed' at (20, 10)
+2017-11-05 23:58:57,405 Making button with text 'Maze' at (130, 10)
+2017-11-05 23:58:57,407 Making button with text 'Rainbow' at (20, 77)
+2017-11-05 23:58:57,409 Making button with text 'Golf' at (130, 77)
+2017-11-05 23:58:57,411 Making button with text 'Pi Noon' at (20, 144)
+2017-11-05 23:58:57,413 Making button with text 'Obstacle' at (130, 144)
+2017-11-05 23:58:57,416 Making button with text 'Shooting' at (20, 211)
+2017-11-05 23:58:57,419 Making button with text 'RC' at (130, 211)
+2017-11-05 23:58:57,420 Making button with text 'Exit' at (20, 278)
+2017-11-05 23:59:03,717 screen pressed: (95, 288)
+2017-11-05 23:59:03,718 on_click: (95, 288)
+2017-11-05 23:59:03,718 Exit clicked - launching 8
+2017-11-05 23:59:03,718 button 8 pressed
+2017-11-05 23:59:53,543 Initialising pygame
+2017-11-05 23:59:53,699 Hiding Cursor
+2017-11-05 23:59:53,699 Setting screen size to (240, 320)
+2017-11-05 23:59:53,871 Making button with text 'Speed' at (20, 10)
+2017-11-05 23:59:53,873 Making button with text 'Maze' at (130, 10)
+2017-11-05 23:59:53,875 Making button with text 'Rainbow' at (20, 77)
+2017-11-05 23:59:53,878 Making button with text 'Golf' at (130, 77)
+2017-11-05 23:59:53,880 Making button with text 'Pi Noon' at (20, 144)
+2017-11-05 23:59:53,882 Making button with text 'Obstacle' at (130, 144)
+2017-11-05 23:59:53,885 Making button with text 'Shooting' at (20, 211)
+2017-11-05 23:59:53,887 Making button with text 'RC' at (130, 211)
+2017-11-05 23:59:53,889 Making button with text 'Exit' at (20, 278)
+2017-11-05 23:59:55,102 screen pressed: (189, 221)
+2017-11-05 23:59:55,103 on_click: (189, 221)
+2017-11-05 23:59:55,103 RC clicked - launching 7
+2017-11-05 23:59:55,103 button 7 pressed
+2017-11-06 00:01:14,310 Initialising pygame
+2017-11-06 00:01:14,449 Hiding Cursor
+2017-11-06 00:01:14,449 Setting screen size to (240, 320)
+2017-11-06 00:01:14,620 Making button with text 'Speed' at (20, 10)
+2017-11-06 00:01:14,623 Making button with text 'Maze' at (130, 10)
+2017-11-06 00:01:14,625 Making button with text 'Rainbow' at (20, 77)
+2017-11-06 00:01:14,627 Making button with text 'Golf' at (130, 77)
+2017-11-06 00:01:14,629 Making button with text 'Pi Noon' at (20, 144)
+2017-11-06 00:01:14,632 Making button with text 'Obstacle' at (130, 144)
+2017-11-06 00:01:14,634 Making button with text 'Shooting' at (20, 211)
+2017-11-06 00:01:14,637 Making button with text 'RC' at (130, 211)
+2017-11-06 00:01:14,639 Making button with text 'Exit' at (20, 278)
+2017-11-06 00:01:16,088 screen pressed: (91, 212)
+2017-11-06 00:01:16,089 on_click: (91, 212)
+2017-11-06 00:01:16,089 Shooting clicked - launching 6
+2017-11-06 00:01:16,089 button 6 pressed
+2017-11-06 00:01:17,437 screen pressed: (79, 162)
+2017-11-06 00:01:17,437 on_click: (79, 162)
+2017-11-06 00:01:17,442 Pi Noon clicked - launching 4
+2017-11-06 00:01:17,442 button 4 pressed
+2017-11-06 00:01:18,781 screen pressed: (186, 224)
+2017-11-06 00:01:18,781 on_click: (186, 224)
+2017-11-06 00:01:18,782 RC clicked - launching 7
+2017-11-06 00:01:18,782 button 7 pressed
+2017-11-06 00:02:07,288 Initialising pygame
+2017-11-06 00:02:07,429 Hiding Cursor
+2017-11-06 00:02:07,429 Setting screen size to (240, 320)
+2017-11-06 00:02:07,598 Making button with text 'Speed' at (20, 10)
+2017-11-06 00:02:07,600 Making button with text 'Maze' at (130, 10)
+2017-11-06 00:02:07,602 Making button with text 'Rainbow' at (20, 77)
+2017-11-06 00:02:07,605 Making button with text 'Golf' at (130, 77)
+2017-11-06 00:02:07,607 Making button with text 'Pi Noon' at (20, 144)
+2017-11-06 00:02:07,609 Making button with text 'Obstacle' at (130, 144)
+2017-11-06 00:02:07,612 Making button with text 'Shooting' at (20, 211)
+2017-11-06 00:02:07,614 Making button with text 'RC' at (130, 211)
+2017-11-06 00:02:07,616 Making button with text 'Exit' at (20, 278)
+2017-11-06 00:02:08,368 screen pressed: (200, 232)
+2017-11-06 00:02:08,369 on_click: (200, 232)
+2017-11-06 00:02:08,369 RC clicked - launching 7
+2017-11-06 00:02:08,369 button 7 pressed
+2017-11-06 00:04:30,524 Initialising pygame
+2017-11-06 00:04:30,659 Hiding Cursor
+2017-11-06 00:04:30,659 Setting screen size to (240, 320)
+2017-11-06 00:04:30,833 Making button with text 'Speed' at (20, 10)
+2017-11-06 00:04:30,835 Making button with text 'Maze' at (130, 10)
+2017-11-06 00:04:30,837 Making button with text 'Rainbow' at (20, 77)
+2017-11-06 00:04:30,840 Making button with text 'Golf' at (130, 77)
+2017-11-06 00:04:30,842 Making button with text 'Pi Noon' at (20, 144)
+2017-11-06 00:04:30,844 Making button with text 'Obstacle' at (130, 144)
+2017-11-06 00:04:30,847 Making button with text 'Shooting' at (20, 211)
+2017-11-06 00:04:30,849 Making button with text 'RC' at (130, 211)
+2017-11-06 00:04:30,851 Making button with text 'Exit' at (20, 278)
+2017-11-06 00:04:31,487 screen pressed: (194, 238)
+2017-11-06 00:04:31,487 on_click: (194, 238)
+2017-11-06 00:04:31,487 RC clicked - launching 7
+2017-11-06 00:04:31,488 button 7 pressed
+2017-11-06 00:06:07,521 Initialising pygame
+2017-11-06 00:06:07,659 Hiding Cursor
+2017-11-06 00:06:07,659 Setting screen size to (240, 320)
+2017-11-06 00:06:07,832 Making button with text 'Speed' at (20, 10)
+2017-11-06 00:06:07,834 Making button with text 'Maze' at (130, 10)
+2017-11-06 00:06:07,836 Making button with text 'Rainbow' at (20, 77)
+2017-11-06 00:06:07,838 Making button with text 'Golf' at (130, 77)
+2017-11-06 00:06:07,840 Making button with text 'Pi Noon' at (20, 144)
+2017-11-06 00:06:07,842 Making button with text 'Obstacle' at (130, 144)
+2017-11-06 00:06:07,845 Making button with text 'Shooting' at (20, 211)
+2017-11-06 00:06:07,848 Making button with text 'RC' at (130, 211)
+2017-11-06 00:06:07,849 Making button with text 'Exit' at (20, 278)
+2017-11-06 00:06:08,661 screen pressed: (173, 242)
+2017-11-06 00:06:08,661 on_click: (173, 242)
+2017-11-06 00:06:08,661 RC clicked - launching 7
+2017-11-06 00:06:08,662 button 7 pressed
+2017-11-06 00:07:21,415 Initialising pygame
+2017-11-06 00:07:21,559 Hiding Cursor
+2017-11-06 00:07:21,559 Setting screen size to (240, 320)
+2017-11-06 00:07:21,732 Making button with text 'Speed' at (20, 10)
+2017-11-06 00:07:21,734 Making button with text 'Maze' at (130, 10)
+2017-11-06 00:07:21,736 Making button with text 'Rainbow' at (20, 77)
+2017-11-06 00:07:21,738 Making button with text 'Golf' at (130, 77)
+2017-11-06 00:07:21,740 Making button with text 'Pi Noon' at (20, 144)
+2017-11-06 00:07:21,743 Making button with text 'Obstacle' at (130, 144)
+2017-11-06 00:07:21,745 Making button with text 'Shooting' at (20, 211)
+2017-11-06 00:07:21,748 Making button with text 'RC' at (130, 211)
+2017-11-06 00:07:21,750 Making button with text 'Exit' at (20, 278)
+2017-11-06 00:07:23,228 screen pressed: (79, 228)
+2017-11-06 00:07:23,229 on_click: (79, 228)
+2017-11-06 00:07:23,229 Shooting clicked - launching 6
+2017-11-06 00:07:23,230 button 6 pressed
+2017-11-06 00:07:24,460 screen pressed: (188, 227)
+2017-11-06 00:07:24,461 on_click: (188, 227)
+2017-11-06 00:07:24,461 RC clicked - launching 7
+2017-11-06 00:07:24,462 button 7 pressed
+2017-11-06 00:12:38,194 Initialising pygame
+2017-11-06 00:12:38,329 Hiding Cursor
+2017-11-06 00:12:38,329 Setting screen size to (240, 320)
+2017-11-06 00:12:38,500 Making button with text 'Speed' at (20, 10)
+2017-11-06 00:12:38,502 Making button with text 'Maze' at (130, 10)
+2017-11-06 00:12:38,504 Making button with text 'Rainbow' at (20, 77)
+2017-11-06 00:12:38,507 Making button with text 'Golf' at (130, 77)
+2017-11-06 00:12:38,509 Making button with text 'Pi Noon' at (20, 144)
+2017-11-06 00:12:38,511 Making button with text 'Obstacle' at (130, 144)
+2017-11-06 00:12:38,513 Making button with text 'Shooting' at (20, 211)
+2017-11-06 00:12:38,516 Making button with text 'RC' at (130, 211)
+2017-11-06 00:12:38,518 Making button with text 'Exit' at (20, 278)
+2017-11-06 00:12:39,423 screen pressed: (187, 228)
+2017-11-06 00:12:39,424 on_click: (187, 228)
+2017-11-06 00:12:39,424 RC clicked - launching 7
+2017-11-06 00:12:39,425 button 7 pressed
+2017-11-06 00:12:39,425 launching RC

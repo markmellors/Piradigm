@@ -2,11 +2,15 @@ import logging
 import os
 import sys
 import time
+import threading
 
 import pygame
 from pygame.locals import *
+import rc
 
 # Global variables
+challenge_name = "Nothing"
+challenge = None
 
 # screen size
 SCREEN_SIZE = width, height = 240, 320
@@ -23,6 +27,24 @@ logging.basicConfig(
     format='%(asctime)s %(message)s'
 )
 
+def launch_challenge(challenge_type, challenge_description):
+    """launch requested challenge thread"""
+    #stop_threads()
+    logging.info("launching %s", challenge_description)
+    challenge = challenge_type
+    challenge_thread = threading.Thread(target=challenge.run)
+    challenge_thread.start()
+    challenge_name = challenge_description
+
+
+def stop_threads():
+    """stop running challenge"""
+    if challenge_name is not "Nothing":
+        challenge.stop()
+        challenge = None
+        challenge_thread = None
+        logging.info("stopping %s",challenge_name)
+        challenge_name = "Nothing"
 
 def setup_environment():
     """Set up all the required environment variables"""
@@ -101,13 +123,14 @@ def on_click(mousepos):
 
 def button_handler(number):
     """Button action handler. Currently differentiates between
-    exit and other buttons only"""
+    exit, rc and other buttons only"""
     logging.debug("button %d pressed", number)
-    if number == 0:    # specific script when exiting
+    if number == 0: 
         time.sleep(1)
-
+    if number == 7:
+        launch_challenge(rc,"RC")
     if number == 8:
-        time.sleep(1)  # do something interesting here
+        stop_threads()
         logging.info("Exit button pressed. Exiting now.")
         sys.exit()
 
