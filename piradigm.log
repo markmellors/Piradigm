@@ -979,3 +979,1021 @@
 2017-11-07 22:26:12,431 launching RC challenge
 2017-11-07 22:26:12,431 about to stop a thread
 2017-11-07 22:26:12,432 about to stop thread Thread-1
+2017-11-07 22:31:48,590 Initialising pygame
+2017-11-07 22:31:48,773 Hiding Cursor
+2017-11-07 22:31:48,773 Setting screen size to (240, 320)
+2017-11-07 22:31:49,092 Making button with text 'Speed' at (20, 10)
+2017-11-07 22:31:49,112 Making button with text 'Maze' at (130, 10)
+2017-11-07 22:31:49,116 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 22:31:49,121 Making button with text 'Golf' at (130, 77)
+2017-11-07 22:31:49,124 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 22:31:49,128 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 22:31:49,133 Making button with text 'Shooting' at (20, 211)
+2017-11-07 22:31:49,138 Making button with text 'RC' at (130, 211)
+2017-11-07 22:31:49,142 Making button with text 'Exit' at (20, 278)
+2017-11-07 22:32:10,150 screen pressed: (188, 259)
+2017-11-07 22:32:10,151 on_click: (188, 259)
+2017-11-07 22:32:10,152 RC clicked - launching 7
+2017-11-07 22:32:10,152 button 7 pressed
+2017-11-07 22:32:10,153 launching RC challenge
+2017-11-07 22:32:10,153 about to stop a thread
+2017-11-07 22:32:10,154 launching new challenge
+2017-11-07 22:32:10,155 challenge Thread-1 launched
+2017-11-07 22:32:14,225 screen pressed: (198, 245)
+2017-11-07 22:32:14,226 on_click: (198, 245)
+2017-11-07 22:32:14,227 RC clicked - launching 7
+2017-11-07 22:32:14,227 button 7 pressed
+2017-11-07 22:32:14,228 launching RC challenge
+2017-11-07 22:32:14,228 about to stop a thread
+2017-11-07 22:32:14,228 about to stop thread Thread-1
+2017-11-07 22:49:06,562 Initialising pygame
+2017-11-07 22:49:06,745 Hiding Cursor
+2017-11-07 22:49:06,746 Setting screen size to (240, 320)
+2017-11-07 22:49:07,127 Making button with text 'Speed' at (20, 10)
+2017-11-07 22:49:07,147 Making button with text 'Maze' at (130, 10)
+2017-11-07 22:49:07,151 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 22:49:07,155 Making button with text 'Golf' at (130, 77)
+2017-11-07 22:49:07,159 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 22:49:07,163 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 22:49:07,168 Making button with text 'Shooting' at (20, 211)
+2017-11-07 22:49:07,173 Making button with text 'RC' at (130, 211)
+2017-11-07 22:49:07,177 Making button with text 'Exit' at (20, 278)
+2017-11-07 22:49:07,181 screen pressed: (218, 241)
+2017-11-07 22:49:07,181 on_click: (218, 241)
+2017-11-07 22:49:07,182 RC clicked - launching 7
+2017-11-07 22:49:07,182 button 7 pressed
+2017-11-07 22:49:07,183 launching RC challenge
+2017-11-07 22:53:10,746 Initialising pygame
+2017-11-07 22:53:10,889 Hiding Cursor
+2017-11-07 22:53:10,890 Setting screen size to (240, 320)
+2017-11-07 22:53:11,248 Making button with text 'Speed' at (20, 10)
+2017-11-07 22:53:11,252 Making button with text 'Maze' at (130, 10)
+2017-11-07 22:53:11,256 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 22:53:11,261 Making button with text 'Golf' at (130, 77)
+2017-11-07 22:53:11,264 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 22:53:11,269 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 22:53:11,273 Making button with text 'Shooting' at (20, 211)
+2017-11-07 22:53:11,278 Making button with text 'RC' at (130, 211)
+2017-11-07 22:53:11,282 Making button with text 'Exit' at (20, 278)
+2017-11-07 22:53:12,824 screen pressed: (215, 229)
+2017-11-07 22:53:12,825 on_click: (215, 229)
+2017-11-07 22:53:12,826 RC clicked - launching 7
+2017-11-07 22:53:12,826 button 7 pressed
+2017-11-07 22:53:12,827 launching RC challenge
+2017-11-07 22:53:36,222 Initialising pygame
+2017-11-07 22:53:36,359 Hiding Cursor
+2017-11-07 22:53:36,360 Setting screen size to (240, 320)
+2017-11-07 22:53:36,649 Making button with text 'Speed' at (20, 10)
+2017-11-07 22:53:36,653 Making button with text 'Maze' at (130, 10)
+2017-11-07 22:53:36,656 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 22:53:36,661 Making button with text 'Golf' at (130, 77)
+2017-11-07 22:53:36,665 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 22:53:36,669 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 22:53:36,674 Making button with text 'Shooting' at (20, 211)
+2017-11-07 22:53:36,678 Making button with text 'RC' at (130, 211)
+2017-11-07 22:53:36,681 Making button with text 'Exit' at (20, 278)
+2017-11-07 22:53:38,210 screen pressed: (225, 231)
+2017-11-07 22:53:38,211 on_click: (225, 231)
+2017-11-07 22:53:38,211 Click at pos (225, 231) did not interact with any button
+2017-11-07 22:53:41,613 screen pressed: (211, 258)
+2017-11-07 22:53:41,614 on_click: (211, 258)
+2017-11-07 22:53:41,615 RC clicked - launching 7
+2017-11-07 22:53:41,615 button 7 pressed
+2017-11-07 22:53:41,616 launching RC challenge
+2017-11-07 22:55:12,332 Initialising pygame
+2017-11-07 22:55:12,489 Hiding Cursor
+2017-11-07 22:55:12,490 Setting screen size to (240, 320)
+2017-11-07 22:55:12,852 Making button with text 'Speed' at (20, 10)
+2017-11-07 22:55:12,856 Making button with text 'Maze' at (130, 10)
+2017-11-07 22:55:12,860 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 22:55:12,865 Making button with text 'Golf' at (130, 77)
+2017-11-07 22:55:12,869 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 22:55:12,873 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 22:55:12,878 Making button with text 'Shooting' at (20, 211)
+2017-11-07 22:55:12,882 Making button with text 'RC' at (130, 211)
+2017-11-07 22:55:12,886 Making button with text 'Exit' at (20, 278)
+2017-11-07 22:55:14,065 screen pressed: (203, 252)
+2017-11-07 22:55:14,066 on_click: (203, 252)
+2017-11-07 22:55:14,066 RC clicked - launching 7
+2017-11-07 22:55:14,067 button 7 pressed
+2017-11-07 22:55:14,068 launching RC challenge
+2017-11-07 22:55:14,068 about to stop a thread
+2017-11-07 22:55:14,068 launching new challenge
+2017-11-07 22:55:14,070 challenge Thread-1 launched
+2017-11-07 22:58:12,996 Initialising pygame
+2017-11-07 22:58:13,202 Hiding Cursor
+2017-11-07 22:58:13,203 Setting screen size to (240, 320)
+2017-11-07 22:58:13,579 Making button with text 'Speed' at (20, 10)
+2017-11-07 22:58:13,583 Making button with text 'Maze' at (130, 10)
+2017-11-07 22:58:13,587 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 22:58:13,592 Making button with text 'Golf' at (130, 77)
+2017-11-07 22:58:13,596 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 22:58:13,600 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 22:58:13,605 Making button with text 'Shooting' at (20, 211)
+2017-11-07 22:58:13,610 Making button with text 'RC' at (130, 211)
+2017-11-07 22:58:13,613 Making button with text 'Exit' at (20, 278)
+2017-11-07 22:58:17,748 screen pressed: (214, 260)
+2017-11-07 22:58:17,749 on_click: (214, 260)
+2017-11-07 22:58:17,797 RC clicked - launching 7
+2017-11-07 22:58:17,797 button 7 pressed
+2017-11-07 22:58:17,798 launching RC challenge
+2017-11-07 22:58:17,799 about to stop a thread
+2017-11-07 22:58:17,799 launching new challenge
+2017-11-07 22:58:17,801 challenge Thread-1 launched
+2017-11-07 22:59:57,509 Initialising pygame
+2017-11-07 22:59:57,773 Hiding Cursor
+2017-11-07 22:59:57,774 Setting screen size to (240, 320)
+2017-11-07 23:00:05,834 screen pressed: (188, 244)
+2017-11-07 23:00:05,835 on_click: (188, 244)
+2017-11-07 23:00:05,836 RC clicked - launching 7
+2017-11-07 23:00:05,837 button 7 pressed
+2017-11-07 23:00:05,837 launching RC challenge
+2017-11-07 23:00:05,838 about to stop a thread
+2017-11-07 23:00:05,838 about to stop thread Thread-1
+2017-11-07 23:01:40,855 Initialising pygame
+2017-11-07 23:01:41,062 Hiding Cursor
+2017-11-07 23:01:41,063 Setting screen size to (240, 320)
+2017-11-07 23:01:41,442 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:01:41,447 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:01:41,451 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:01:41,456 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:01:41,460 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:01:41,464 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:01:41,469 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:01:41,474 Making button with text 'RC' at (130, 211)
+2017-11-07 23:01:41,477 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:01:45,461 screen pressed: (200, 155)
+2017-11-07 23:01:45,462 on_click: (200, 155)
+2017-11-07 23:01:45,481 Obstacle clicked - launching 5
+2017-11-07 23:01:45,482 button 5 pressed
+2017-11-07 23:01:46,248 screen pressed: (74, 118)
+2017-11-07 23:01:46,249 on_click: (74, 118)
+2017-11-07 23:01:46,250 Rainbow clicked - launching 2
+2017-11-07 23:01:46,250 button 2 pressed
+2017-11-07 23:01:46,904 screen pressed: (214, 55)
+2017-11-07 23:01:46,905 on_click: (214, 55)
+2017-11-07 23:01:46,905 Maze clicked - launching 1
+2017-11-07 23:01:46,906 button 1 pressed
+2017-11-07 23:01:47,393 screen pressed: (91, 37)
+2017-11-07 23:01:47,394 on_click: (91, 37)
+2017-11-07 23:01:47,395 Speed clicked - launching 0
+2017-11-07 23:01:47,395 button 0 pressed
+2017-11-07 23:01:49,009 screen pressed: (202, 244)
+2017-11-07 23:01:49,009 on_click: (202, 244)
+2017-11-07 23:01:49,010 RC clicked - launching 7
+2017-11-07 23:01:49,010 button 7 pressed
+2017-11-07 23:01:49,010 launching RC challenge
+2017-11-07 23:01:49,011 about to stop a thread
+2017-11-07 23:01:49,011 launching new challenge
+2017-11-07 23:01:49,012 challenge Thread-1 launched
+2017-11-07 23:04:53,419 Initialising pygame
+2017-11-07 23:04:53,672 Hiding Cursor
+2017-11-07 23:04:53,674 Setting screen size to (240, 320)
+2017-11-07 23:05:01,127 screen pressed: (218, 227)
+2017-11-07 23:05:01,128 on_click: (218, 227)
+2017-11-07 23:05:01,129 RC clicked - launching 7
+2017-11-07 23:05:01,130 button 7 pressed
+2017-11-07 23:05:01,130 launching RC challenge
+2017-11-07 23:05:01,131 about to stop a thread
+2017-11-07 23:05:01,131 about to stop thread Thread-1
+2017-11-07 23:08:33,746 Initialising pygame
+2017-11-07 23:08:33,923 Hiding Cursor
+2017-11-07 23:08:33,923 Setting screen size to (240, 320)
+2017-11-07 23:08:34,310 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:08:34,314 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:08:34,318 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:08:34,323 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:08:34,327 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:08:34,332 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:08:34,337 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:08:34,342 Making button with text 'RC' at (130, 211)
+2017-11-07 23:08:34,345 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:08:40,058 screen pressed: (222, 217)
+2017-11-07 23:08:40,059 on_click: (222, 217)
+2017-11-07 23:08:40,060 RC clicked - launching 7
+2017-11-07 23:08:40,061 button 7 pressed
+2017-11-07 23:08:40,061 launching RC challenge
+2017-11-07 23:08:40,062 about to stop a thread
+2017-11-07 23:08:40,062 launching new challenge
+2017-11-07 23:08:40,064 challenge Thread-1 launched
+2017-11-07 23:13:57,086 Initialising pygame
+2017-11-07 23:13:57,353 Hiding Cursor
+2017-11-07 23:13:57,353 Setting screen size to (240, 320)
+2017-11-07 23:14:06,365 screen pressed: (212, 131)
+2017-11-07 23:14:06,365 on_click: (212, 131)
+2017-11-07 23:14:06,366 Golf clicked - launching 3
+2017-11-07 23:14:06,366 button 3 pressed
+2017-11-07 23:14:07,173 screen pressed: (86, 101)
+2017-11-07 23:14:07,174 on_click: (86, 101)
+2017-11-07 23:14:07,174 Rainbow clicked - launching 2
+2017-11-07 23:14:07,175 button 2 pressed
+2017-11-07 23:14:08,431 screen pressed: (219, 240)
+2017-11-07 23:14:08,431 on_click: (219, 240)
+2017-11-07 23:14:08,432 RC clicked - launching 7
+2017-11-07 23:14:08,433 button 7 pressed
+2017-11-07 23:14:08,433 launching RC challenge
+2017-11-07 23:14:08,434 about to stop a thread
+2017-11-07 23:14:08,434 about to stop thread Thread-1
+2017-11-07 23:17:42,872 Initialising pygame
+2017-11-07 23:17:43,102 Hiding Cursor
+2017-11-07 23:17:43,103 Setting screen size to (240, 320)
+2017-11-07 23:17:43,507 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:17:43,511 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:17:43,515 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:17:43,520 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:17:43,524 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:17:43,529 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:17:43,534 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:17:43,539 Making button with text 'RC' at (130, 211)
+2017-11-07 23:17:43,542 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:17:44,791 screen pressed: (202, 239)
+2017-11-07 23:17:44,792 on_click: (202, 239)
+2017-11-07 23:17:44,800 RC clicked - launching 7
+2017-11-07 23:17:44,800 button 7 pressed
+2017-11-07 23:17:44,801 launching RC challenge
+2017-11-07 23:17:44,802 about to stop a thread
+2017-11-07 23:17:44,802 launching new challenge
+2017-11-07 23:17:44,803 challenge Thread-1 launched
+2017-11-07 23:17:51,273 screen pressed: (224, 244)
+2017-11-07 23:17:51,274 on_click: (224, 244)
+2017-11-07 23:17:51,275 RC clicked - launching 7
+2017-11-07 23:17:51,275 button 7 pressed
+2017-11-07 23:17:51,276 launching RC challenge
+2017-11-07 23:17:51,276 about to stop a thread
+2017-11-07 23:17:51,276 about to stop thread Thread-1
+2017-11-07 23:26:27,346 Initialising pygame
+2017-11-07 23:26:27,540 Hiding Cursor
+2017-11-07 23:26:27,540 Setting screen size to (240, 320)
+2017-11-07 23:26:27,812 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:26:27,832 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:26:27,836 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:26:27,840 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:26:27,844 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:26:27,848 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:26:27,853 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:26:27,858 Making button with text 'RC' at (130, 211)
+2017-11-07 23:26:27,861 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:26:29,328 screen pressed: (213, 228)
+2017-11-07 23:26:29,329 on_click: (213, 228)
+2017-11-07 23:26:29,329 RC clicked - launching 7
+2017-11-07 23:26:29,330 button 7 pressed
+2017-11-07 23:26:29,331 launching RC challenge
+2017-11-07 23:26:29,331 about to stop a thread
+2017-11-07 23:26:29,332 launching new challenge
+2017-11-07 23:26:29,333 challenge Thread-1 launched
+2017-11-07 23:26:43,049 screen pressed: (210, 248)
+2017-11-07 23:26:43,050 on_click: (210, 248)
+2017-11-07 23:26:43,050 RC clicked - launching 7
+2017-11-07 23:26:43,050 button 7 pressed
+2017-11-07 23:26:43,051 launching RC challenge
+2017-11-07 23:26:43,051 about to stop a thread
+2017-11-07 23:26:43,051 about to stop thread Thread-1
+2017-11-07 23:33:27,651 Initialising pygame
+2017-11-07 23:33:27,795 Hiding Cursor
+2017-11-07 23:33:27,795 Setting screen size to (240, 320)
+2017-11-07 23:33:28,136 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:33:28,140 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:33:28,144 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:33:28,149 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:33:28,153 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:33:28,157 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:33:28,162 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:33:28,166 Making button with text 'RC' at (130, 211)
+2017-11-07 23:33:28,170 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:33:32,954 screen pressed: (193, 237)
+2017-11-07 23:33:32,955 on_click: (193, 237)
+2017-11-07 23:33:32,956 RC clicked - launching 7
+2017-11-07 23:33:32,956 button 7 pressed
+2017-11-07 23:33:32,957 launching RC challenge
+2017-11-07 23:33:32,957 about to stop a thread
+2017-11-07 23:33:32,958 launching new challenge
+2017-11-07 23:33:32,959 challenge Bob launched
+2017-11-07 23:33:43,829 screen pressed: (56, 118)
+2017-11-07 23:33:43,830 on_click: (56, 118)
+2017-11-07 23:33:43,830 Rainbow clicked - launching 2
+2017-11-07 23:33:43,830 button 2 pressed
+2017-11-07 23:33:45,055 screen pressed: (199, 227)
+2017-11-07 23:33:45,056 on_click: (199, 227)
+2017-11-07 23:33:45,057 RC clicked - launching 7
+2017-11-07 23:33:45,057 button 7 pressed
+2017-11-07 23:33:45,058 launching RC challenge
+2017-11-07 23:33:45,058 about to stop a thread
+2017-11-07 23:33:45,058 about to stop thread Bob
+2017-11-07 23:36:07,965 Initialising pygame
+2017-11-07 23:36:08,105 Hiding Cursor
+2017-11-07 23:36:08,105 Setting screen size to (240, 320)
+2017-11-07 23:36:08,408 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:36:08,413 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:36:08,416 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:36:08,421 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:36:08,425 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:36:08,429 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:36:08,434 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:36:08,438 Making button with text 'RC' at (130, 211)
+2017-11-07 23:36:08,442 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:36:10,966 screen pressed: (216, 244)
+2017-11-07 23:36:10,967 on_click: (216, 244)
+2017-11-07 23:36:10,968 RC clicked - launching 7
+2017-11-07 23:36:10,968 button 7 pressed
+2017-11-07 23:36:10,969 launching RC challenge
+2017-11-07 23:36:10,970 about to stop a thread
+2017-11-07 23:36:10,970 launching new challenge
+2017-11-07 23:36:10,971 challenge Bob launched
+2017-11-07 23:36:22,631 screen pressed: (202, 249)
+2017-11-07 23:36:22,632 on_click: (202, 249)
+2017-11-07 23:36:22,632 RC clicked - launching 7
+2017-11-07 23:36:22,632 button 7 pressed
+2017-11-07 23:36:22,633 launching RC challenge
+2017-11-07 23:36:22,633 about to stop a thread
+2017-11-07 23:36:22,633 about to stop thread Bob
+2017-11-07 23:45:34,781 Initialising pygame
+2017-11-07 23:45:34,988 Hiding Cursor
+2017-11-07 23:45:34,989 Setting screen size to (240, 320)
+2017-11-07 23:45:35,366 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:45:35,370 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:45:35,374 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:45:35,378 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:45:35,382 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:45:35,386 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:45:35,391 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:45:35,395 Making button with text 'RC' at (130, 211)
+2017-11-07 23:45:35,399 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:45:37,186 screen pressed: (203, 254)
+2017-11-07 23:45:37,187 on_click: (203, 254)
+2017-11-07 23:45:37,187 RC clicked - launching 7
+2017-11-07 23:45:37,188 button 7 pressed
+2017-11-07 23:45:37,188 launching RC challenge
+2017-11-07 23:45:37,189 about to stop a thread
+2017-11-07 23:45:37,189 launching new challenge
+2017-11-07 23:45:37,191 challenge RC launched
+2017-11-07 23:45:38,929 screen pressed: (220, 240)
+2017-11-07 23:45:38,929 on_click: (220, 240)
+2017-11-07 23:45:38,929 RC clicked - launching 7
+2017-11-07 23:45:38,930 button 7 pressed
+2017-11-07 23:45:38,930 launching RC challenge
+2017-11-07 23:45:38,930 about to stop a thread
+2017-11-07 23:45:38,930 about to stop thread RC
+2017-11-07 23:45:38,931 stopping challenge
+2017-11-07 23:45:38,931 launching new challenge
+2017-11-07 23:45:38,931 challenge RC launched
+2017-11-07 23:46:04,108 screen pressed: (201, 270)
+2017-11-07 23:46:04,109 on_click: (201, 270)
+2017-11-07 23:46:04,109 Click at pos (201, 270) did not interact with any button
+2017-11-07 23:46:07,983 screen pressed: (201, 271)
+2017-11-07 23:46:07,984 on_click: (201, 271)
+2017-11-07 23:46:07,985 Click at pos (201, 271) did not interact with any button
+2017-11-07 23:46:09,297 screen pressed: (205, 238)
+2017-11-07 23:46:09,298 on_click: (205, 238)
+2017-11-07 23:46:09,302 RC clicked - launching 7
+2017-11-07 23:46:09,302 button 7 pressed
+2017-11-07 23:46:09,303 launching RC challenge
+2017-11-07 23:46:09,303 about to stop a thread
+2017-11-07 23:46:09,304 about to stop thread RC
+2017-11-07 23:46:09,304 stopping challenge
+2017-11-07 23:46:09,305 launching new challenge
+2017-11-07 23:46:09,306 challenge RC launched
+2017-11-07 23:46:14,043 screen pressed: (185, 155)
+2017-11-07 23:46:14,044 on_click: (185, 155)
+2017-11-07 23:46:14,045 Obstacle clicked - launching 5
+2017-11-07 23:46:14,045 button 5 pressed
+2017-11-07 23:46:14,665 screen pressed: (80, 152)
+2017-11-07 23:46:14,666 on_click: (80, 152)
+2017-11-07 23:46:14,670 Pi Noon clicked - launching 4
+2017-11-07 23:46:14,670 button 4 pressed
+2017-11-07 23:46:16,188 screen pressed: (204, 271)
+2017-11-07 23:46:16,189 on_click: (204, 271)
+2017-11-07 23:46:16,190 Click at pos (204, 271) did not interact with any button
+2017-11-07 23:46:30,503 screen pressed: (77, 285)
+2017-11-07 23:46:30,503 on_click: (77, 285)
+2017-11-07 23:46:30,504 Exit clicked - launching 8
+2017-11-07 23:46:30,504 button 8 pressed
+2017-11-07 23:46:30,504 Exit button pressed. Exiting now.
+2017-11-07 23:46:30,504 about to stop a thread
+2017-11-07 23:46:30,504 about to stop thread RC
+2017-11-07 23:46:30,505 stopping challenge
+2017-11-07 23:46:30,505 launching new challenge
+2017-11-07 23:48:29,092 Initialising pygame
+2017-11-07 23:48:29,225 Hiding Cursor
+2017-11-07 23:48:29,226 Setting screen size to (240, 320)
+2017-11-07 23:48:29,607 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:48:29,612 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:48:29,615 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:48:29,620 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:48:29,624 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:48:29,628 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:48:29,633 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:48:29,638 Making button with text 'RC' at (130, 211)
+2017-11-07 23:48:29,641 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:48:31,611 screen pressed: (202, 256)
+2017-11-07 23:48:31,612 on_click: (202, 256)
+2017-11-07 23:48:31,613 RC clicked - launching 7
+2017-11-07 23:48:31,613 button 7 pressed
+2017-11-07 23:48:31,614 launching RC challenge
+2017-11-07 23:48:37,991 screen pressed: (212, 250)
+2017-11-07 23:48:37,992 on_click: (212, 250)
+2017-11-07 23:48:37,992 RC clicked - launching 7
+2017-11-07 23:48:37,992 button 7 pressed
+2017-11-07 23:48:37,992 launching RC challenge
+2017-11-07 23:48:49,989 screen pressed: (99, 217)
+2017-11-07 23:48:49,989 on_click: (99, 217)
+2017-11-07 23:48:49,990 Shooting clicked - launching 6
+2017-11-07 23:48:49,990 button 6 pressed
+2017-11-07 23:48:50,451 screen pressed: (186, 156)
+2017-11-07 23:48:50,452 on_click: (186, 156)
+2017-11-07 23:48:50,452 Obstacle clicked - launching 5
+2017-11-07 23:48:50,453 button 5 pressed
+2017-11-07 23:48:51,877 screen pressed: (81, 296)
+2017-11-07 23:48:51,878 on_click: (81, 296)
+2017-11-07 23:48:51,879 Exit clicked - launching 8
+2017-11-07 23:48:51,879 button 8 pressed
+2017-11-07 23:48:51,879 Exit button pressed. Exiting now.
+2017-11-07 23:48:53,615 screen pressed: (68, 297)
+2017-11-07 23:48:53,616 on_click: (68, 297)
+2017-11-07 23:48:53,616 Exit clicked - launching 8
+2017-11-07 23:48:53,616 button 8 pressed
+2017-11-07 23:48:53,617 Exit button pressed. Exiting now.
+2017-11-07 23:48:54,103 screen pressed: (60, 271)
+2017-11-07 23:48:54,104 on_click: (60, 271)
+2017-11-07 23:48:54,105 Click at pos (60, 271) did not interact with any button
+2017-11-07 23:48:54,432 screen pressed: (62, 255)
+2017-11-07 23:48:54,433 on_click: (62, 255)
+2017-11-07 23:48:54,433 Shooting clicked - launching 6
+2017-11-07 23:48:54,434 button 6 pressed
+2017-11-07 23:48:54,690 screen pressed: (75, 239)
+2017-11-07 23:48:54,691 on_click: (75, 239)
+2017-11-07 23:48:54,692 Shooting clicked - launching 6
+2017-11-07 23:48:54,692 button 6 pressed
+2017-11-07 23:48:54,969 screen pressed: (144, 286)
+2017-11-07 23:48:54,969 on_click: (144, 286)
+2017-11-07 23:48:54,970 Exit clicked - launching 8
+2017-11-07 23:48:54,970 button 8 pressed
+2017-11-07 23:48:54,971 Exit button pressed. Exiting now.
+2017-11-07 23:48:55,811 screen pressed: (75, 307)
+2017-11-07 23:48:55,812 on_click: (75, 307)
+2017-11-07 23:48:55,813 Exit clicked - launching 8
+2017-11-07 23:48:55,813 button 8 pressed
+2017-11-07 23:48:55,814 Exit button pressed. Exiting now.
+2017-11-07 23:48:56,058 screen pressed: (61, 291)
+2017-11-07 23:48:56,059 on_click: (61, 291)
+2017-11-07 23:48:56,059 Exit clicked - launching 8
+2017-11-07 23:48:56,060 button 8 pressed
+2017-11-07 23:48:56,060 Exit button pressed. Exiting now.
+2017-11-07 23:48:56,247 screen pressed: (57, 290)
+2017-11-07 23:48:56,248 on_click: (57, 290)
+2017-11-07 23:48:56,249 Exit clicked - launching 8
+2017-11-07 23:48:56,249 button 8 pressed
+2017-11-07 23:48:56,249 Exit button pressed. Exiting now.
+2017-11-07 23:48:56,428 screen pressed: (65, 287)
+2017-11-07 23:48:56,429 on_click: (65, 287)
+2017-11-07 23:48:56,430 Exit clicked - launching 8
+2017-11-07 23:48:56,430 button 8 pressed
+2017-11-07 23:48:56,430 Exit button pressed. Exiting now.
+2017-11-07 23:48:56,615 screen pressed: (97, 290)
+2017-11-07 23:48:56,616 on_click: (97, 290)
+2017-11-07 23:48:56,616 Exit clicked - launching 8
+2017-11-07 23:48:56,617 button 8 pressed
+2017-11-07 23:48:56,617 Exit button pressed. Exiting now.
+2017-11-07 23:48:56,803 screen pressed: (115, 312)
+2017-11-07 23:48:56,804 on_click: (115, 312)
+2017-11-07 23:48:56,804 Exit clicked - launching 8
+2017-11-07 23:48:56,805 button 8 pressed
+2017-11-07 23:48:56,805 Exit button pressed. Exiting now.
+2017-11-07 23:48:56,989 screen pressed: (95, 310)
+2017-11-07 23:48:56,990 on_click: (95, 310)
+2017-11-07 23:48:56,990 Exit clicked - launching 8
+2017-11-07 23:48:56,991 button 8 pressed
+2017-11-07 23:48:56,991 Exit button pressed. Exiting now.
+2017-11-07 23:48:57,144 screen pressed: (86, 294)
+2017-11-07 23:48:57,145 on_click: (86, 294)
+2017-11-07 23:48:57,145 Exit clicked - launching 8
+2017-11-07 23:48:57,146 button 8 pressed
+2017-11-07 23:48:57,146 Exit button pressed. Exiting now.
+2017-11-07 23:48:57,317 screen pressed: (87, 281)
+2017-11-07 23:48:57,317 on_click: (87, 281)
+2017-11-07 23:48:57,318 Exit clicked - launching 8
+2017-11-07 23:48:57,319 button 8 pressed
+2017-11-07 23:48:57,319 Exit button pressed. Exiting now.
+2017-11-07 23:48:57,481 screen pressed: (96, 283)
+2017-11-07 23:48:57,481 on_click: (96, 283)
+2017-11-07 23:48:57,482 Exit clicked - launching 8
+2017-11-07 23:48:57,482 button 8 pressed
+2017-11-07 23:48:57,483 Exit button pressed. Exiting now.
+2017-11-07 23:48:57,883 screen pressed: (208, 268)
+2017-11-07 23:48:57,884 on_click: (208, 268)
+2017-11-07 23:48:57,884 Click at pos (208, 268) did not interact with any button
+2017-11-07 23:48:58,079 screen pressed: (199, 248)
+2017-11-07 23:48:58,080 on_click: (199, 248)
+2017-11-07 23:48:58,081 RC clicked - launching 7
+2017-11-07 23:48:58,081 button 7 pressed
+2017-11-07 23:48:58,081 launching RC challenge
+2017-11-07 23:48:58,359 screen pressed: (111, 285)
+2017-11-07 23:48:58,360 on_click: (111, 285)
+2017-11-07 23:48:58,361 Exit clicked - launching 8
+2017-11-07 23:48:58,361 button 8 pressed
+2017-11-07 23:48:58,362 Exit button pressed. Exiting now.
+2017-11-07 23:48:58,563 screen pressed: (76, 292)
+2017-11-07 23:48:58,564 on_click: (76, 292)
+2017-11-07 23:48:58,564 Exit clicked - launching 8
+2017-11-07 23:48:58,565 button 8 pressed
+2017-11-07 23:48:58,565 Exit button pressed. Exiting now.
+2017-11-07 23:48:58,741 screen pressed: (78, 296)
+2017-11-07 23:48:58,742 on_click: (78, 296)
+2017-11-07 23:48:58,742 Exit clicked - launching 8
+2017-11-07 23:48:58,743 button 8 pressed
+2017-11-07 23:48:58,743 Exit button pressed. Exiting now.
+2017-11-07 23:48:59,095 screen pressed: (192, 255)
+2017-11-07 23:48:59,096 on_click: (192, 255)
+2017-11-07 23:48:59,097 RC clicked - launching 7
+2017-11-07 23:48:59,097 button 7 pressed
+2017-11-07 23:48:59,098 launching RC challenge
+2017-11-07 23:48:59,321 screen pressed: (199, 245)
+2017-11-07 23:48:59,322 on_click: (199, 245)
+2017-11-07 23:48:59,322 RC clicked - launching 7
+2017-11-07 23:48:59,323 button 7 pressed
+2017-11-07 23:48:59,323 launching RC challenge
+2017-11-07 23:48:59,592 screen pressed: (193, 251)
+2017-11-07 23:48:59,593 on_click: (193, 251)
+2017-11-07 23:48:59,593 RC clicked - launching 7
+2017-11-07 23:48:59,594 button 7 pressed
+2017-11-07 23:48:59,594 launching RC challenge
+2017-11-07 23:48:59,823 screen pressed: (182, 257)
+2017-11-07 23:48:59,824 on_click: (182, 257)
+2017-11-07 23:48:59,824 RC clicked - launching 7
+2017-11-07 23:48:59,825 button 7 pressed
+2017-11-07 23:48:59,825 launching RC challenge
+2017-11-07 23:49:00,255 screen pressed: (190, 257)
+2017-11-07 23:49:00,256 on_click: (190, 257)
+2017-11-07 23:49:00,256 RC clicked - launching 7
+2017-11-07 23:49:00,257 button 7 pressed
+2017-11-07 23:49:00,257 launching RC challenge
+2017-11-07 23:49:48,046 Initialising pygame
+2017-11-07 23:49:48,278 Hiding Cursor
+2017-11-07 23:49:48,279 Setting screen size to (240, 320)
+2017-11-07 23:49:48,654 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:49:48,659 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:49:48,662 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:49:48,667 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:49:48,671 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:49:48,675 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:49:48,680 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:49:48,684 Making button with text 'RC' at (130, 211)
+2017-11-07 23:49:48,688 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:49:49,756 screen pressed: (204, 251)
+2017-11-07 23:49:49,757 on_click: (204, 251)
+2017-11-07 23:49:49,758 RC clicked - launching 7
+2017-11-07 23:49:49,758 button 7 pressed
+2017-11-07 23:49:49,759 launching RC challenge
+2017-11-07 23:49:49,759 about to stop a thread
+2017-11-07 23:49:49,760 launching new challenge
+2017-11-07 23:49:49,761 challenge RC launched
+2017-11-07 23:50:02,904 screen pressed: (199, 253)
+2017-11-07 23:50:02,905 on_click: (199, 253)
+2017-11-07 23:50:02,906 RC clicked - launching 7
+2017-11-07 23:50:02,906 button 7 pressed
+2017-11-07 23:50:02,907 launching RC challenge
+2017-11-07 23:50:02,907 about to stop a thread
+2017-11-07 23:50:02,908 about to stop thread RC
+2017-11-07 23:50:02,908 stopping challenge
+2017-11-07 23:50:02,909 launching new challenge
+2017-11-07 23:50:02,910 challenge RC launched
+2017-11-07 23:50:12,885 screen pressed: (192, 268)
+2017-11-07 23:50:12,886 on_click: (192, 268)
+2017-11-07 23:50:12,886 Click at pos (192, 268) did not interact with any button
+2017-11-07 23:50:13,570 screen pressed: (208, 145)
+2017-11-07 23:50:13,570 on_click: (208, 145)
+2017-11-07 23:50:13,571 Obstacle clicked - launching 5
+2017-11-07 23:50:13,571 button 5 pressed
+2017-11-07 23:50:16,228 screen pressed: (201, 253)
+2017-11-07 23:50:16,229 on_click: (201, 253)
+2017-11-07 23:50:16,229 RC clicked - launching 7
+2017-11-07 23:50:16,229 button 7 pressed
+2017-11-07 23:50:16,230 launching RC challenge
+2017-11-07 23:50:16,230 about to stop a thread
+2017-11-07 23:50:16,230 about to stop thread RC
+2017-11-07 23:50:16,230 stopping challenge
+2017-11-07 23:50:16,231 launching new challenge
+2017-11-07 23:50:16,231 challenge RC launched
+2017-11-07 23:50:17,233 screen pressed: (209, 133)
+2017-11-07 23:50:17,234 on_click: (209, 133)
+2017-11-07 23:50:17,235 Golf clicked - launching 3
+2017-11-07 23:50:17,235 button 3 pressed
+2017-11-07 23:50:18,037 screen pressed: (186, 160)
+2017-11-07 23:50:18,038 on_click: (186, 160)
+2017-11-07 23:50:18,042 Obstacle clicked - launching 5
+2017-11-07 23:50:18,043 button 5 pressed
+2017-11-07 23:50:20,050 screen pressed: (153, 160)
+2017-11-07 23:50:20,051 on_click: (153, 160)
+2017-11-07 23:50:20,051 Obstacle clicked - launching 5
+2017-11-07 23:50:20,051 button 5 pressed
+2017-11-07 23:50:20,329 screen pressed: (92, 169)
+2017-11-07 23:50:20,330 on_click: (92, 169)
+2017-11-07 23:50:20,330 Pi Noon clicked - launching 4
+2017-11-07 23:50:20,331 button 4 pressed
+2017-11-07 23:50:20,566 screen pressed: (59, 148)
+2017-11-07 23:50:20,567 on_click: (59, 148)
+2017-11-07 23:50:20,567 Pi Noon clicked - launching 4
+2017-11-07 23:50:20,568 button 4 pressed
+2017-11-07 23:50:21,070 screen pressed: (204, 97)
+2017-11-07 23:50:21,071 on_click: (204, 97)
+2017-11-07 23:50:21,072 Golf clicked - launching 3
+2017-11-07 23:50:21,072 button 3 pressed
+2017-11-07 23:50:21,501 screen pressed: (207, 82)
+2017-11-07 23:50:21,502 on_click: (207, 82)
+2017-11-07 23:50:21,502 Golf clicked - launching 3
+2017-11-07 23:50:21,503 button 3 pressed
+2017-11-07 23:50:21,916 screen pressed: (199, 166)
+2017-11-07 23:50:21,917 on_click: (199, 166)
+2017-11-07 23:50:21,918 Obstacle clicked - launching 5
+2017-11-07 23:50:21,918 button 5 pressed
+2017-11-07 23:50:22,365 screen pressed: (203, 89)
+2017-11-07 23:50:22,366 on_click: (203, 89)
+2017-11-07 23:50:22,366 Golf clicked - launching 3
+2017-11-07 23:50:22,367 button 3 pressed
+2017-11-07 23:54:01,555 Initialising pygame
+2017-11-07 23:54:01,768 Hiding Cursor
+2017-11-07 23:54:01,768 Setting screen size to (240, 320)
+2017-11-07 23:54:02,144 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:54:02,148 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:54:02,152 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:54:02,157 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:54:02,161 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:54:02,165 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:54:02,170 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:54:02,174 Making button with text 'RC' at (130, 211)
+2017-11-07 23:54:02,177 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:54:04,053 screen pressed: (188, 238)
+2017-11-07 23:54:04,054 on_click: (188, 238)
+2017-11-07 23:54:04,055 RC clicked - launching 7
+2017-11-07 23:54:04,055 button 7 pressed
+2017-11-07 23:54:04,056 launching RC challenge
+2017-11-07 23:54:04,056 about to stop a thread
+2017-11-07 23:54:04,057 launching new challenge
+2017-11-07 23:54:04,058 challenge RC launched
+2017-11-07 23:54:06,343 screen pressed: (199, 136)
+2017-11-07 23:54:06,344 on_click: (199, 136)
+2017-11-07 23:54:06,344 Click at pos (199, 136) did not interact with any button
+2017-11-07 23:54:08,478 screen pressed: (34, 120)
+2017-11-07 23:54:08,479 on_click: (34, 120)
+2017-11-07 23:54:08,479 Rainbow clicked - launching 2
+2017-11-07 23:54:08,479 button 2 pressed
+2017-11-07 23:54:08,912 screen pressed: (55, 158)
+2017-11-07 23:54:08,913 on_click: (55, 158)
+2017-11-07 23:54:08,913 Pi Noon clicked - launching 4
+2017-11-07 23:54:08,914 button 4 pressed
+2017-11-07 23:54:10,480 screen pressed: (72, 99)
+2017-11-07 23:54:10,481 on_click: (72, 99)
+2017-11-07 23:54:10,482 Rainbow clicked - launching 2
+2017-11-07 23:54:10,482 button 2 pressed
+2017-11-07 23:54:10,829 screen pressed: (95, 105)
+2017-11-07 23:54:10,830 on_click: (95, 105)
+2017-11-07 23:54:10,831 Rainbow clicked - launching 2
+2017-11-07 23:54:10,831 button 2 pressed
+2017-11-07 23:54:11,163 screen pressed: (221, 116)
+2017-11-07 23:54:11,163 on_click: (221, 116)
+2017-11-07 23:54:11,164 Golf clicked - launching 3
+2017-11-07 23:54:11,164 button 3 pressed
+2017-11-07 23:54:14,496 screen pressed: (203, 257)
+2017-11-07 23:54:14,497 on_click: (203, 257)
+2017-11-07 23:54:14,497 RC clicked - launching 7
+2017-11-07 23:54:14,498 button 7 pressed
+2017-11-07 23:54:14,498 launching RC challenge
+2017-11-07 23:54:14,499 about to stop a thread
+2017-11-07 23:54:14,499 about to stop thread RC
+2017-11-07 23:54:14,500 stopping challenge
+2017-11-07 23:54:14,500 launching new challenge
+2017-11-07 23:54:14,501 challenge RC launched
+2017-11-07 23:54:15,835 screen pressed: (211, 128)
+2017-11-07 23:54:15,835 on_click: (211, 128)
+2017-11-07 23:54:15,836 Golf clicked - launching 3
+2017-11-07 23:54:15,836 button 3 pressed
+2017-11-07 23:54:16,356 screen pressed: (171, 114)
+2017-11-07 23:54:16,357 on_click: (171, 114)
+2017-11-07 23:54:16,358 Golf clicked - launching 3
+2017-11-07 23:54:16,358 button 3 pressed
+2017-11-07 23:54:16,699 screen pressed: (74, 135)
+2017-11-07 23:54:16,700 on_click: (74, 135)
+2017-11-07 23:54:16,701 Click at pos (74, 135) did not interact with any button
+2017-11-07 23:54:17,094 screen pressed: (148, 122)
+2017-11-07 23:54:17,094 on_click: (148, 122)
+2017-11-07 23:54:17,095 Golf clicked - launching 3
+2017-11-07 23:54:17,095 button 3 pressed
+2017-11-07 23:54:17,318 screen pressed: (216, 115)
+2017-11-07 23:54:17,319 on_click: (216, 115)
+2017-11-07 23:54:17,319 Golf clicked - launching 3
+2017-11-07 23:54:17,320 button 3 pressed
+2017-11-07 23:54:17,525 screen pressed: (211, 112)
+2017-11-07 23:54:17,526 on_click: (211, 112)
+2017-11-07 23:54:17,527 Golf clicked - launching 3
+2017-11-07 23:54:17,527 button 3 pressed
+2017-11-07 23:54:17,707 screen pressed: (193, 94)
+2017-11-07 23:54:17,708 on_click: (193, 94)
+2017-11-07 23:54:17,709 Golf clicked - launching 3
+2017-11-07 23:54:17,709 button 3 pressed
+2017-11-07 23:54:17,906 screen pressed: (159, 120)
+2017-11-07 23:54:17,906 on_click: (159, 120)
+2017-11-07 23:54:17,907 Golf clicked - launching 3
+2017-11-07 23:54:17,907 button 3 pressed
+2017-11-07 23:54:18,097 screen pressed: (168, 145)
+2017-11-07 23:54:18,097 on_click: (168, 145)
+2017-11-07 23:54:18,098 Obstacle clicked - launching 5
+2017-11-07 23:54:18,098 button 5 pressed
+2017-11-07 23:54:18,297 screen pressed: (194, 138)
+2017-11-07 23:54:18,298 on_click: (194, 138)
+2017-11-07 23:54:18,299 Click at pos (194, 138) did not interact with any button
+2017-11-07 23:54:18,518 screen pressed: (189, 149)
+2017-11-07 23:54:18,519 on_click: (189, 149)
+2017-11-07 23:54:18,519 Obstacle clicked - launching 5
+2017-11-07 23:54:18,520 button 5 pressed
+2017-11-07 23:54:19,815 screen pressed: (46, 292)
+2017-11-07 23:54:19,816 on_click: (46, 292)
+2017-11-07 23:54:19,818 Exit clicked - launching 8
+2017-11-07 23:54:19,819 button 8 pressed
+2017-11-07 23:54:19,819 Exit button pressed. Exiting now.
+2017-11-07 23:54:19,820 stopping challenge
+2017-11-07 23:54:24,886 screen pressed: (67, 273)
+2017-11-07 23:54:24,887 on_click: (67, 273)
+2017-11-07 23:54:24,890 Exit clicked - launching 8
+2017-11-07 23:54:24,890 button 8 pressed
+2017-11-07 23:54:24,890 Exit button pressed. Exiting now.
+2017-11-07 23:54:24,891 stopping challenge
+2017-11-07 23:54:25,631 screen pressed: (70, 288)
+2017-11-07 23:54:25,632 on_click: (70, 288)
+2017-11-07 23:54:25,633 Exit clicked - launching 8
+2017-11-07 23:54:25,633 button 8 pressed
+2017-11-07 23:54:25,633 Exit button pressed. Exiting now.
+2017-11-07 23:54:25,634 stopping challenge
+2017-11-07 23:54:26,330 screen pressed: (72, 283)
+2017-11-07 23:54:26,330 on_click: (72, 283)
+2017-11-07 23:54:26,331 Exit clicked - launching 8
+2017-11-07 23:54:26,331 button 8 pressed
+2017-11-07 23:54:26,332 Exit button pressed. Exiting now.
+2017-11-07 23:54:26,332 stopping challenge
+2017-11-07 23:54:28,233 screen pressed: (60, 287)
+2017-11-07 23:54:28,234 on_click: (60, 287)
+2017-11-07 23:54:28,235 Exit clicked - launching 8
+2017-11-07 23:54:28,235 button 8 pressed
+2017-11-07 23:54:28,235 Exit button pressed. Exiting now.
+2017-11-07 23:54:28,236 stopping challenge
+2017-11-07 23:56:18,554 Initialising pygame
+2017-11-07 23:56:18,778 Hiding Cursor
+2017-11-07 23:56:18,779 Setting screen size to (240, 320)
+2017-11-07 23:56:19,159 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:56:19,164 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:56:19,168 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:56:19,172 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:56:19,176 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:56:19,180 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:56:19,185 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:56:19,190 Making button with text 'RC' at (130, 211)
+2017-11-07 23:56:19,193 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:56:19,858 screen pressed: (193, 167)
+2017-11-07 23:56:19,858 on_click: (193, 167)
+2017-11-07 23:56:19,859 Obstacle clicked - launching 5
+2017-11-07 23:56:19,859 button 5 pressed
+2017-11-07 23:56:21,200 screen pressed: (154, 125)
+2017-11-07 23:56:21,201 on_click: (154, 125)
+2017-11-07 23:56:21,202 Golf clicked - launching 3
+2017-11-07 23:56:21,202 button 3 pressed
+2017-11-07 23:56:21,748 screen pressed: (59, 123)
+2017-11-07 23:56:21,748 on_click: (59, 123)
+2017-11-07 23:56:21,749 Rainbow clicked - launching 2
+2017-11-07 23:56:21,749 button 2 pressed
+2017-11-07 23:56:23,379 screen pressed: (202, 254)
+2017-11-07 23:56:23,380 on_click: (202, 254)
+2017-11-07 23:56:23,380 RC clicked - launching 7
+2017-11-07 23:56:23,381 button 7 pressed
+2017-11-07 23:56:23,381 launching RC challenge
+2017-11-07 23:56:23,382 about to stop a thread
+2017-11-07 23:56:23,383 launching new challenge
+2017-11-07 23:56:23,384 challenge RC launched
+2017-11-07 23:56:26,243 screen pressed: (37, 279)
+2017-11-07 23:56:26,244 on_click: (37, 279)
+2017-11-07 23:56:26,248 Exit clicked - launching 8
+2017-11-07 23:56:26,249 button 8 pressed
+2017-11-07 23:56:26,249 Exit button pressed. Exiting now.
+2017-11-07 23:56:26,250 stopping challenge
+2017-11-07 23:56:28,200 screen pressed: (194, 206)
+2017-11-07 23:56:28,201 on_click: (194, 206)
+2017-11-07 23:56:28,202 RC clicked - launching 7
+2017-11-07 23:56:28,202 button 7 pressed
+2017-11-07 23:56:28,203 launching RC challenge
+2017-11-07 23:56:28,203 about to stop a thread
+2017-11-07 23:56:28,204 about to stop thread RC
+2017-11-07 23:56:28,205 stopping challenge
+2017-11-07 23:56:28,205 launching new challenge
+2017-11-07 23:56:28,207 challenge RC launched
+2017-11-07 23:56:29,485 screen pressed: (36, 296)
+2017-11-07 23:56:29,485 on_click: (36, 296)
+2017-11-07 23:56:29,486 Exit clicked - launching 8
+2017-11-07 23:56:29,486 button 8 pressed
+2017-11-07 23:56:29,486 Exit button pressed. Exiting now.
+2017-11-07 23:56:29,486 stopping challenge
+2017-11-07 23:56:35,185 screen pressed: (195, 247)
+2017-11-07 23:56:35,185 on_click: (195, 247)
+2017-11-07 23:56:35,186 RC clicked - launching 7
+2017-11-07 23:56:35,186 button 7 pressed
+2017-11-07 23:56:35,186 launching RC challenge
+2017-11-07 23:56:35,186 about to stop a thread
+2017-11-07 23:56:35,186 about to stop thread RC
+2017-11-07 23:56:35,187 stopping challenge
+2017-11-07 23:56:35,187 launching new challenge
+2017-11-07 23:56:35,188 challenge RC launched
+2017-11-07 23:56:41,220 screen pressed: (43, 287)
+2017-11-07 23:56:41,221 on_click: (43, 287)
+2017-11-07 23:56:41,222 Exit clicked - launching 8
+2017-11-07 23:56:41,222 button 8 pressed
+2017-11-07 23:56:41,223 Exit button pressed. Exiting now.
+2017-11-07 23:56:41,223 stopping challenge
+2017-11-07 23:56:42,075 screen pressed: (54, 281)
+2017-11-07 23:56:42,075 on_click: (54, 281)
+2017-11-07 23:56:42,075 Exit clicked - launching 8
+2017-11-07 23:56:42,076 button 8 pressed
+2017-11-07 23:56:42,076 Exit button pressed. Exiting now.
+2017-11-07 23:56:42,076 stopping challenge
+2017-11-07 23:56:43,418 screen pressed: (45, 281)
+2017-11-07 23:56:43,419 on_click: (45, 281)
+2017-11-07 23:56:43,419 Exit clicked - launching 8
+2017-11-07 23:56:43,420 button 8 pressed
+2017-11-07 23:56:43,420 Exit button pressed. Exiting now.
+2017-11-07 23:56:43,421 stopping challenge
+2017-11-07 23:56:43,886 screen pressed: (46, 293)
+2017-11-07 23:56:43,887 on_click: (46, 293)
+2017-11-07 23:56:43,887 Exit clicked - launching 8
+2017-11-07 23:56:43,888 button 8 pressed
+2017-11-07 23:56:43,888 Exit button pressed. Exiting now.
+2017-11-07 23:56:43,889 stopping challenge
+2017-11-07 23:56:44,239 screen pressed: (52, 299)
+2017-11-07 23:56:44,239 on_click: (52, 299)
+2017-11-07 23:56:44,240 Exit clicked - launching 8
+2017-11-07 23:56:44,240 button 8 pressed
+2017-11-07 23:56:44,241 Exit button pressed. Exiting now.
+2017-11-07 23:56:44,241 stopping challenge
+2017-11-07 23:56:44,478 screen pressed: (51, 296)
+2017-11-07 23:56:44,478 on_click: (51, 296)
+2017-11-07 23:56:44,479 Exit clicked - launching 8
+2017-11-07 23:56:44,479 button 8 pressed
+2017-11-07 23:56:44,480 Exit button pressed. Exiting now.
+2017-11-07 23:56:44,480 stopping challenge
+2017-11-07 23:56:44,670 screen pressed: (52, 269)
+2017-11-07 23:56:44,671 on_click: (52, 269)
+2017-11-07 23:56:44,672 Click at pos (52, 269) did not interact with any button
+2017-11-07 23:56:44,861 screen pressed: (52, 292)
+2017-11-07 23:56:44,862 on_click: (52, 292)
+2017-11-07 23:56:44,863 Exit clicked - launching 8
+2017-11-07 23:56:44,863 button 8 pressed
+2017-11-07 23:56:44,864 Exit button pressed. Exiting now.
+2017-11-07 23:56:44,864 stopping challenge
+2017-11-07 23:56:45,038 screen pressed: (52, 289)
+2017-11-07 23:56:45,039 on_click: (52, 289)
+2017-11-07 23:56:45,040 Exit clicked - launching 8
+2017-11-07 23:56:45,040 button 8 pressed
+2017-11-07 23:56:45,041 Exit button pressed. Exiting now.
+2017-11-07 23:56:45,041 stopping challenge
+2017-11-07 23:56:45,385 screen pressed: (54, 300)
+2017-11-07 23:56:45,385 on_click: (54, 300)
+2017-11-07 23:56:45,386 Exit clicked - launching 8
+2017-11-07 23:56:45,386 button 8 pressed
+2017-11-07 23:56:45,387 Exit button pressed. Exiting now.
+2017-11-07 23:56:45,387 stopping challenge
+2017-11-07 23:56:45,575 screen pressed: (52, 291)
+2017-11-07 23:56:45,576 on_click: (52, 291)
+2017-11-07 23:56:45,576 Exit clicked - launching 8
+2017-11-07 23:56:45,577 button 8 pressed
+2017-11-07 23:56:45,577 Exit button pressed. Exiting now.
+2017-11-07 23:56:45,578 stopping challenge
+2017-11-07 23:56:45,734 screen pressed: (53, 277)
+2017-11-07 23:56:45,734 on_click: (53, 277)
+2017-11-07 23:56:45,735 Exit clicked - launching 8
+2017-11-07 23:56:45,735 button 8 pressed
+2017-11-07 23:56:45,736 Exit button pressed. Exiting now.
+2017-11-07 23:56:45,736 stopping challenge
+2017-11-07 23:56:45,920 screen pressed: (65, 272)
+2017-11-07 23:56:45,921 on_click: (65, 272)
+2017-11-07 23:56:45,922 Click at pos (65, 272) did not interact with any button
+2017-11-07 23:56:46,108 screen pressed: (74, 269)
+2017-11-07 23:56:46,109 on_click: (74, 269)
+2017-11-07 23:56:46,109 Click at pos (74, 269) did not interact with any button
+2017-11-07 23:56:46,293 screen pressed: (74, 270)
+2017-11-07 23:56:46,294 on_click: (74, 270)
+2017-11-07 23:56:46,297 Click at pos (74, 270) did not interact with any button
+2017-11-07 23:56:46,484 screen pressed: (69, 281)
+2017-11-07 23:56:46,485 on_click: (69, 281)
+2017-11-07 23:56:46,486 Exit clicked - launching 8
+2017-11-07 23:56:46,486 button 8 pressed
+2017-11-07 23:56:46,487 Exit button pressed. Exiting now.
+2017-11-07 23:56:46,487 stopping challenge
+2017-11-07 23:56:47,439 screen pressed: (63, 286)
+2017-11-07 23:56:47,439 on_click: (63, 286)
+2017-11-07 23:56:47,440 Exit clicked - launching 8
+2017-11-07 23:56:47,441 button 8 pressed
+2017-11-07 23:56:47,441 Exit button pressed. Exiting now.
+2017-11-07 23:56:47,441 stopping challenge
+2017-11-07 23:57:33,035 Initialising pygame
+2017-11-07 23:57:33,258 Hiding Cursor
+2017-11-07 23:57:33,259 Setting screen size to (240, 320)
+2017-11-07 23:57:33,637 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:57:33,641 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:57:33,645 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:57:33,649 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:57:33,653 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:57:33,657 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:57:33,662 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:57:33,666 Making button with text 'RC' at (130, 211)
+2017-11-07 23:57:33,670 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:57:34,607 screen pressed: (218, 252)
+2017-11-07 23:57:34,607 on_click: (218, 252)
+2017-11-07 23:57:34,608 RC clicked - launching 7
+2017-11-07 23:57:34,608 button 7 pressed
+2017-11-07 23:57:34,609 launching RC challenge
+2017-11-07 23:57:34,610 about to stop a thread
+2017-11-07 23:57:34,610 launching new challenge
+2017-11-07 23:57:34,612 challenge RC launched
+2017-11-07 23:57:36,114 screen pressed: (214, 224)
+2017-11-07 23:57:36,115 on_click: (214, 224)
+2017-11-07 23:57:36,120 RC clicked - launching 7
+2017-11-07 23:57:36,121 button 7 pressed
+2017-11-07 23:57:36,121 launching RC challenge
+2017-11-07 23:57:36,121 about to stop a thread
+2017-11-07 23:57:36,121 about to stop thread RC
+2017-11-07 23:57:36,122 stopping challenge
+2017-11-07 23:57:36,122 launching new challenge
+2017-11-07 23:57:36,123 challenge RC launched
+2017-11-07 23:57:37,865 screen pressed: (213, 143)
+2017-11-07 23:57:37,866 on_click: (213, 143)
+2017-11-07 23:57:37,867 Obstacle clicked - launching 5
+2017-11-07 23:57:37,867 button 5 pressed
+2017-11-07 23:57:38,386 screen pressed: (207, 124)
+2017-11-07 23:57:38,387 on_click: (207, 124)
+2017-11-07 23:57:38,388 Golf clicked - launching 3
+2017-11-07 23:57:38,388 button 3 pressed
+2017-11-07 23:57:38,650 screen pressed: (207, 112)
+2017-11-07 23:57:38,651 on_click: (207, 112)
+2017-11-07 23:57:38,652 Golf clicked - launching 3
+2017-11-07 23:57:38,652 button 3 pressed
+2017-11-07 23:57:38,873 screen pressed: (197, 114)
+2017-11-07 23:57:38,874 on_click: (197, 114)
+2017-11-07 23:57:38,875 Golf clicked - launching 3
+2017-11-07 23:57:38,875 button 3 pressed
+2017-11-07 23:57:39,637 screen pressed: (94, 132)
+2017-11-07 23:57:39,638 on_click: (94, 132)
+2017-11-07 23:57:39,638 Rainbow clicked - launching 2
+2017-11-07 23:57:39,638 button 2 pressed
+2017-11-07 23:57:39,895 screen pressed: (53, 144)
+2017-11-07 23:57:39,896 on_click: (53, 144)
+2017-11-07 23:57:39,897 Pi Noon clicked - launching 4
+2017-11-07 23:57:39,897 button 4 pressed
+2017-11-07 23:57:40,107 screen pressed: (33, 170)
+2017-11-07 23:57:40,108 on_click: (33, 170)
+2017-11-07 23:57:40,108 Pi Noon clicked - launching 4
+2017-11-07 23:57:40,109 button 4 pressed
+2017-11-07 23:57:40,349 screen pressed: (65, 125)
+2017-11-07 23:57:40,349 on_click: (65, 125)
+2017-11-07 23:57:40,350 Rainbow clicked - launching 2
+2017-11-07 23:57:40,350 button 2 pressed
+2017-11-07 23:57:40,585 screen pressed: (183, 86)
+2017-11-07 23:57:40,586 on_click: (183, 86)
+2017-11-07 23:57:40,587 Golf clicked - launching 3
+2017-11-07 23:57:40,587 button 3 pressed
+2017-11-07 23:57:40,819 screen pressed: (223, 120)
+2017-11-07 23:57:40,820 on_click: (223, 120)
+2017-11-07 23:57:40,821 Golf clicked - launching 3
+2017-11-07 23:57:40,821 button 3 pressed
+2017-11-07 23:57:41,572 screen pressed: (29, 47)
+2017-11-07 23:57:41,573 on_click: (29, 47)
+2017-11-07 23:57:41,578 Speed clicked - launching 0
+2017-11-07 23:57:41,578 button 0 pressed
+2017-11-07 23:57:42,580 about to stop a thread
+2017-11-07 23:57:42,580 about to stop thread RC
+2017-11-07 23:57:42,581 stopping challenge
+2017-11-07 23:57:42,582 launching new challenge
+2017-11-07 23:57:50,504 Initialising pygame
+2017-11-07 23:57:50,718 Hiding Cursor
+2017-11-07 23:57:50,719 Setting screen size to (240, 320)
+2017-11-07 23:57:51,097 Making button with text 'Speed' at (20, 10)
+2017-11-07 23:57:51,101 Making button with text 'Maze' at (130, 10)
+2017-11-07 23:57:51,105 Making button with text 'Rainbow' at (20, 77)
+2017-11-07 23:57:51,109 Making button with text 'Golf' at (130, 77)
+2017-11-07 23:57:51,113 Making button with text 'Pi Noon' at (20, 144)
+2017-11-07 23:57:51,117 Making button with text 'Obstacle' at (130, 144)
+2017-11-07 23:57:51,122 Making button with text 'Shooting' at (20, 211)
+2017-11-07 23:57:51,127 Making button with text 'RC' at (130, 211)
+2017-11-07 23:57:51,130 Making button with text 'Exit' at (20, 278)
+2017-11-07 23:57:51,936 screen pressed: (216, 267)
+2017-11-07 23:57:51,937 on_click: (216, 267)
+2017-11-07 23:57:51,938 RC clicked - launching 7
+2017-11-07 23:57:51,938 button 7 pressed
+2017-11-07 23:57:51,939 launching RC challenge
+2017-11-07 23:57:51,940 about to stop a thread
+2017-11-07 23:57:51,940 launching new challenge
+2017-11-07 23:57:51,941 challenge RC launched
+2017-11-07 23:57:54,766 screen pressed: (54, 284)
+2017-11-07 23:57:54,767 on_click: (54, 284)
+2017-11-07 23:57:54,768 Exit clicked - launching 8
+2017-11-07 23:57:54,768 button 8 pressed
+2017-11-07 23:57:54,768 Exit button pressed. Exiting now.
+2017-11-07 23:57:54,769 stopping challenge
+2017-11-07 23:58:00,773 screen pressed: (53, 284)
+2017-11-07 23:58:00,774 on_click: (53, 284)
+2017-11-07 23:58:00,774 Exit clicked - launching 8
+2017-11-07 23:58:00,775 button 8 pressed
+2017-11-07 23:58:00,775 Exit button pressed. Exiting now.

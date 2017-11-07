@@ -30,13 +30,15 @@ def launch_challenge(new_challenge):
     """launch requested challenge thread"""
     logging.info("launching new challenge")
     challenge_thread = threading.Thread(target=new_challenge.run)
+    challenge_thread.daemon = True
     challenge_thread.start()
-    return challenge_thread
+    challenge_thread.setName("Bob")
+    return new_challenge
 
 
 def stop_threads(current_challenge):
     """stop running challenge"""
-    current_challenge.stop()
+    err = current_challenge.stop()
     current_challenge = None
     logging.info("stopping challenge")
 
@@ -124,7 +126,7 @@ def button_handler(number):
     logging.debug("button %d pressed", number)
     if number == 0:
         time.sleep(1)
-        return None
+        return "Other"
     if number == 7:
         logging.info("launching RC challenge")
         new_challenge = RC()
@@ -159,17 +161,21 @@ while True:
             # where the screen is pressed
             # pygame.draw.circle(screen, WHITE, pos, 2, 0)
             requested_challenge = on_click(pos)
-            if requested_challenge is not None:
+            if requested_challenge is not None and requested_challenge is not "Exit":
                 logging.info("about to stop a thread")
                 if running_challenge:
                     logging.info("about to stop thread %s", running_challenge.name)
                     stop_threads(running_challenge)
+            if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "other":
                 running_challenge = launch_challenge(requested_challenge)
                 logging.info("challenge %s launched", running_challenge.name)
+                time.sleep(1)
             elif requested_challenge == "Exit":
                 if running_challenge is not None:
                     stop_threads(running_challenge)
-                sys.exit
+                    running_challenge = None
+                else:
+                    sys.exit()
         # ensure there is always a safe way to end the program
         # if the touch screen fails
         if event.type == KEYDOWN:
