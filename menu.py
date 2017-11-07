@@ -6,11 +6,9 @@ import threading
 
 import pygame
 from pygame.locals import *
-import rc
+from rc import RC
 
 # Global variables
-challenge_name = "Nothing"
-challenge = None
 
 # screen size
 SCREEN_SIZE = width, height = 240, 320
@@ -27,24 +25,21 @@ logging.basicConfig(
     format='%(asctime)s %(message)s'
 )
 
-def launch_challenge(challenge_type, challenge_description):
+
+def launch_challenge(new_challenge):
     """launch requested challenge thread"""
-    #stop_threads()
-    logging.info("launching %s", challenge_description)
-    challenge = challenge_type
-    challenge_thread = threading.Thread(target=challenge.run)
+    logging.info("launching new challenge")
+    challenge_thread = threading.Thread(target=new_challenge.run)
     challenge_thread.start()
-    challenge_name = challenge_description
+    return challenge_thread
 
 
-def stop_threads():
+def stop_threads(current_challenge):
     """stop running challenge"""
-    if challenge_name is not "Nothing":
-        challenge.stop()
-        challenge = None
-        challenge_thread = None
-        logging.info("stopping %s",challenge_name)
-        challenge_name = "Nothing"
+    current_challenge.stop()
+    current_challenge = None
+    logging.info("stopping challenge")
+
 
 def setup_environment():
     """Set up all the required environment variables"""
@@ -113,26 +108,32 @@ def on_click(mousepos):
             button["label"], button["index"]
         )
         # Call button_handler with the matched button's index value
-        button_handler(button['index'])
+        new_challenge = button_handler(button['index'])
+        return new_challenge
     except StopIteration:
         logging.debug(
             "Click at pos %s did not interact with any button",
             mousepos
         )
+        return None
 
 
 def button_handler(number):
     """Button action handler. Currently differentiates between
     exit, rc and other buttons only"""
     logging.debug("button %d pressed", number)
-    if number == 0: 
+    if number == 0:
         time.sleep(1)
+        return None
     if number == 7:
-        launch_challenge(rc,"RC")
+        logging.info("launching RC challenge")
+        new_challenge = RC()
+        return new_challenge
     if number == 8:
-        stop_threads()
         logging.info("Exit button pressed. Exiting now.")
-        sys.exit()
+        return "Exit"
+    else:
+        return None
 
 
 setup_environment()
@@ -146,6 +147,7 @@ pygame.mouse.set_visible(False)
 logging.info("Setting screen size to %s", SCREEN_SIZE)
 screen = pygame.display.set_mode(SCREEN_SIZE)
 buttons = setup_menu(screen)
+running_challenge = None
 
 # While loop to manage touch screen inputs
 while True:
@@ -156,12 +158,22 @@ while True:
             # for debugging purposes - adds a small dot
             # where the screen is pressed
             # pygame.draw.circle(screen, WHITE, pos, 2, 0)
-            on_click(pos)
-
+            requested_challenge = on_click(pos)
+            if requested_challenge is not None:
+                logging.info("about to stop a thread")
+                if running_challenge:
+                    logging.info("about to stop thread %s", running_challenge.name)
+                    stop_threads(running_challenge)
+                running_challenge = launch_challenge(requested_challenge)
+                logging.info("challenge %s launched", running_challenge.name)
+            elif requested_challenge == "Exit":
+                if running_challenge is not None:
+                    stop_threads(running_challenge)
+                sys.exit
         # ensure there is always a safe way to end the program
         # if the touch screen fails
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 sys.exit()
 
-    pygame.display.update()
+pygame.display.update()
