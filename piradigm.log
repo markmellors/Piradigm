@@ -1997,3 +1997,110 @@
 2017-11-07 23:58:00,774 Exit clicked - launching 8
 2017-11-07 23:58:00,775 button 8 pressed
 2017-11-07 23:58:00,775 Exit button pressed. Exiting now.
+2017-11-08 19:07:12,893 Initialising pygame
+2017-11-08 19:07:13,155 Hiding Cursor
+2017-11-08 19:07:13,156 Setting screen size to (240, 320)
+2017-11-08 19:07:13,552 Making button with text 'Speed' at (20, 10)
+2017-11-08 19:07:13,575 Making button with text 'Maze' at (130, 10)
+2017-11-08 19:07:13,579 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 19:07:13,584 Making button with text 'Golf' at (130, 77)
+2017-11-08 19:07:13,588 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 19:07:13,592 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 19:07:13,597 Making button with text 'Shooting' at (20, 211)
+2017-11-08 19:07:13,602 Making button with text 'RC' at (130, 211)
+2017-11-08 19:07:13,605 Making button with text 'Exit' at (20, 278)
+2017-11-08 19:11:45,360 Initialising pygame
+2017-11-08 19:11:45,574 Hiding Cursor
+2017-11-08 19:11:45,575 Setting screen size to (240, 320)
+2017-11-08 19:11:45,951 Making button with text 'Speed' at (20, 10)
+2017-11-08 19:11:45,955 Making button with text 'Maze' at (130, 10)
+2017-11-08 19:11:45,959 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 19:11:45,964 Making button with text 'Golf' at (130, 77)
+2017-11-08 19:11:45,968 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 19:11:45,971 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 19:11:45,976 Making button with text 'Shooting' at (20, 211)
+2017-11-08 19:11:45,981 Making button with text 'RC' at (130, 211)
+2017-11-08 19:11:45,984 Making button with text 'Exit' at (20, 278)
+2017-11-08 19:11:47,360 screen pressed: (69, 312)
+2017-11-08 19:11:47,361 on_click: (69, 312)
+2017-11-08 19:11:47,362 Exit clicked - launching 8
+2017-11-08 19:11:47,362 button 8 pressed
+2017-11-08 19:11:47,363 Exit button pressed. Exiting now.
+2017-11-08 19:11:47,363 about to stop a thread
+2017-11-08 19:19:31,946 Initialising pygame
+2017-11-08 19:19:32,154 Hiding Cursor
+2017-11-08 19:19:32,155 Setting screen size to (240, 320)
+2017-11-08 19:19:32,545 Making button with text 'Speed' at (20, 10)
+2017-11-08 19:19:32,549 Making button with text 'Maze' at (130, 10)
+2017-11-08 19:19:32,553 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 19:19:32,558 Making button with text 'Golf' at (130, 77)
+2017-11-08 19:19:32,562 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 19:19:32,566 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 19:19:32,571 Making button with text 'Shooting' at (20, 211)
+2017-11-08 19:19:32,576 Making button with text 'RC' at (130, 211)
+2017-11-08 19:19:32,580 Making button with text 'Exit' at (20, 278)
+2017-11-08 19:19:34,280 screen pressed: (193, 245)
+2017-11-08 19:19:34,280 on_click: (193, 245)
+2017-11-08 19:19:34,281 RC clicked - launching 7
+2017-11-08 19:19:34,282 button 7 pressed
+2017-11-08 19:19:34,282 launching RC challenge
+2017-11-08 19:57:56,893 Initialising pygame
+2017-11-08 19:57:57,104 Hiding Cursor
+2017-11-08 19:57:57,105 Setting screen size to (240, 320)
+2017-11-08 19:57:57,484 Making button with text 'Speed' at (20, 10)
+2017-11-08 19:57:57,488 Making button with text 'Maze' at (130, 10)
+2017-11-08 19:57:57,492 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 19:57:57,497 Making button with text 'Golf' at (130, 77)
+2017-11-08 19:57:57,501 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 19:57:57,504 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 19:57:57,509 Making button with text 'Shooting' at (20, 211)
+2017-11-08 19:57:57,514 Making button with text 'RC' at (130, 211)
+2017-11-08 19:57:57,517 Making button with text 'Exit' at (20, 278)
+2017-11-08 19:58:01,109 screen pressed: (200, 220)
+2017-11-08 19:58:01,110 on_click: (200, 220)
+2017-11-08 19:58:01,111 RC clicked - launching 7
+2017-11-08 19:58:01,111 button 7 pressed
+2017-11-08 19:58:01,112 launching RC challenge
+2017-11-08 19:58:01,112 initialised
+2017-11-08 19:58:01,113 about to stop a thread
+2017-11-08 19:58:01,113 launching new challenge
+2017-11-08 19:58:01,114 RC set to run
+2017-11-08 19:58:01,115 challenge RC launched
+2017-11-08 19:58:02,117 RC still alive
+2017-11-08 19:58:02,886 screen pressed: (151, 150)
+2017-11-08 19:58:02,887 on_click: (151, 150)
+2017-11-08 19:58:02,887 Obstacle clicked - launching 5
+2017-11-08 19:58:02,888 button 5 pressed
+2017-11-08 19:58:03,286 screen pressed: (185, 136)
+2017-11-08 19:58:03,287 on_click: (185, 136)
+2017-11-08 19:58:03,288 Click at pos (185, 136) did not interact with any button
+2017-11-08 19:58:04,152 RC still alive
+2017-11-08 19:58:04,167 screen pressed: (216, 166)
+2017-11-08 19:58:04,168 on_click: (216, 166)
+2017-11-08 19:58:04,169 Obstacle clicked - launching 5
+2017-11-08 19:58:04,169 button 5 pressed
+2017-11-08 19:58:04,418 screen pressed: (215, 250)
+2017-11-08 19:58:04,419 on_click: (215, 250)
+2017-11-08 19:58:04,419 RC clicked - launching 7
+2017-11-08 19:58:04,420 button 7 pressed
+2017-11-08 19:58:04,420 launching RC challenge
+2017-11-08 19:58:04,421 initialised
+2017-11-08 19:58:04,421 about to stop a thread
+2017-11-08 19:58:04,421 about to stop thread RC
+2017-11-08 19:58:04,422 rc challenge stopping
+2017-11-08 19:58:04,422 stopping challenge
+2017-11-08 19:58:04,423 launching new challenge
+2017-11-08 19:58:04,424 RC set to run
+2017-11-08 19:58:04,425 challenge RC launched
+2017-11-08 19:58:05,169 RC still alive
+2017-11-08 19:58:05,169 RC timing out
+2017-11-08 19:58:05,425 RC still alive
+2017-11-08 19:58:05,947 screen pressed: (132, 289)
+2017-11-08 19:58:05,948 on_click: (132, 289)
+2017-11-08 19:58:05,948 Exit clicked - launching 8
+2017-11-08 19:58:05,949 button 8 pressed
+2017-11-08 19:58:05,949 Exit button pressed. Exiting now.
+2017-11-08 19:58:05,949 about to stop a thread
+2017-11-08 19:58:05,950 about to stop thread RC
+2017-11-08 19:58:05,950 rc challenge stopping
+2017-11-08 19:58:05,951 stopping challenge

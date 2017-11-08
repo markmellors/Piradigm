@@ -161,7 +161,7 @@ while True:
             # where the screen is pressed
             # pygame.draw.circle(screen, WHITE, pos, 2, 0)
             requested_challenge = on_click(pos)
-            if requested_challenge is not None and requested_challenge is not "Exit":
+            if requested_challenge is not None or requested_challenge is "Exit":
                 logging.info("about to stop a thread")
                 if running_challenge:
                     logging.info("about to stop thread %s", running_challenge.name)
@@ -171,11 +171,7 @@ while True:
                 logging.info("challenge %s launched", running_challenge.name)
                 time.sleep(1)
             elif requested_challenge == "Exit":
-                if running_challenge is not None:
-                    stop_threads(running_challenge)
-                    running_challenge = None
-                else:
-                    sys.exit()
+                sys.exit()
         # ensure there is always a safe way to end the program
         # if the touch screen fails
         if event.type == KEYDOWN:
