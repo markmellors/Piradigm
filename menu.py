@@ -32,15 +32,14 @@ def launch_challenge(new_challenge):
     challenge_thread = threading.Thread(target=new_challenge.run)
     challenge_thread.daemon = True
     challenge_thread.start()
-    challenge_thread.setName("Bob")
     return new_challenge
 
 
 def stop_threads(current_challenge):
     """stop running challenge"""
-    err = current_challenge.stop()
+    current_challenge.stop()
     current_challenge = None
-    logging.info("stopping challenge")
+    logging.info("stopped running challenge")
 
 
 def setup_environment():
@@ -124,14 +123,15 @@ def button_handler(number):
     """Button action handler. Currently differentiates between
     exit, rc and other buttons only"""
     logging.debug("button %d pressed", number)
-    if number == 0:
-        time.sleep(1)
+    time.sleep(0.01)
+    if number < 7:
+        logging.info("other selected")
         return "Other"
-    if number == 7:
+    elif number == 7:
         logging.info("launching RC challenge")
         new_challenge = RC()
         return new_challenge
-    if number == 8:
+    elif number == 8:
         logging.info("Exit button pressed. Exiting now.")
         return "Exit"
     else:
@@ -153,6 +153,7 @@ running_challenge = None
 
 # While loop to manage touch screen inputs
 while True:
+    pygame.display.update()
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
             logging.debug("screen pressed: %s", event.pos)
@@ -162,14 +163,13 @@ while True:
             # pygame.draw.circle(screen, WHITE, pos, 2, 0)
             requested_challenge = on_click(pos)
             if requested_challenge is not None or requested_challenge is "Exit":
-                logging.info("about to stop a thread")
+                logging.info("about to stop a thread if there's one running")
                 if running_challenge:
-                    logging.info("about to stop thread %s", running_challenge.name)
+                    logging.info("about to stop thread")
                     stop_threads(running_challenge)
-            if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "other":
+            elif requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
                 running_challenge = launch_challenge(requested_challenge)
                 logging.info("challenge %s launched", running_challenge.name)
-                time.sleep(1)
             elif requested_challenge == "Exit":
                 sys.exit()
         # ensure there is always a safe way to end the program
@@ -177,5 +177,3 @@ while True:
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 sys.exit()
-
-pygame.display.update()

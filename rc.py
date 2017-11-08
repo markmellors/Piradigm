@@ -17,12 +17,13 @@ class RC:
     def run(self):
         logging.info("RC set to run")
         now = time.clock()
-        while not self.killed and time.clock() < (now + 10):
-            time.sleep(1)
+        while (time.clock() < (now + 10)) and not self.killed:
+            time.sleep(0.5)
             logging.info("RC still alive")
-        logging.info("RC timing out")
+            time.sleep(0.5)
+        if time.clock() > (now+10):
+            logging.info("RC challenge timed out")
 
     def stop(self):
         logging.info("rc challenge stopping")
         self.killed = True
-        return "stopping"
