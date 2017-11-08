@@ -17,23 +17,9 @@ logging.basicConfig(
 
 
 class RC:
-
-    def mixer(self, inYaw, inThrottle,):
-        left = inThrottle + inYaw
-        right = inThrottle - inYaw
-        scaleLeft = abs(left / 125.0)
-        scaleRight = abs(right / 125.0)
-        scaleMax = max(scaleLeft, scaleRight)
-        scaleMax = max(1, scaleMax)
-        out_left = int(constrain(left / scaleMax, -125, 125))
-        out_right = int(constrain(right / scaleMax, -125, 125))
-        results = [out_right, out_left]
-        return results
-
-    def constrain(self, val, min_val, max_val):
-        return min(max_val, max(min_val, val))
-
     def __init__(self):
+        time.sleep(0.01)
+        logging.info("initialising RC")        
         self.timeOut = 10
         # Setup
         self.maxPower = 1.0
@@ -41,15 +27,19 @@ class RC:
         self.power_right = 0.0
         self.x_axis = 0.0
         self.y_axis = 0.0
+        self.pz = pz
         self.pz.init()
-        self.self.name = "RC"
-        self.self.killed = False
+        self.name = "RC"
+        self.killed = False
 
     def run(self):
+        logging.info("running RC challenge")
         try:
             # Loop indefinitely
             startTime = time.clock()
-            while time.clock() < (startTime + self.TimeOut) and not self.killed:
+            while time.clock() < (startTime + self.timeOut) and not self.killed:
+                logging.info("RC looping")
+                time.sleep(1)
                 events = get_gamepad()
                 for event in events:
                     logging.info(event.code, event.state)
@@ -58,27 +48,27 @@ class RC:
                             logging.info("Backwards")
                         elif event.state < 125:
                             logging.info("Forward")
-                        y_axis = event.state
-                        if y_axis > 130:
-                            y_axis = -(y_axis - 130)
-                        elif y_axis < 125:
-                            y_axis = ((-y_axis) + 125)
+                        self.y_axis = event.state
+                        if self.y_axis > 130:
+                            self.y_axis = -(self.y_axis - 130)
+                        elif self.y_axis < 125:
+                            self.y_axis = ((-self.y_axis) + 125)
                         else:
-                            y_axis = 0.0
-                        logging.info("Y: " + str(-y_axis))
+                            self.y_axis = 0.0
+                        logging.info("Y: %s", -self.y_axis)
                     if event.code == "ABS_Z":
                         if event.state > 130:
                             logging.info("Right")
                         elif event.state < 125:
                             logging.info("Left")
-                        x_axis = event.state
-                        if x_axis > 130:
-                            x_axis = (x_axis - 130)
-                        elif x_axis < 125:
-                            x_axis = -((-x_axis) + 125)
+                        self.x_axis = event.state
+                        if self.x_axis > 130:
+                            self.x_axis = (self.x_axis - 130)
+                        elif self.x_axis < 125:
+                            self.x_axis = -((-self.x_axis) + 125)
                         else:
-                            x_axis = 0.0
-                        logging.info("X: " + str(x_axis))
+                            self.x_axis = 0.0
+                        logging.info("X: %s", self.x_axis)
                     if event.code == "BTN_TL":
                         if event.state is True:
                             logging.info("Botton Left")
@@ -94,28 +84,28 @@ class RC:
                     if event.code == "BTN_TL2":
                         if event.state is True:
                             logging.info("Select")
-                            pz.stop()
-                            x_axis = 0
-                            y_axis = 0
+                            self.pz.stop()
+                            self.x_axis = 0
+                            self.y_axis = 0
                     if event.code == "ABS_HAT0X":
                         if event.state == -1:
                             logging.info("D pad Left")
-                            pz.spinLeft(100)
+                            self.pz.spinLeft(100)
                         elif event.state == 1:
                             logging.info("D pad Right")
-                            pz.spinRight(100)
+                            self.pz.spinRight(100)
                     if event.code == "ABS_HAT0Y":
                         if event.state == -1:
                             logging.info("D pad Up")
-                            pz.forward(100)
+                            self.pz.forward(100)
                     elif event.state == 1:
                         logging.info("D pad Down")
-                        pz.reverse(100)
-                mixer_results = self.mixer(x_axis, y_axis)
+                        self.pz.reverse(100)
+                mixer_results = self.mixer(self.x_axis, self.y_axis)
                 #print (mixer_results)
                 power_left = int((mixer_results[0] / 125.0)*100)
                 power_right = int((mixer_results[1] / 125.0)*100)
-                logging.info("left: " + str(power_left) + " right: " + str(power_right))
+                logging.info("left: %s right: %S", power_left, power_right)
                 self.pz.setMotor(1, -power_right)
                 self.pz.setMotor(0, power_left)
                 # print(event.ev_type, event.code, event.state)
@@ -127,6 +117,21 @@ class RC:
             logging.info("bye")
 
 
-def stop(self):
-    logging.info("RC challenge stopping")
-    self.killed = True
+    def mixer(self, inYaw, inThrottle,):
+        left = inThrottle + inYaw
+        right = inThrottle - inYaw
+        scaleLeft = abs(left / 125.0)
+        scaleRight = abs(right / 125.0)
+        scaleMax = max(scaleLeft, scaleRight)
+        scaleMax = max(1, scaleMax)
+        out_left = int(self.constrain(left / scaleMax, -125, 125))
+        out_right = int(self.constrain(right / scaleMax, -125, 125))
+        results = [out_right, out_left]
+        return results
+
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
+
+    def stop(self):
+        logging.info("RC challenge stopping")
+        self.killed = True

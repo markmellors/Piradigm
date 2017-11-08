@@ -6,7 +6,7 @@ import threading
 
 import pygame
 from pygame.locals import *
-from rc import RC
+from Tiny import RC
 
 # Global variables
 
@@ -162,15 +162,20 @@ while True:
             # where the screen is pressed
             # pygame.draw.circle(screen, WHITE, pos, 2, 0)
             requested_challenge = on_click(pos)
+            logging.info("requested challenge is %s", requested_challenge)
+            time.sleep(0.01)
             if requested_challenge is not None or requested_challenge is "Exit":
                 logging.info("about to stop a thread if there's one running")
                 if running_challenge:
+                    time.sleep(0.01)
                     logging.info("about to stop thread")
                     stop_threads(running_challenge)
-            elif requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
+
+            if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
                 running_challenge = launch_challenge(requested_challenge)
                 logging.info("challenge %s launched", running_challenge.name)
-            elif requested_challenge == "Exit":
+
+            if requested_challenge == "Exit":
                 sys.exit()
         # ensure there is always a safe way to end the program
         # if the touch screen fails
