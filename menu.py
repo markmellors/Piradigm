@@ -142,7 +142,7 @@ setup_environment()
 
 logging.info("Initialising pygame")
 pygame.init()
-
+clock=pygame.time.Clock()
 logging.info("Hiding Cursor")
 pygame.mouse.set_visible(False)
 
@@ -153,6 +153,7 @@ running_challenge = None
 
 # While loop to manage touch screen inputs
 while True:
+    clock.tick(30)
     pygame.display.update()
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:

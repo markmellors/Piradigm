@@ -4113,4 +4113,1114 @@
 2017-11-08 22:50:49,514 button 7 pressed
 2017-11-08 22:50:49,525 launching RC challenge
 2017-11-08 22:50:49,536 initialising RC
-2017-11-08 22:50:49,547 requested challenge is <Tiny.
+2017-11-08 22:50:49,547 requested challenge is <Tiny.2017-11-08 23:06:22,426 Initialising pygame
+2017-11-08 23:06:22,692 Hiding Cursor
+2017-11-08 23:06:22,692 Setting screen size to (240, 320)
+2017-11-08 23:06:23,046 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:06:23,066 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:06:23,070 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:06:23,075 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:06:23,079 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:06:23,083 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:06:23,088 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:06:23,093 Making button with text 'RC' at (130, 211)
+2017-11-08 23:06:23,096 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:06:28,351 screen pressed: (187, 242)
+2017-11-08 23:06:28,352 on_click: (187, 242)
+2017-11-08 23:06:28,352 RC clicked - launching 7
+2017-11-08 23:06:28,353 button 7 pressed
+2017-11-08 23:06:28,369 launching RC challenge
+2017-11-08 23:06:28,379 initialising RC
+2017-11-08 23:06:28,391 requested challenge is <Tiny.RC instance at 0x747175a8>
+2017-11-08 23:06:28,402 about to stop a thread if there's one running
+2017-11-08 23:06:28,402 launching new challenge
+2017-11-08 23:06:28,404 challenge RC launched
+2017-11-08 23:06:28,405 running RC challenge
+2017-11-08 23:06:30,222 RC looping
+2017-11-08 23:06:37,488 screen pressed: (138, 293)
+2017-11-08 23:06:37,498 Y: -0.0
+2017-11-08 23:06:37,500 on_click: (138, 293)
+2017-11-08 23:06:37,501 left: 0 right: 0
+2017-11-08 23:06:37,503 RC looping
+2017-11-08 23:06:37,504 Exit clicked - launching 8
+2017-11-08 23:06:37,505 button 8 pressed
+2017-11-08 23:06:37,515 Exit button pressed. Exiting now.
+2017-11-08 23:06:37,516 requested challenge is Exit
+2017-11-08 23:06:37,527 about to stop a thread if there's one running
+2017-11-08 23:06:37,537 about to stop thread
+2017-11-08 23:06:37,538 RC challenge stopping
+2017-11-08 23:06:37,538 stopped running challenge
+2017-11-08 23:08:12,085 Initialising pygame
+2017-11-08 23:08:12,302 Hiding Cursor
+2017-11-08 23:08:12,303 Setting screen size to (240, 320)
+2017-11-08 23:08:12,647 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:08:12,651 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:08:12,655 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:08:12,660 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:08:12,663 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:08:12,668 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:08:12,673 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:08:12,677 Making button with text 'RC' at (130, 211)
+2017-11-08 23:08:12,681 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:08:15,179 screen pressed: (183, 229)
+2017-11-08 23:08:15,180 on_click: (183, 229)
+2017-11-08 23:08:15,180 RC clicked - launching 7
+2017-11-08 23:08:15,181 button 7 pressed
+2017-11-08 23:08:15,192 launching RC challenge
+2017-11-08 23:08:15,202 initialising RC
+2017-11-08 23:08:15,214 requested challenge is <Tiny.RC instance at 0x746bf5a8>
+2017-11-08 23:08:15,225 about to stop a thread if there's one running
+2017-11-08 23:08:15,225 launching new challenge
+2017-11-08 23:08:15,227 challenge RC launched
+2017-11-08 23:08:15,227 running RC challenge
+2017-11-08 23:08:20,914 RC looping
+2017-11-08 23:08:21,038 screen pressed: (133, 287)
+2017-11-08 23:08:21,039 on_click: (133, 287)
+2017-11-08 23:08:21,039 Exit clicked - launching 8
+2017-11-08 23:08:21,040 button 8 pressed
+2017-11-08 23:08:21,050 Exit button pressed. Exiting now.
+2017-11-08 23:08:21,051 requested challenge is Exit
+2017-11-08 23:08:21,061 about to stop a thread if there's one running
+2017-11-08 23:08:21,072 about to stop thread
+2017-11-08 23:08:21,073 RC challenge stopping
+2017-11-08 23:08:21,073 stopped running challenge
+2017-11-08 23:08:27,326 Initialising pygame
+2017-11-08 23:08:27,562 Hiding Cursor
+2017-11-08 23:08:27,563 Setting screen size to (240, 320)
+2017-11-08 23:08:27,820 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:08:27,825 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:08:27,829 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:08:27,833 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:08:27,837 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:08:27,841 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:08:27,846 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:08:27,851 Making button with text 'RC' at (130, 211)
+2017-11-08 23:08:27,855 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:08:29,539 screen pressed: (179, 219)
+2017-11-08 23:08:29,540 on_click: (179, 219)
+2017-11-08 23:08:29,541 RC clicked - launching 7
+2017-11-08 23:08:29,541 button 7 pressed
+2017-11-08 23:08:29,552 launching RC challenge
+2017-11-08 23:08:29,563 initialising RC
+2017-11-08 23:08:29,574 requested challenge is <Tiny.RC instance at 0x746675a8>
+2017-11-08 23:08:29,585 about to stop a thread if there's one running
+2017-11-08 23:08:29,585 launching new challenge
+2017-11-08 23:08:29,587 running RC challenge
+2017-11-08 23:08:29,587 challenge RC launched
+2017-11-08 23:08:29,588 RC looping
+2017-11-08 23:08:33,704 event code: SYN_DROPPED , event state: 0
+2017-11-08 23:08:36,764 left: 0 right: 0
+2017-11-08 23:08:39,579 screen pressed: (102, 279)
+2017-11-08 23:08:39,581 RC looping
+2017-11-08 23:08:39,582 on_click: (102, 279)
+2017-11-08 23:08:39,583 Exit clicked - launching 8
+2017-11-08 23:08:39,583 button 8 pressed
+2017-11-08 23:08:39,594 Exit button pressed. Exiting now.
+2017-11-08 23:08:39,594 requested challenge is Exit
+2017-11-08 23:08:39,605 about to stop a thread if there's one running
+2017-11-08 23:08:39,615 about to stop thread
+2017-11-08 23:08:39,616 RC challenge stopping
+2017-11-08 23:08:39,616 stopped running challenge
+2017-11-08 23:08:43,055 Initialising pygame
+2017-11-08 23:08:43,291 Hiding Cursor
+2017-11-08 23:08:43,292 Setting screen size to (240, 320)
+2017-11-08 23:08:43,636 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:08:43,640 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:08:43,644 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:08:43,648 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:08:43,652 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:08:43,656 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:08:43,661 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:08:43,666 Making button with text 'RC' at (130, 211)
+2017-11-08 23:08:43,669 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:08:46,155 screen pressed: (179, 220)
+2017-11-08 23:08:46,156 on_click: (179, 220)
+2017-11-08 23:08:46,156 RC clicked - launching 7
+2017-11-08 23:08:46,157 button 7 pressed
+2017-11-08 23:08:46,167 launching RC challenge
+2017-11-08 23:08:46,178 initialising RC
+2017-11-08 23:08:46,189 requested challenge is <Tiny.RC instance at 0x746305a8>
+2017-11-08 23:08:46,200 about to stop a thread if there's one running
+2017-11-08 23:08:46,201 launching new challenge
+2017-11-08 23:08:46,202 running RC challenge
+2017-11-08 23:08:46,203 challenge RC launched
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           2017-11-08 23:10:16,111 Initialising pygame
+2017-11-08 23:10:16,371 Hiding Cursor
+2017-11-08 23:10:16,372 Setting screen size to (240, 320)
+2017-11-08 23:10:16,721 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:10:16,740 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:10:16,744 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:10:16,749 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:10:16,753 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:10:16,757 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:10:16,762 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:10:16,767 Making button with text 'RC' at (130, 211)
+2017-11-08 23:10:16,771 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:10:24,152 screen pressed: (200, 88)
+2017-11-08 23:10:24,153 on_click: (200, 88)
+2017-11-08 23:10:24,154 Golf clicked - launching 3
+2017-11-08 23:10:24,154 button 3 pressed
+2017-11-08 23:10:24,171 other selected
+2017-11-08 23:10:24,171 requested challenge is Other
+2017-11-08 23:10:24,182 about to stop a thread if there's one running
+2017-11-08 23:10:26,636 screen pressed: (66, 79)
+2017-11-08 23:10:26,637 on_click: (66, 79)
+2017-11-08 23:10:26,637 Rainbow clicked - launching 2
+2017-11-08 23:10:26,638 button 2 pressed
+2017-11-08 23:10:26,648 other selected
+2017-11-08 23:10:26,649 requested challenge is Other
+2017-11-08 23:10:26,660 about to stop a thread if there's one running
+2017-11-08 23:10:29,720 screen pressed: (107, 285)
+2017-11-08 23:10:29,721 on_click: (107, 285)
+2017-11-08 23:10:29,721 Exit clicked - launching 8
+2017-11-08 23:10:29,722 button 8 pressed
+2017-11-08 23:10:29,732 Exit button pressed. Exiting now.
+2017-11-08 23:10:29,733 requested challenge is Exit
+2017-11-08 23:10:29,744 about to stop a thread if there's one running
+2017-11-08 23:10:34,636 Initialising pygame
+2017-11-08 23:10:34,862 Hiding Cursor
+2017-11-08 23:10:34,863 Setting screen size to (240, 320)
+2017-11-08 23:10:35,203 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:10:35,208 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:10:35,212 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:10:35,217 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:10:35,221 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:10:35,225 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:10:35,231 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:10:35,236 Making button with text 'RC' at (130, 211)
+2017-11-08 23:10:35,239 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:10:37,186 screen pressed: (188, 227)
+2017-11-08 23:10:37,187 on_click: (188, 227)
+2017-11-08 23:10:37,188 RC clicked - launching 7
+2017-11-08 23:10:37,189 button 7 pressed
+2017-11-08 23:10:37,200 launching RC challenge
+2017-11-08 23:10:37,211 initialising RC
+2017-11-08 23:10:37,222 requested challenge is <Tiny.RC instance at 0x746d75a8>
+2017-11-08 23:10:37,233 about to stop a thread if there's one running
+2017-11-08 23:10:37,234 launching new challenge
+2017-11-08 23:10:37,236 running RC challenge
+2017-11-08 23:10:37,237 challenge RC launched
+2017-11-08 23:10:37,238 RC looping
+2017-11-08 23:10:45,944 screen pressed: (144, 290)
+2017-11-08 23:10:45,945 on_click: (144, 290)
+2017-11-08 23:10:45,946 Exit clicked - launching 8
+2017-11-08 23:10:45,947 button 8 pressed
+2017-11-08 23:10:45,958 Exit button pressed. Exiting now.
+2017-11-08 23:10:45,958 requested challenge is Exit
+2017-11-08 23:10:45,969 about to stop a thread if there's one running
+2017-11-08 23:10:45,980 about to stop thread
+2017-11-08 23:10:45,981 RC challenge stopping
+2017-11-08 23:10:45,982 stopped running challenge
+2017-11-08 23:10:52,520 Initialising pygame
+2017-11-08 23:10:52,732 Hiding Cursor
+2017-11-08 23:10:52,733 Setting screen size to (240, 320)
+2017-11-08 23:10:53,076 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:10:53,081 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:10:53,085 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:10:53,089 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:10:53,093 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:10:53,098 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:10:53,103 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:10:53,108 Making button with text 'RC' at (130, 211)
+2017-11-08 23:10:53,111 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:11:00,376 screen pressed: (185, 231)
+2017-11-08 23:11:00,377 on_click: (185, 231)
+2017-11-08 23:11:00,378 RC clicked - launching 7
+2017-11-08 23:11:00,378 button 7 pressed
+2017-11-08 23:11:00,389 launching RC challenge
+2017-11-08 23:11:00,400 initialising RC
+2017-11-08 23:11:00,411 requested challenge is <Tiny.RC instance at 0x7465a5a8>
+2017-11-08 23:11:00,422 about to stop a thread if there's one running
+2017-11-08 23:11:00,423 launching new challenge
+2017-11-08 23:11:00,425 running RC challenge
+2017-11-08 23:11:00,425 challenge RC launched
+2017-11-08 23:11:00,426 RC looping
+2017-11-08 23:11:24,527 screen pressed: (189, 219)
+2017-11-08 23:11:24,528 on_click: (189, 219)
+2017-11-08 23:11:24,528 RC clicked - launching 7
+2017-11-08 23:11:24,529 button 7 pressed
+2017-11-08 23:11:24,539 launching RC challenge
+2017-11-08 23:11:24,550 initialising RC
+2017-11-08 23:11:24,560 requested challenge is <Tiny.RC instance at 0x73562738>
+2017-11-08 23:11:24,571 about to stop a thread if there's one running
+2017-11-08 23:11:24,581 about to stop thread
+2017-11-08 23:11:24,582 RC challenge stopping
+2017-11-08 23:11:24,582 stopped running challenge
+2017-11-08 23:11:24,582 launching new challenge
+2017-11-08 23:11:24,583 challenge RC launched
+2017-11-08 23:11:24,584 running RC challenge
+2017-11-08 23:11:28,753 RC looping
+2017-11-08 23:11:28,754 event code: ABS_Z , event state: 129
+2017-11-08 23:11:41,755 X: 0.0
+2017-11-08 23:11:43,465 left: 0 right: 0
+2017-11-08 23:11:43,465 event code: SYN_REPORT , event state: 0
+2017-11-08 23:12:01,645 left: 0 right: 0
+2017-11-08 23:12:08,446 screen pressed: (120, 286)
+2017-11-08 23:12:08,447 on_click: (120, 286)
+2017-11-08 23:12:08,447 Exit clicked - launching 8
+2017-11-08 23:12:08,448 button 8 pressed
+2017-11-08 23:12:08,458 Exit button pressed. Exiting now.
+2017-11-08 23:12:08,458 requested challenge is Exit
+2017-11-08 23:12:08,469 about to stop a thread if there's one running
+2017-11-08 23:12:08,479 about to stop thread
+2017-11-08 23:12:08,480 RC challenge stopping
+2017-11-08 23:12:08,480 stopped running challenge
+2017-11-08 23:18:03,552 Initialising pygame
+2017-11-08 23:18:03,763 Hiding Cursor
+2017-11-08 23:18:03,764 Setting screen size to (240, 320)
+2017-11-08 23:18:04,115 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:18:04,119 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:18:04,124 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:18:04,129 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:18:04,133 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:18:04,137 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:18:04,143 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:18:04,148 Making button with text 'RC' at (130, 211)
+2017-11-08 23:18:04,152 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:18:06,411 screen pressed: (194, 219)
+2017-11-08 23:18:06,412 on_click: (194, 219)
+2017-11-08 23:18:06,413 RC clicked - launching 7
+2017-11-08 23:18:06,413 button 7 pressed
+2017-11-08 23:18:06,425 launching RC challenge
+2017-11-08 23:18:06,436 initialising RC
+2017-11-08 23:18:06,447 requested challenge is <Tiny.RC instance at 0x746df558>
+2017-11-08 23:18:06,458 about to stop a thread if there's one running
+2017-11-08 23:18:06,459 launching new challenge
+2017-11-08 23:18:06,461 running RC challenge
+2017-11-08 23:18:06,461 challenge RC launched
+2017-11-08 23:18:06,462 RC looping
+2017-11-08 23:18:12,010 screen pressed: (185, 227)
+2017-11-08 23:18:12,011 on_click: (185, 227)
+2017-11-08 23:18:12,012 RC clicked - launching 7
+2017-11-08 23:18:12,012 button 7 pressed
+2017-11-08 23:18:12,023 launching RC challenge
+2017-11-08 23:18:12,034 initialising RC
+2017-11-08 23:18:12,045 requested challenge is <Tiny.RC instance at 0x735e76e8>
+2017-11-08 23:18:12,056 about to stop a thread if there's one running
+2017-11-08 23:18:12,067 about to stop thread
+2017-11-08 23:18:12,068 RC challenge stopping
+2017-11-08 23:18:12,068 stopped running challenge
+2017-11-08 23:18:12,069 launching new challenge
+2017-11-08 23:18:12,071 challenge RC launched
+2017-11-08 23:18:12,072 running RC challenge
+2017-11-08 23:18:13,278 RC looping
+2017-11-08 23:18:14,221 screen pressed: (119, 287)
+2017-11-08 23:18:14,222 on_click: (119, 287)
+2017-11-08 23:18:14,223 Exit clicked - launching 8
+2017-11-08 23:18:14,223 button 8 pressed
+2017-11-08 23:18:14,234 Exit button pressed. Exiting now.
+2017-11-08 23:18:14,235 requested challenge is Exit
+2017-11-08 23:18:14,246 about to stop a thread if there's one running
+2017-11-08 23:18:14,256 about to stop thread
+2017-11-08 23:18:14,257 RC challenge stopping
+2017-11-08 23:18:14,257 stopped running challenge
+2017-11-08 23:18:27,826 Initialising pygame
+2017-11-08 23:18:28,042 Hiding Cursor
+2017-11-08 23:18:28,043 Setting screen size to (240, 320)
+2017-11-08 23:18:28,383 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:18:28,387 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:18:28,391 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:18:28,396 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:18:28,400 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:18:28,404 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:18:28,409 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:18:28,414 Making button with text 'RC' at (130, 211)
+2017-11-08 23:18:28,417 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:18:30,921 screen pressed: (190, 238)
+2017-11-08 23:18:30,922 on_click: (190, 238)
+2017-11-08 23:18:30,922 RC clicked - launching 7
+2017-11-08 23:18:30,923 button 7 pressed
+2017-11-08 23:18:30,934 launching RC challenge
+2017-11-08 23:18:30,945 initialising RC
+2017-11-08 23:18:30,956 requested challenge is <Tiny.RC instance at 0x746a2558>
+2017-11-08 23:18:30,967 about to stop a thread if there's one running
+2017-11-08 23:18:30,968 launching new challenge
+2017-11-08 23:18:30,970 running RC challenge
+2017-11-08 23:18:30,970 challenge RC launched
+2017-11-08 23:18:30,971 RC looping
+2017-11-08 23:18:58,843 screen pressed: (139, 275)
+2017-11-08 23:18:58,843 on_click: (139, 275)
+2017-11-08 23:18:58,844 Exit clicked - launching 8
+2017-11-08 23:18:58,844 button 8 pressed
+2017-11-08 23:18:58,854 Exit button pressed. Exiting now.
+2017-11-08 23:18:58,855 requested challenge is Exit
+2017-11-08 23:18:58,865 about to stop a thread if there's one running
+2017-11-08 23:18:58,876 about to stop thread
+2017-11-08 23:18:58,876 RC challenge stopping
+2017-11-08 23:18:58,877 stopped running challenge
+2017-11-08 23:21:10,760 Initialising pygame
+2017-11-08 23:21:10,993 Hiding Cursor
+2017-11-08 23:21:10,994 Setting screen size to (240, 320)
+2017-11-08 23:21:11,344 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:21:11,348 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:21:11,352 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:21:11,357 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:21:11,361 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:21:11,366 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:21:11,371 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:21:11,376 Making button with text 'RC' at (130, 211)
+2017-11-08 23:21:11,379 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:21:13,522 screen pressed: (175, 228)
+2017-11-08 23:21:13,523 on_click: (175, 228)
+2017-11-08 23:21:13,529 RC clicked - launching 7
+2017-11-08 23:21:13,530 button 7 pressed
+2017-11-08 23:21:13,541 launching RC challenge
+2017-11-08 23:21:13,553 initialising RC
+2017-11-08 23:21:13,564 requested challenge is <Tiny.RC instance at 0x746ed580>
+2017-11-08 23:21:13,576 about to stop a thread if there's one running
+2017-11-08 23:21:13,576 launching new challenge
+2017-11-08 23:21:13,578 challenge RC launched
+2017-11-08 23:21:13,579 running RC challenge
+2017-11-08 23:21:14,468 start time: 2.719638
+2017-11-08 23:21:29,620 screen pressed: (128, 290)
+2017-11-08 23:21:29,621 on_click: (128, 290)
+2017-11-08 23:21:29,622 Exit clicked - launching 8
+2017-11-08 23:21:29,622 button 8 pressed
+2017-11-08 23:21:29,633 Exit button pressed. Exiting now.
+2017-11-08 23:21:29,634 requested challenge is Exit
+2017-11-08 23:21:29,645 about to stop a thread if there's one running
+2017-11-08 23:21:29,656 about to stop thread
+2017-11-08 23:21:29,657 RC challenge stopping
+2017-11-08 23:21:29,657 stopped running challenge
+2017-11-08 23:22:00,527 Initialising pygame
+2017-11-08 23:22:00,752 Hiding Cursor
+2017-11-08 23:22:00,754 Setting screen size to (240, 320)
+2017-11-08 23:22:01,105 Making button with text 'Speed' at (20, 10)
+2017-11-08 23:22:01,109 Making button with text 'Maze' at (130, 10)
+2017-11-08 23:22:01,114 Making button with text 'Rainbow' at (20, 77)
+2017-11-08 23:22:01,119 Making button with text 'Golf' at (130, 77)
+2017-11-08 23:22:01,123 Making button with text 'Pi Noon' at (20, 144)
+2017-11-08 23:22:01,128 Making button with text 'Obstacle' at (130, 144)
+2017-11-08 23:22:01,133 Making button with text 'Shooting' at (20, 211)
+2017-11-08 23:22:01,138 Making button with text 'RC' at (130, 211)
+2017-11-08 23:22:01,142 Making button with text 'Exit' at (20, 278)
+2017-11-08 23:22:02,619 screen pressed: (193, 229)
+2017-11-08 23:22:02,620 on_click: (193, 229)
+2017-11-08 23:22:02,621 RC clicked - launching 7
+2017-11-08 23:22:02,622 button 7 pressed
+2017-11-08 23:22:02,633 launching RC challenge
+2017-11-08 23:22:02,644 initialising RC
+2017-11-08 23:22:02,656 requested challenge is <Tiny.RC instance at 0x7471e580>
+2017-11-08 23:22:02,667 about to stop a thread if there's one running
+2017-11-08 23:22:02,668 launching new challenge
+2017-11-08 23:22:02,670 running RC challenge
+2017-11-08 23:22:02,670 challenge RC launched
+2017-11-08 23:22:02,672 start time: 2.041121
+2017-11-08 23:22:08,892 screen pressed: (190, 167)
+2017-11-08 23:22:08,894 on_click: (190, 167)
+2017-11-08 23:22:08,895 Obstacle clicked - launching 5
+2017-11-08 23:22:08,895 button 5 pressed
+2017-11-08 23:22:08,906 other selected
+2017-11-08 23:22:08,907 requested challenge is Other
+2017-11-08 23:22:08,917 about to stop a thread if there's one running
+2017-11-08 23:22:08,928 about to stop thread
+2017-11-08 23:22:08,929 RC challenge stopping
+2017-11-08 23:22:08,930 stopped running challenge
+2017-11-08 23:22:12,074 screen pressed: (186, 236)
+2017-11-08 23:22:12,075 on_click: (186, 236)
+2017-11-08 23:22:12,076 RC clicked - launching 7
+2017-11-08 23:22:12,077 button 7 pressed
+2017-11-08 23:22:12,087 launching RC challenge
+2017-11-08 23:22:12,098 initialising RC
+2017-11-08 23:22:12,109 requested challenge is <Tiny.RC instance at 0x73626710>
+2017-11-08 23:22:12,120 about to stop a thread if there's one running
+2017-11-08 23:22:12,131 about to stop thread
+2017-11-08 23:22:12,132 RC challenge stopping
+2017-11-08 23:22:12,133 stopped running challenge
+2017-11-08 23:22:12,134 launching new challenge
+2017-11-08 23:22:12,136 challenge RC launched
+2017-11-08 23:22:12,137 running RC challenge
+2017-11-08 23:22:16,360 start time: 8.094285
+2017-11-08 23:22:16,592 screen pressed: (193, 233)
+2017-11-08 23:22:16,593 on_click: (193, 233)
+2017-11-08 23:22:16,594 RC clicked - launching 7
+2017-11-08 23:22:16,595 button 7 pressed
+2017-11-08 23:22:16,606 launching RC challenge
+2017-11-08 23:22:16,616 initialising RC
+2017-11-08 23:22:16,628 requested challenge is <Tiny.RC instance at 0x736417b0>
+2017-11-08 23:22:16,639 about to stop a thread if there's one running
+2017-11-08 23:22:16,650 about to stop thread
+2017-11-08 23:22:16,651 RC challenge stopping
+2017-11-08 23:22:16,651 stopped running challenge
+2017-11-08 23:22:16,652 launching new challenge
+2017-11-08 23:22:16,654 running RC challenge
+2017-11-08 23:22:16,654 challenge RC launched
+2017-11-08 23:22:16,655 start time: 8.204971
+2017-11-08 23:22:24,396 screen pressed: (184, 229)
+2017-11-08 23:22:24,397 on_click: (184, 229)
+2017-11-08 23:22:24,398 RC clicked - launching 7
+2017-11-08 23:22:24,398 button 7 pressed
+2017-11-08 23:22:24,409 launching RC challenge
+2017-11-08 23:22:24,420 initialising RC
+2017-11-08 23:22:24,431 requested challenge is <Tiny.RC instance at 0x7338dbe8>
+2017-11-08 23:22:24,442 about to stop a thread if there's one running
+2017-11-08 23:22:24,453 about to stop thread
+2017-11-08 23:22:24,453 RC challenge stopping
+2017-11-08 23:22:24,454 stopped running challenge
+2017-11-08 23:22:24,454 launching new challenge
+2017-11-08 23:22:24,456 running RC challenge
+2017-11-08 23:22:24,457 challenge RC launched
+2017-11-08 23:22:24,457 start time: 11.648621
+2017-11-08 23:22:39,610 screen pressed: (199, 240)
+2017-11-08 23:22:39,611 on_click: (199, 240)
+2017-11-08 23:22:39,612 RC clicked - launching 7
+2017-11-08 23:22:39,613 button 7 pressed
+2017-11-08 23:22:39,623 launching RC challenge
+2017-11-08 23:22:39,634 initialising RC
+2017-11-08 23:22:39,645 requested challenge is <Tiny.RC instance at 0x7338dd50>
+2017-11-08 23:22:39,656 about to stop a thread if there's one running
+2017-11-08 23:22:39,667 about to stop thread
+2017-11-08 23:22:39,668 RC challenge stopping
+2017-11-08 23:22:39,668 stopped running challenge
+2017-11-08 23:22:39,669 launching new challenge
+2017-11-08 23:22:39,670 challenge RC launched
+2017-11-08 23:22:39,671 running RC challenge
+2017-11-08 23:22:41,014 screen pressed: (195, 246)
+2017-11-08 23:22:41,014 start time: 18.959159
+2017-11-08 23:22:41,015 on_click: (195, 246)
+2017-11-08 23:22:41,016 RC clicked - launching 7
+2017-11-08 23:22:41,017 button 7 pressed
+2017-11-08 23:22:41,027 launching RC challenge
+2017-11-08 23:22:41,038 initialising RC
+2017-11-08 23:22:41,049 requested challenge is <Tiny.RC instance at 0x7338df30>
+2017-11-08 23:22:41,060 about to stop a thread if there's one running
+2017-11-08 23:22:41,071 about to stop thread
+2017-11-08 23:22:41,072 RC challenge stopping
+2017-11-08 23:22:41,072 stopped running challenge
+2017-11-08 23:22:41,073 launching new challenge
+2017-11-08 23:22:41,074 running RC challenge
+2017-11-08 23:22:41,075 challenge RC launched
+2017-11-08 23:22:41,076 start time: 18.972051
+2017-11-08 23:22:42,832 screen pressed: (186, 227)
+2017-11-08 23:22:42,834 on_click: (186, 227)
+2017-11-08 23:22:42,835 RC clicked - launching 7
+2017-11-08 23:22:42,835 button 7 pressed
+2017-11-08 23:22:42,846 launching RC challenge
+2017-11-08 23:22:42,857 initialising RC
+2017-11-08 23:22:42,868 requested challenge is <Tiny.RC instance at 0x732f8120>
+2017-11-08 23:22:42,879 about to stop a thread if there's one running
+2017-11-08 23:22:42,890 about to stop thread
+2017-11-08 23:22:42,890 RC challenge stopping
+2017-11-08 23:22:42,891 stopped running challenge
+2017-11-08 23:22:42,892 launching new challenge
+2017-11-08 23:22:42,893 running RC challenge
+2017-11-08 23:22:42,894 start time: 19.774288
+2017-11-08 23:22:42,894 challenge RC launched
+2017-11-08 23:22:51,341 screen pressed: (152, 284)
+2017-11-08 23:22:51,342 on_click: (152, 284)
+2017-11-08 23:22:51,342 Exit clicked - launching 8
+2017-11-08 23:22:51,343 button 8 pressed
+2017-11-08 23:22:51,353 Exit button pressed. Exiting now.
+2017-11-08 23:22:51,354 requested challenge is Exit
+2017-11-08 23:22:51,365 about to stop a thread if there's one running
+2017-11-08 23:22:51,376 about to stop thread
+2017-11-08 23:22:51,376 RC challenge stopping
+2017-11-08 23:22:51,377 stopped running challenge
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               2017-11-11 19:38:26,767 Initialising pygame
+2017-11-11 19:38:26,996 Hiding Cursor
+2017-11-11 19:38:26,997 Setting screen size to (240, 320)
+2017-11-11 19:38:27,348 Making button with text 'Speed' at (20, 10)
+2017-11-11 19:38:27,353 Making button with text 'Maze' at (130, 10)
+2017-11-11 19:38:27,358 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 19:38:27,363 Making button with text 'Golf' at (130, 77)
+2017-11-11 19:38:27,367 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 19:38:27,372 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 19:38:27,378 Making button with text 'Shooting' at (20, 211)
+2017-11-11 19:38:27,383 Making button with text 'RC' at (130, 211)
+2017-11-11 19:38:27,387 Making button with text 'Exit' at (20, 278)
+2017-11-11 19:38:38,109 screen pressed: (178, 82)
+2017-11-11 19:38:38,111 on_click: (178, 82)
+2017-11-11 19:38:38,111 Golf clicked - launching 3
+2017-11-11 19:38:38,112 button 3 pressed
+2017-11-11 19:38:38,123 other selected
+2017-11-11 19:38:38,124 requested challenge is Other
+2017-11-11 19:38:38,135 about to stop a thread if there's one running
+2017-11-11 19:38:39,184 screen pressed: (76, 88)
+2017-11-11 19:38:39,185 on_click: (76, 88)
+2017-11-11 19:38:39,186 Rainbow clicked - launching 2
+2017-11-11 19:38:39,186 button 2 pressed
+2017-11-11 19:38:39,197 other selected
+2017-11-11 19:38:39,199 requested challenge is Other
+2017-11-11 19:38:39,209 about to stop a thread if there's one running
+2017-11-11 19:38:40,849 screen pressed: (86, 121)
+2017-11-11 19:38:40,849 on_click: (86, 121)
+2017-11-11 19:38:40,850 Rainbow clicked - launching 2
+2017-11-11 19:38:40,851 button 2 pressed
+2017-11-11 19:38:40,861 other selected
+2017-11-11 19:38:40,863 requested challenge is Other
+2017-11-11 19:38:40,874 about to stop a thread if there's one running
+2017-11-11 19:39:10,039 Initialising pygame
+2017-11-11 19:39:10,257 Hiding Cursor
+2017-11-11 19:39:10,258 Setting screen size to (240, 320)
+2017-11-11 19:39:10,647 Making button with text 'Speed' at (20, 10)
+2017-11-11 19:39:10,651 Making button with text 'Maze' at (130, 10)
+2017-11-11 19:39:10,655 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 19:39:10,661 Making button with text 'Golf' at (130, 77)
+2017-11-11 19:39:10,665 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 19:39:10,669 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 19:39:10,675 Making button with text 'Shooting' at (20, 211)
+2017-11-11 19:39:10,680 Making button with text 'RC' at (130, 211)
+2017-11-11 19:39:10,683 Making button with text 'Exit' at (20, 278)
+2017-11-11 19:39:14,235 screen pressed: (184, 76)
+2017-11-11 19:39:14,236 on_click: (184, 76)
+2017-11-11 19:39:14,237 Golf clicked - launching 3
+2017-11-11 19:39:14,237 button 3 pressed
+2017-11-11 19:39:14,248 other selected
+2017-11-11 19:39:14,249 requested challenge is Other
+2017-11-11 19:39:14,260 about to stop a thread if there's one running
+2017-11-11 19:39:16,523 screen pressed: (189, 215)
+2017-11-11 19:39:16,524 on_click: (189, 215)
+2017-11-11 19:39:16,524 RC clicked - launching 7
+2017-11-11 19:39:16,525 button 7 pressed
+2017-11-11 19:39:16,536 launching RC challenge
+2017-11-11 19:39:16,537 initialised
+2017-11-11 19:39:16,537 requested challenge is <rc.RC instance at 0x76a78580>
+2017-11-11 19:39:16,548 about to stop a thread if there's one running
+2017-11-11 19:39:16,549 launching new challenge
+2017-11-11 19:39:16,552 RC set to run
+2017-11-11 19:39:16,552 challenge RC launched
+2017-11-11 19:39:17,118 RC still alive
+2017-11-11 19:39:31,792 RC still alive
+2017-11-11 19:39:34,392 RC still alive
+2017-11-11 19:39:39,876 RC challenge timed out
+2017-11-11 19:39:42,743 screen pressed: (136, 282)
+2017-11-11 19:39:42,744 on_click: (136, 282)
+2017-11-11 19:39:42,744 Exit clicked - launching 8
+2017-11-11 19:39:42,745 button 8 pressed
+2017-11-11 19:39:42,756 Exit button pressed. Exiting now.
+2017-11-11 19:39:42,757 requested challenge is Exit
+2017-11-11 19:39:42,768 about to stop a thread if there's one running
+2017-11-11 19:39:42,779 about to stop thread
+2017-11-11 19:39:42,780 rc challenge stopping
+2017-11-11 19:39:42,781 stopped running challenge
+2017-11-11 19:51:58,915 Initialising pygame
+2017-11-11 19:51:59,146 Hiding Cursor
+2017-11-11 19:51:59,147 Setting screen size to (240, 320)
+2017-11-11 19:51:59,528 Making button with text 'Speed' at (20, 10)
+2017-11-11 19:51:59,532 Making button with text 'Maze' at (130, 10)
+2017-11-11 19:51:59,536 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 19:51:59,541 Making button with text 'Golf' at (130, 77)
+2017-11-11 19:51:59,545 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 19:51:59,549 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 19:51:59,555 Making button with text 'Shooting' at (20, 211)
+2017-11-11 19:51:59,560 Making button with text 'RC' at (130, 211)
+2017-11-11 19:51:59,563 Making button with text 'Exit' at (20, 278)
+2017-11-11 19:52:02,050 screen pressed: (181, 227)
+2017-11-11 19:52:02,051 on_click: (181, 227)
+2017-11-11 19:52:02,051 RC clicked - launching 7
+2017-11-11 19:52:02,052 button 7 pressed
+2017-11-11 19:52:02,063 launching RC challenge
+2017-11-11 19:52:02,064 initialised
+2017-11-11 19:52:02,064 requested challenge is <rc.RC instance at 0x769cd580>
+2017-11-11 19:52:02,075 about to stop a thread if there's one running
+2017-11-11 19:52:02,076 launching new challenge
+2017-11-11 19:52:02,077 challenge RC launched
+2017-11-11 19:52:08,279 RC set to run
+2017-11-11 19:52:28,479 RC still alive
+2017-11-11 19:52:38,829 RC still alive
+2017-11-11 19:52:43,885 screen pressed: (120, 284)
+2017-11-11 19:52:43,887 on_click: (120, 284)
+2017-11-11 19:52:43,888 Exit clicked - launching 8
+2017-11-11 19:52:43,889 button 8 pressed
+2017-11-11 19:52:43,900 Exit button pressed. Exiting now.
+2017-11-11 19:52:43,900 requested challenge is Exit
+2017-11-11 19:52:43,911 about to stop a thread if there's one running
+2017-11-11 19:52:43,922 about to stop thread
+2017-11-11 19:52:43,923 rc challenge stopping
+2017-11-11 19:52:43,924 stopped running challenge
+2017-11-11 19:53:06,195 Initialising pygame
+2017-11-11 19:53:06,427 Hiding Cursor
+2017-11-11 19:53:06,427 Setting screen size to (240, 320)
+2017-11-11 19:53:06,816 Making button with text 'Speed' at (20, 10)
+2017-11-11 19:53:06,820 Making button with text 'Maze' at (130, 10)
+2017-11-11 19:53:06,824 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 19:53:06,829 Making button with text 'Golf' at (130, 77)
+2017-11-11 19:53:06,834 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 19:53:06,838 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 19:53:06,844 Making button with text 'Shooting' at (20, 211)
+2017-11-11 19:53:06,849 Making button with text 'RC' at (130, 211)
+2017-11-11 19:53:06,853 Making button with text 'Exit' at (20, 278)
+2017-11-11 19:53:08,185 screen pressed: (182, 161)
+2017-11-11 19:53:08,186 on_click: (182, 161)
+2017-11-11 19:53:08,187 Obstacle clicked - launching 5
+2017-11-11 19:53:08,187 button 5 pressed
+2017-11-11 19:53:08,199 other selected
+2017-11-11 19:53:08,200 requested challenge is Other
+2017-11-11 19:53:08,211 about to stop a thread if there's one running
+2017-11-11 19:53:08,993 screen pressed: (95, 155)
+2017-11-11 19:53:08,994 on_click: (95, 155)
+2017-11-11 19:53:08,994 Pi Noon clicked - launching 4
+2017-11-11 19:53:08,994 button 4 pressed
+2017-11-11 19:53:09,005 other selected
+2017-11-11 19:53:09,005 requested challenge is Other
+2017-11-11 19:53:09,016 about to stop a thread if there's one running
+2017-11-11 19:53:10,451 screen pressed: (185, 230)
+2017-11-11 19:53:10,452 on_click: (185, 230)
+2017-11-11 19:53:10,452 RC clicked - launching 7
+2017-11-11 19:53:10,453 button 7 pressed
+2017-11-11 19:53:10,463 launching RC challenge
+2017-11-11 19:53:10,464 initialised
+2017-11-11 19:53:10,469 requested challenge is <rc.RC instance at 0x76a13580>
+2017-11-11 19:53:10,481 about to stop a thread if there's one running
+2017-11-11 19:53:10,482 launching new challenge
+2017-11-11 19:53:10,483 RC set to run
+2017-11-11 19:53:10,484 challenge RC launched
+2017-11-11 19:53:12,091 RC still alive
+2017-11-11 19:53:12,106 screen pressed: (123, 294)
+2017-11-11 19:53:12,107 on_click: (123, 294)
+2017-11-11 19:53:12,107 Exit clicked - launching 8
+2017-11-11 19:53:12,108 button 8 pressed
+2017-11-11 19:53:12,119 Exit button pressed. Exiting now.
+2017-11-11 19:53:12,120 requested challenge is Exit
+2017-11-11 19:53:12,131 about to stop a thread if there's one running
+2017-11-11 19:53:12,142 about to stop thread
+2017-11-11 19:53:12,142 rc challenge stopping
+2017-11-11 19:53:12,143 stopped running challenge
+2017-11-11 20:11:37,731 Initialising pygame
+2017-11-11 20:11:37,956 Hiding Cursor
+2017-11-11 20:11:37,957 Setting screen size to (240, 320)
+2017-11-11 20:11:38,337 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:11:38,341 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:11:38,345 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:11:38,350 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:11:38,354 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:11:38,358 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:11:38,363 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:11:38,368 Making button with text 'RC' at (130, 211)
+2017-11-11 20:11:38,371 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:11:39,355 screen pressed: (188, 159)
+2017-11-11 20:11:39,356 on_click: (188, 159)
+2017-11-11 20:11:39,356 Obstacle clicked - launching 5
+2017-11-11 20:11:39,357 button 5 pressed
+2017-11-11 20:11:39,368 other selected
+2017-11-11 20:11:39,368 requested challenge is Other
+2017-11-11 20:11:39,380 about to stop a thread if there's one running
+2017-11-11 20:11:52,734 screen pressed: (189, 222)
+2017-11-11 20:11:52,735 on_click: (189, 222)
+2017-11-11 20:11:52,736 RC clicked - launching 7
+2017-11-11 20:11:52,736 button 7 pressed
+2017-11-11 20:11:52,747 launching RC challenge
+2017-11-11 20:11:52,748 initialised
+2017-11-11 20:11:52,748 requested challenge is <rc.RC instance at 0x747fb850>
+2017-11-11 20:11:52,759 about to stop a thread if there's one running
+2017-11-11 20:11:52,760 launching new challenge
+2017-11-11 20:11:52,761 challenge RC launched
+2017-11-11 20:11:52,762 RC set to run
+2017-11-11 20:12:14,720 screen pressed: (139, 284)
+2017-11-11 20:12:14,721 on_click: (139, 284)
+2017-11-11 20:12:14,722 Exit clicked - launching 8
+2017-11-11 20:12:14,722 button 8 pressed
+2017-11-11 20:12:14,733 Exit button pressed. Exiting now.
+2017-11-11 20:12:14,734 requested challenge is Exit
+2017-11-11 20:12:14,744 about to stop a thread if there's one running
+2017-11-11 20:12:14,755 about to stop thread
+2017-11-11 20:12:14,756 rc challenge stopping
+2017-11-11 20:12:14,757 stopped running challenge
+2017-11-11 20:12:52,432 Initialising pygame
+2017-11-11 20:12:52,646 Hiding Cursor
+2017-11-11 20:12:52,647 Setting screen size to (240, 320)
+2017-11-11 20:12:53,027 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:12:53,031 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:12:53,035 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:12:53,040 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:12:53,044 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:12:53,048 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:12:53,053 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:12:53,058 Making button with text 'RC' at (130, 211)
+2017-11-11 20:12:53,061 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:12:57,353 screen pressed: (203, 158)
+2017-11-11 20:12:57,354 on_click: (203, 158)
+2017-11-11 20:12:57,355 Obstacle clicked - launching 5
+2017-11-11 20:12:57,355 button 5 pressed
+2017-11-11 20:12:57,366 other selected
+2017-11-11 20:12:57,367 requested challenge is Other
+2017-11-11 20:12:57,378 about to stop a thread if there's one running
+2017-11-11 20:12:58,770 screen pressed: (192, 225)
+2017-11-11 20:12:58,771 on_click: (192, 225)
+2017-11-11 20:12:58,771 RC clicked - launching 7
+2017-11-11 20:12:58,772 button 7 pressed
+2017-11-11 20:12:58,782 launching RC challenge
+2017-11-11 20:12:58,783 initialised
+2017-11-11 20:12:58,784 requested challenge is <rc.RC instance at 0x747c5878>
+2017-11-11 20:12:58,795 about to stop a thread if there's one running
+2017-11-11 20:12:58,796 launching new challenge
+2017-11-11 20:12:58,798 RC set to run
+2017-11-11 20:12:58,799 challenge RC launched
+2017-11-11 20:13:06,740 screen pressed: (120, 288)
+2017-11-11 20:13:06,741 on_click: (120, 288)
+2017-11-11 20:13:06,742 Exit clicked - launching 8
+2017-11-11 20:13:06,743 button 8 pressed
+2017-11-11 20:13:06,754 Exit button pressed. Exiting now.
+2017-11-11 20:13:06,754 requested challenge is Exit
+2017-11-11 20:13:06,765 about to stop a thread if there's one running
+2017-11-11 20:13:06,776 about to stop thread
+2017-11-11 20:13:06,777 rc challenge stopping
+2017-11-11 20:13:06,777 stopped running challenge
+2017-11-11 20:14:39,465 Initialising pygame
+2017-11-11 20:14:39,686 Hiding Cursor
+2017-11-11 20:14:39,687 Setting screen size to (240, 320)
+2017-11-11 20:14:40,072 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:14:40,076 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:14:40,080 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:14:40,085 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:14:40,090 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:14:40,094 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:14:40,099 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:14:40,104 Making button with text 'RC' at (130, 211)
+2017-11-11 20:14:40,108 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:14:41,446 screen pressed: (183, 227)
+2017-11-11 20:14:41,447 on_click: (183, 227)
+2017-11-11 20:14:41,448 RC clicked - launching 7
+2017-11-11 20:14:41,448 button 7 pressed
+2017-11-11 20:14:41,459 launching RC challenge
+2017-11-11 20:14:41,460 initialised
+2017-11-11 20:14:41,461 requested challenge is <rc.RC instance at 0x747a2878>
+2017-11-11 20:14:41,472 about to stop a thread if there's one running
+2017-11-11 20:14:41,473 launching new challenge
+2017-11-11 20:14:41,475 RC set to run
+2017-11-11 20:14:41,476 challenge RC launched
+2017-11-11 20:14:44,418 RC still alive
+2017-11-11 20:14:50,472 RC still alive
+2017-11-11 20:18:52,682 Initialising pygame
+2017-11-11 20:18:52,897 Hiding Cursor
+2017-11-11 20:18:52,898 Setting screen size to (240, 320)
+2017-11-11 20:18:53,288 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:18:53,293 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:18:53,298 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:18:53,303 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:18:53,307 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:18:53,311 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:18:53,316 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:18:53,321 Making button with text 'RC' at (130, 211)
+2017-11-11 20:18:53,325 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:19:02,464 screen pressed: (187, 220)
+2017-11-11 20:19:02,465 on_click: (187, 220)
+2017-11-11 20:19:02,466 RC clicked - launching 7
+2017-11-11 20:19:02,466 button 7 pressed
+2017-11-11 20:19:02,477 launching RC challenge
+2017-11-11 20:19:02,478 initialised
+2017-11-11 20:19:02,479 requested challenge is <rc.RC instance at 0x748927d8>
+2017-11-11 20:19:02,490 about to stop a thread if there's one running
+2017-11-11 20:19:02,491 launching new challenge
+2017-11-11 20:19:02,492 RC set to run
+2017-11-11 20:19:02,493 challenge RC launched
+2017-11-11 20:19:02,494 RC still alive
+2017-11-11 20:19:04,262 RC still alive
+2017-11-11 20:19:04,263 RC still alive
+2017-11-11 20:19:24,649 RC challenge timed out
+2017-11-11 20:23:02,689 screen pressed: (107, 304)
+2017-11-11 20:23:02,689 on_click: (107, 304)
+2017-11-11 20:23:02,690 Exit clicked - launching 8
+2017-11-11 20:23:02,690 button 8 pressed
+2017-11-11 20:23:02,700 Exit button pressed. Exiting now.
+2017-11-11 20:23:02,700 requested challenge is Exit
+2017-11-11 20:23:02,711 about to stop a thread if there's one running
+2017-11-11 20:23:02,721 about to stop thread
+2017-11-11 20:23:02,721 rc challenge stopping
+2017-11-11 20:23:02,722 stopped running challenge
+2017-11-11 20:25:15,175 Initialising pygame
+2017-11-11 20:25:15,323 Hiding Cursor
+2017-11-11 20:25:15,324 Setting screen size to (240, 320)
+2017-11-11 20:25:15,664 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:25:15,668 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:25:15,672 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:25:15,677 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:25:15,682 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:25:15,686 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:25:15,691 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:25:15,696 Making button with text 'RC' at (130, 211)
+2017-11-11 20:25:15,700 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:25:18,808 screen pressed: (178, 228)
+2017-11-11 20:25:18,809 on_click: (178, 228)
+2017-11-11 20:25:18,809 RC clicked - launching 7
+2017-11-11 20:25:18,810 button 7 pressed
+2017-11-11 20:25:18,821 launching RC challenge
+2017-11-11 20:25:18,822 initialised
+2017-11-11 20:25:18,823 requested challenge is <rc.RC instance at 0x74873788>
+2017-11-11 20:25:18,834 about to stop a thread if there's one running
+2017-11-11 20:25:18,835 launching new challenge
+2017-11-11 20:25:18,837 RC set to run
+2017-11-11 20:25:18,838 challenge RC launched
+2017-11-11 20:25:29,723 RC challenge timed out
+2017-11-11 20:47:39,369 Initialising pygame
+2017-11-11 20:47:39,587 Hiding Cursor
+2017-11-11 20:47:39,587 Setting screen size to (240, 320)
+2017-11-11 20:47:39,977 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:47:39,982 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:47:39,986 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:47:39,991 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:47:39,995 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:47:39,999 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:47:40,005 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:47:40,010 Making button with text 'RC' at (130, 211)
+2017-11-11 20:47:40,013 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:48:14,870 Initialising pygame
+2017-11-11 20:48:15,107 Hiding Cursor
+2017-11-11 20:48:15,107 Setting screen size to (240, 320)
+2017-11-11 20:48:15,494 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:48:15,498 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:48:15,502 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:48:15,507 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:48:15,512 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:48:15,516 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:48:15,521 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:48:15,526 Making button with text 'RC' at (130, 211)
+2017-11-11 20:48:15,530 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:50:32,762 Initialising pygame
+2017-11-11 20:50:32,976 Hiding Cursor
+2017-11-11 20:50:32,977 Setting screen size to (240, 320)
+2017-11-11 20:50:33,364 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:50:33,369 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:50:33,373 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:50:33,379 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:50:33,383 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:50:33,387 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:50:33,393 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:50:33,398 Making button with text 'RC' at (130, 211)
+2017-11-11 20:50:33,403 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:50:49,946 screen pressed: (182, 232)
+2017-11-11 20:50:49,947 on_click: (182, 232)
+2017-11-11 20:50:49,948 RC clicked - launching 7
+2017-11-11 20:50:49,949 button 7 pressed
+2017-11-11 20:50:49,960 launching RC challenge
+2017-11-11 20:50:49,960 initialised
+2017-11-11 20:50:49,961 requested challenge is <rc.RC instance at 0x769ff580>
+2017-11-11 20:50:49,972 about to stop a thread if there's one running
+2017-11-11 20:50:49,973 launching new challenge
+2017-11-11 20:50:49,976 RC set to run
+2017-11-11 20:50:49,977 challenge RC launched
+2017-11-11 20:51:00,011 RC challenge timed out
+2017-11-11 20:54:20,412 Initialising pygame
+2017-11-11 20:54:20,636 Hiding Cursor
+2017-11-11 20:54:20,636 Setting screen size to (240, 320)
+2017-11-11 20:54:21,012 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:54:21,017 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:54:21,021 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:54:21,025 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:54:21,029 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:54:21,033 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:54:21,039 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:54:21,043 Making button with text 'RC' at (130, 211)
+2017-11-11 20:54:21,047 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:54:22,253 screen pressed: (207, 233)
+2017-11-11 20:54:22,254 on_click: (207, 233)
+2017-11-11 20:54:22,255 RC clicked - launching 7
+2017-11-11 20:54:22,255 button 7 pressed
+2017-11-11 20:54:22,266 launching RC challenge
+2017-11-11 20:54:22,267 initialised
+2017-11-11 20:54:22,268 requested challenge is <rc.RC instance at 0x7486d878>
+2017-11-11 20:54:22,279 about to stop a thread if there's one running
+2017-11-11 20:54:22,279 launching new challenge
+2017-11-11 20:54:22,281 challenge RC launched
+2017-11-11 20:54:22,282 RC set to run
+2017-11-11 20:54:22,783 RC still alive
+2017-11-11 20:54:23,794 RC still alive
+2017-11-11 20:54:24,831 RC still alive
+2017-11-11 20:54:25,839 RC still alive
+2017-11-11 20:54:26,891 RC still alive
+2017-11-11 20:54:27,893 RC still alive
+2017-11-11 20:54:28,931 RC still alive
+2017-11-11 20:54:29,933 RC still alive
+2017-11-11 20:54:30,992 RC still alive
+2017-11-11 20:54:32,031 RC still alive
+2017-11-11 20:54:45,144 screen pressed: (159, 294)
+2017-11-11 20:54:45,145 on_click: (159, 294)
+2017-11-11 20:54:45,146 Exit clicked - launching 8
+2017-11-11 20:54:45,146 button 8 pressed
+2017-11-11 20:54:45,157 Exit button pressed. Exiting now.
+2017-11-11 20:54:45,158 requested challenge is Exit
+2017-11-11 20:54:45,169 about to stop a thread if there's one running
+2017-11-11 20:54:45,180 about to stop thread
+2017-11-11 20:54:45,181 rc challenge stopping
+2017-11-11 20:54:45,182 stopped running challenge
+2017-11-11 20:55:06,193 Initialising pygame
+2017-11-11 20:55:06,407 Hiding Cursor
+2017-11-11 20:55:06,408 Setting screen size to (240, 320)
+2017-11-11 20:55:06,799 Making button with text 'Speed' at (20, 10)
+2017-11-11 20:55:06,803 Making button with text 'Maze' at (130, 10)
+2017-11-11 20:55:06,807 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 20:55:06,812 Making button with text 'Golf' at (130, 77)
+2017-11-11 20:55:06,817 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 20:55:06,821 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 20:55:06,826 Making button with text 'Shooting' at (20, 211)
+2017-11-11 20:55:06,831 Making button with text 'RC' at (130, 211)
+2017-11-11 20:55:06,835 Making button with text 'Exit' at (20, 278)
+2017-11-11 20:55:07,565 screen pressed: (179, 241)
+2017-11-11 20:55:07,566 on_click: (179, 241)
+2017-11-11 20:55:07,567 RC clicked - launching 7
+2017-11-11 20:55:07,568 button 7 pressed
+2017-11-11 20:55:07,579 launching RC challenge
+2017-11-11 20:55:07,580 initialised
+2017-11-11 20:55:07,580 requested challenge is <rc.RC instance at 0x7489c878>
+2017-11-11 20:55:07,591 about to stop a thread if there's one running
+2017-11-11 20:55:07,592 launching new challenge
+2017-11-11 20:55:07,593 challenge RC launched
+2017-11-11 20:55:07,594 RC set to run
+2017-11-11 20:55:08,096 RC still alive
+2017-11-11 20:55:09,141 RC still alive
+2017-11-11 20:55:10,191 RC still alive
+2017-11-11 20:55:11,193 RC still alive
+2017-11-11 20:55:12,232 RC still alive
+2017-11-11 20:55:13,234 RC still alive
+2017-11-11 20:55:14,293 RC still alive
+2017-11-11 20:55:15,331 RC still alive
+2017-11-11 20:55:16,333 RC still alive
+2017-11-11 20:55:17,371 RC still alive
+2017-11-11 20:55:17,873 RC challenge timed out
+2017-11-11 2017-11-11 21:04:02,414 Initialising pygame
+2017-11-11 21:04:02,688 Hiding Cursor
+2017-11-11 21:04:02,689 Setting screen size to (240, 320)
+2017-11-11 21:04:03,048 Making button with text 'Speed' at (20, 10)
+2017-11-11 21:04:03,068 Making button with text 'Maze' at (130, 10)
+2017-11-11 21:04:03,072 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 21:04:03,077 Making button with text 'Golf' at (130, 77)
+2017-11-11 21:04:03,081 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 21:04:03,086 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 21:04:03,091 Making button with text 'Shooting' at (20, 211)
+2017-11-11 21:04:03,096 Making button with text 'RC' at (130, 211)
+2017-11-11 21:04:03,099 Making button with text 'Exit' at (20, 278)
+2017-11-11 21:04:09,068 screen pressed: (176, 243)
+2017-11-11 21:04:09,069 on_click: (176, 243)
+2017-11-11 21:04:09,070 RC clicked - launching 7
+2017-11-11 21:04:09,070 button 7 pressed
+2017-11-11 21:04:09,085 launching RC challenge
+2017-11-11 21:04:09,096 initialising RC
+2017-11-11 21:04:09,107 requested challenge is <Tiny.RC instance at 0x747085a8>
+2017-11-11 21:04:09,119 about to stop a thread if there's one running
+2017-11-11 21:04:09,119 launching new challenge
+2017-11-11 21:04:09,121 running RC challenge
+2017-11-11 21:04:09,122 challenge RC launched
+2017-11-11 21:04:09,123 start time: 1.72521
+2017-11-11 21:08:07,130 Initialising pygame
+2017-11-11 21:08:07,340 Hiding Cursor
+2017-11-11 21:08:07,341 Setting screen size to (240, 320)
+2017-11-11 21:08:07,685 Making button with text 'Speed' at (20, 10)
+2017-11-11 21:08:07,689 Making button with text 'Maze' at (130, 10)
+2017-11-11 21:08:07,693 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 21:08:07,698 Making button with text 'Golf' at (130, 77)
+2017-11-11 21:08:07,702 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 21:08:07,707 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 21:08:07,712 Making button with text 'Shooting' at (20, 211)
+2017-11-11 21:08:07,717 Making button with text 'RC' at (130, 211)
+2017-11-11 21:08:07,721 Making button with text 'Exit' at (20, 278)
+2017-11-11 21:08:12,068 screen pressed: (204, 259)
+2017-11-11 21:08:12,069 on_click: (204, 259)
+2017-11-11 21:08:12,070 RC clicked - launching 7
+2017-11-11 21:08:12,071 button 7 pressed
+2017-11-11 21:08:12,082 launching RC challenge
+2017-11-11 21:08:12,093 initialising RC
+2017-11-11 21:08:12,104 requested challenge is <Tiny.RC instance at 0x746685a8>
+2017-11-11 21:08:12,116 about to stop a thread if there's one running
+2017-11-11 21:08:12,116 launching new challenge
+2017-11-11 21:08:12,118 running RC challenge
+2017-11-11 21:08:12,119 challenge RC launched
+2017-11-11 21:08:12,120 start time: 1.556128
+2017-11-11 21:08:12,397 screen pressed: (210, 229)
+2017-11-11 21:08:12,398 on_click: (210, 229)
+2017-11-11 21:08:12,398 RC clicked - launching 7
+2017-11-11 21:08:12,399 button 7 pressed
+2017-11-11 21:08:12,410 launching RC challenge
+2017-11-11 21:08:12,421 initialising RC
+2017-11-11 21:08:12,432 requested challenge is <Tiny.RC instance at 0x73570738>
+2017-11-11 21:08:12,443 about to stop a thread if there's one running
+2017-11-11 21:08:12,454 about to stop thread
+2017-11-11 21:08:12,454 RC challenge stopping
+2017-11-11 21:08:12,455 stopped running challenge
+2017-11-11 21:08:12,456 launching new challenge
+2017-11-11 21:08:12,458 running RC challenge
+2017-11-11 21:08:12,459 challenge RC launched
+2017-11-11 21:08:12,459 start time: 1.583727
+2017-11-11 21:08:22,216 Initialising pygame
+2017-11-11 21:08:22,440 Hiding Cursor
+2017-11-11 21:08:22,441 Setting screen size to (240, 320)
+2017-11-11 21:08:22,782 Making button with text 'Speed' at (20, 10)
+2017-11-11 21:08:22,786 Making button with text 'Maze' at (130, 10)
+2017-11-11 21:08:22,790 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 21:08:22,795 Making button with text 'Golf' at (130, 77)
+2017-11-11 21:08:22,799 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 21:08:22,803 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 21:08:22,808 Making button with text 'Shooting' at (20, 211)
+2017-11-11 21:08:22,813 Making button with text 'RC' at (130, 211)
+2017-11-11 21:08:22,817 Making button with text 'Exit' at (20, 278)
+2017-11-11 21:12:18,087 Initialising pygame
+2017-11-11 21:12:18,340 Hiding Cursor
+2017-11-11 21:12:18,341 Setting screen size to (240, 320)
+2017-11-11 21:12:18,753 Making button with text 'Speed' at (20, 10)
+2017-11-11 21:12:18,758 Making button with text 'Maze' at (130, 10)
+2017-11-11 21:12:18,763 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 21:12:18,768 Making button with text 'Golf' at (130, 77)
+2017-11-11 21:12:18,772 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 21:12:18,777 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 21:12:18,782 Making button with text 'Shooting' at (20, 211)
+2017-11-11 21:12:18,787 Making button with text 'RC' at (130, 211)
+2017-11-11 21:12:18,791 Making button with text 'Exit' at (20, 278)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            2017-11-11 21:26:54,730 Initialising pygame
+2017-11-11 21:26:54,989 Hiding Cursor
+2017-11-11 21:26:54,989 Setting screen size to (240, 320)
+2017-11-11 21:26:55,348 Making button with text 'Speed' at (20, 10)
+2017-11-11 21:26:55,368 Making button with text 'Maze' at (130, 10)
+2017-11-11 21:26:55,372 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 21:26:55,377 Making button with text 'Golf' at (130, 77)
+2017-11-11 21:26:55,381 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 21:26:55,385 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 21:26:55,390 Making button with text 'Shooting' at (20, 211)
+2017-11-11 21:26:55,395 Making button with text 'RC' at (130, 211)
+2017-11-11 21:26:55,398 Making button with text 'Exit' at (20, 278)
+2017-11-11 21:27:04,918 screen pressed: (187, 237)
+2017-11-11 21:27:04,920 on_click: (187, 237)
+2017-11-11 21:27:04,921 RC clicked - launching 7
+2017-11-11 21:27:04,921 button 7 pressed
+2017-11-11 21:27:04,936 launching RC challenge
+2017-11-11 21:27:04,947 initialising RC
+2017-11-11 21:27:04,958 requested challenge is <Tiny.RC instance at 0x746575d0>
+2017-11-11 21:27:04,969 about to stop a thread if there's one running
+2017-11-11 21:27:04,970 launching new challenge
+2017-11-11 21:27:04,971 running RC challenge
+2017-11-11 21:27:04,972 challenge RC launched
+2017-11-11 21:27:04,972 start time: 1.887388
+2017-11-11 21:27:05,009 RC looping
+2017-11-11 21:27:26,950 screen pressed: (154, 284)
+2017-11-11 21:27:26,951 on_click: (154, 284)
+2017-11-11 21:27:26,951 Exit clicked - launching 8
+2017-11-11 21:27:26,952 button 8 pressed
+2017-11-11 21:27:26,963 Exit button pressed. Exiting now.
+2017-11-11 21:27:26,963 requested challenge is Exit
+2017-11-11 21:27:26,974 about to stop a thread if there's one running
+2017-11-11 21:27:26,985 about to stop thread
+2017-11-11 21:27:26,985 RC challenge stopping
+2017-11-11 21:27:26,986 stopped running challenge
+2017-11-11 21:30:37,555 Initialising pygame
+2017-11-11 21:30:37,770 Hiding Cursor
+2017-11-11 21:30:37,771 Setting screen size to (240, 320)
+2017-11-11 21:30:38,111 Making button with text 'Speed' at (20, 10)
+2017-11-11 21:30:38,115 Making button with text 'Maze' at (130, 10)
+2017-11-11 21:30:38,119 Making button with text 'Rainbow' at (20, 77)
+2017-11-11 21:30:38,123 Making button with text 'Golf' at (130, 77)
+2017-11-11 21:30:38,127 Making button with text 'Pi Noon' at (20, 144)
+2017-11-11 21:30:38,131 Making button with text 'Obstacle' at (130, 144)
+2017-11-11 21:30:38,136 Making button with text 'Shooting' at (20, 211)
+2017-11-11 21:30:38,140 Making button with text 'RC' at (130, 211)
+2017-11-11 21:30:38,144 Making button with text 'Exit' at (20, 278)
+2017-11-11 21:30:39,228 screen pressed: (180, 234)
+2017-11-11 21:30:39,229 on_click: (180, 234)
+2017-11-11 21:30:39,229 RC clicked - launching 7
+2017-11-11 21:30:39,230 button 7 pressed
+2017-11-11 21:30:39,240 launching RC challenge
+2017-11-11 21:30:39,251 initialising RC
+2017-11-11 21:30:39,262 requested challenge is <Tiny.RC instance at 0x746c25d0>
+2017-11-11 21:30:39,273 about to stop a thread if there's one running
+2017-11-11 21:30:39,274 launching new challenge
+2017-11-11 21:30:39,275 running RC challenge
+2017-11-11 21:30:39,276 challenge RC launched
+2017-11-11 21:30:39,276 start time: 1.499148
+2017-11-11 21:30:39,348 RC looping
+2017-11-11 21:30:43,488 screen pressed: (125, 286)
+2017-11-11 21:30:43,489 on_click: (125, 286)
+2017-11-11 21:30:43,489 Exit clicked - launching 8
+2017-11-11 21:30:43,490 button 8 pressed
+2017-11-11 21:30:43,500 Exit button pressed. Exiting now.
+2017-11-11 21:30:43,501 requested challenge is Exit
+2017-11-11 21:30:43,511 about to stop a thread if there's one running
+2017-11-11 21:30:43,522 about to stop thread
+2017-11-11 21:30:43,522 RC challenge stopping
+2017-11-11 21:30:43,523 stopped running challenge

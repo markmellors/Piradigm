@@ -5,7 +5,7 @@
 
 from inputs import get_gamepad
 #  from explorerhat import motor
-import piconzero as pz
+import piconzero
 import time
 import logging
 
@@ -27,7 +27,7 @@ class RC:
         self.power_right = 0.0
         self.x_axis = 0.0
         self.y_axis = 0.0
-        self.pz = pz
+        self.pz = piconzero
         self.pz.init()
         self.name = "RC"
         self.killed = False
@@ -37,17 +37,18 @@ class RC:
         try:
             # Loop indefinitely
             startTime = time.clock()
+            logging.info("start time: %s", startTime)
             while time.clock() < (startTime + self.timeOut) and not self.killed:
                 logging.info("RC looping")
-                time.sleep(1)
+                time.sleep(0.01)
                 events = get_gamepad()
                 for event in events:
-                    logging.info(event.code, event.state)
+                    logging.info("event code: %s , event state: %s", event.code, event.state)
                     if event.code == "ABS_Y":
-                        if event.state > 130:
-                            logging.info("Backwards")
-                        elif event.state < 125:
-                            logging.info("Forward")
+                        #if event.state > 130:
+                            #logging.info("Backwards")
+                        #elif event.state < 125:
+                            #logging.info("Forward")
                         self.y_axis = event.state
                         if self.y_axis > 130:
                             self.y_axis = -(self.y_axis - 130)
@@ -57,10 +58,10 @@ class RC:
                             self.y_axis = 0.0
                         logging.info("Y: %s", -self.y_axis)
                     if event.code == "ABS_Z":
-                        if event.state > 130:
-                            logging.info("Right")
-                        elif event.state < 125:
-                            logging.info("Left")
+                        #if event.state > 130:
+                            #logging.info("Right")
+                        #elif event.state < 125:
+                            #logging.info("Left")
                         self.x_axis = event.state
                         if self.x_axis > 130:
                             self.x_axis = (self.x_axis - 130)
@@ -105,7 +106,7 @@ class RC:
                 #print (mixer_results)
                 power_left = int((mixer_results[0] / 125.0)*100)
                 power_right = int((mixer_results[1] / 125.0)*100)
-                logging.info("left: %s right: %S", power_left, power_right)
+                #logging.info("left: %s right: %s", power_left, power_right)
                 self.pz.setMotor(1, -power_right)
                 self.pz.setMotor(0, power_left)
                 # print(event.ev_type, event.code, event.state)

@@ -1,3 +1,4 @@
+import datetime
 import time
 import logging
 
@@ -16,12 +17,13 @@ class RC:
 
     def run(self):
         logging.info("RC set to run")
-        now = time.clock()
-        while (time.clock() < (now + 10)) and not self.killed:
+        timeout_threshold = datetime.datetime.now() + datetime.timedelta(seconds=10)
+        while (datetime.datetime.now() < timeout_threshold) and not self.killed:
+            #print(datetime.datetime.now())
             time.sleep(0.5)
             logging.info("RC still alive")
             time.sleep(0.5)
-        if time.clock() > (now+10):
+        if (datetime.datetime.now() > timeout_threshold):
             logging.info("RC challenge timed out")
 
     def stop(self):
