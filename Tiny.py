@@ -39,7 +39,9 @@ class RC:
                             logging.info('Found a joystick and connected')
                             while joystick.connected:
                                 rx, ry = joystick['rx', 'ry']
+                                logging.info("joystick L/R: %s, %s" % (rx, ry))
                                 power_left, power_right = self.steering(rx, ry)
+                                logging.info("power L/R: %s, %s" % (power_left, power_right))
                                 self.pz.setMotor(1, power_right * self.motor_max)
                                 self.pz.setMotor(0, power_left * self.motor_max)
 
