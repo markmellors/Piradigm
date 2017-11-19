@@ -40,10 +40,9 @@ class RC:
                             while joystick.connected:
                                 rx, ry = joystick['rx', 'ry']
                                 logging.info("joystick L/R: %s, %s" % (rx, ry))
-                                power_left, power_right = self.steering(rx, ry)
-                                motor_left = int(power_left * self.motor_max)
-                                motor_right = int(power_right * self.motor_max)
-                                logging.info("power L/R: %s, %s" % (power_left, power_right))
+                                steering_left, steering_right = self.steering(rx, ry)
+                                motor_left, motor_right = self.get_motor_values(steering_left, steering_right)
+                                logging.info("steering L/R: %s, %s" % (steering_left, steering_right))
                                 logging.info("motor value L/R: %s, %s" % (motor_left, motor_right))
                                 self.pz.setMotor(1, motor_right)
                                 self.pz.setMotor(0, motor_left)
@@ -86,6 +85,12 @@ class RC:
         right = max(-1, min(right, 1))
 
         return left, right
+
+    def get_motor_values(self, steering_left, steering_right):
+        motor_left = int(steering_left * self.motor_max) * -1
+        motor_right = int(steering_right * self.motor_max) * -1
+
+        return (motor_left, motor_right)
 
     def constrain(self, val, min_val, max_val):
         return min(max_val, max(min_val, val))
