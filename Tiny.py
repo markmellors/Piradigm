@@ -52,9 +52,11 @@ class RC:
 
             except KeyboardInterrupt:
                 # CTRL+C exit, disable all drives
+                logging.info("killed from keyboard")
+            finally:
                 logging.info("stopping")
-                # self.pz.stop()
-                # self.pz.cleanup()
+                self.pz.stop()
+                self.pz.cleanup()
                 logging.info("bye")
 
     def steering(self, x, y):
