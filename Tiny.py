@@ -41,9 +41,12 @@ class RC:
                                 rx, ry = joystick['rx', 'ry']
                                 logging.info("joystick L/R: %s, %s" % (rx, ry))
                                 power_left, power_right = self.steering(rx, ry)
+                                motor_left = int(power_left * self.motor_max)
+                                motor_right = int(power_right * self.motor_max)
                                 logging.info("power L/R: %s, %s" % (power_left, power_right))
-                                self.pz.setMotor(1, power_right * self.motor_max)
-                                self.pz.setMotor(0, power_left * self.motor_max)
+                                logging.info("motor value L/R: %s, %s" % (motor_left, motor_right))
+                                self.pz.setMotor(1, motor_right)
+                                self.pz.setMotor(0, motor_left)
 
                         # Joystick disconnected...
                         logging.info('Connection to joystick lost')
