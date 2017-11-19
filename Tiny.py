@@ -112,10 +112,13 @@ class RC:
                 # print(event.ev_type, event.code, event.state)
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
+            logging.info("killed from keyboard")
+        finally:
             logging.info("stopping")
             self.pz.stop()
             self.pz.cleanup()
             logging.info("bye")
+
 
 
     def mixer(self, inYaw, inThrottle,):
