@@ -6,7 +6,7 @@ import threading
 
 import pygame
 from pygame.locals import *
-from Tiny import RC
+from remote_control import RC
 
 # Global variables
 
