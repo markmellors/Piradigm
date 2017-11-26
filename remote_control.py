@@ -6,7 +6,7 @@ import piconzero
 import math
 import time
 import logging
-
+import random
 
 logging.basicConfig(
     filename='piradigm.log',
@@ -25,10 +25,10 @@ class RC():
         self.start_time = None
         self.pz = piconzero
         self.pz.init()
-
-        # piconzero expects values in the range -128 to 127
-        # but values -127, -128 and 127 are treated as always on - no PWM
-        self.motor_max = 127
+        self.motor_max = 100
+        self.slow_speed = 20
+        self.deadband=5
+        self.boost_fraction=0.4
         self.name = "RC"
         self.killed = False
 
@@ -45,6 +45,10 @@ class RC():
                         logging.debug("joystick L/R: %s, %s" % (rx, ry))
                         steering_left, steering_right = self.steering(rx, ry)
                         motor_left, motor_right = self.get_motor_values(steering_left, steering_right)
+                        if self.deadband<math.fabs(motor_left)<self.slow_speed:
+                            motor_left=motor_left+math.copysign(self.slow_speed*math.ceil(random.random()+self.boost_fraction-1),motor_left)
+                        if self.deadband<math.fabs(motor_right)<self.slow_speed:
+                            motor_right=motor_right+math.copysign(self.slow_speed*math.ceil(random.random()+self.boost_fraction-1),motor_right)
                         logging.debug("steering L/R: %s, %s" % (steering_left, steering_right))
                         logging.debug("motor value L/R: %s, %s" % (motor_left, motor_right))
                         self.pz.setMotor(1, motor_right)
