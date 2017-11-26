@@ -1,12 +1,28 @@
+""" Menu script for Piradigm
+Usage:
+  menu.py [--timeout=<seconds>]
+  menu.py -h | --help | --version
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+  --timeout=<seconds>  Challenge timeout time in seconds. [default: 120].
+"""
 import logging
 import os
 import sys
 import time
 import threading
 
+from docopt import docopt
+
 import pygame
 from pygame.locals import *
 from remote_control import RC
+
+VERSION = '0.1rc'
+
+arguments = docopt(__doc__, version=VERSION)
 
 # Global variables
 
@@ -37,6 +53,7 @@ class Menu():
         ]
         for var_name, val in env_vars:
             os.environ[var_name] = val
+        self.timeout = kwargs.pop('timeout', 120)
 
     def launch_challenge(self, new_challenge):
         """launch requested challenge thread"""
@@ -131,7 +148,7 @@ class Menu():
             return "Other"
         elif number == 7:
             logging.info("launching RC challenge")
-            new_challenge = RC()
+            new_challenge = RC(timeout=self.timeout)
             return new_challenge
         elif number == 8:
             logging.info("Exit button pressed. Exiting now.")
@@ -184,5 +201,5 @@ class Menu():
 
 
 if __name__ == "__main__":
-    menu = Menu()
+    menu = Menu(timeout=int(arguments['--timeout']))
     menu.run()

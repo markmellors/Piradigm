@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 class RC():
-    def __init__(self):
+    def __init__(self, timeout=120):
         time.sleep(0.01)
         logging.info("initialising RC")
-        self.time_out = 90
+        self.timeout = timeout
         self.start_time = None
         self.pz = piconzero
         self.pz.init()
@@ -68,7 +68,7 @@ class RC():
     def should_die(self):
         # TODO this should be monitored by the calling thread using a
         # combination of Timer threads and is_alive()
-        timed_out = time.clock() >= (self.start_time + self.time_out)
+        timed_out = time.clock() >= (self.start_time + self.timeout)
         return timed_out or self.killed
 
     def steering(self, x, y):
