@@ -18,7 +18,7 @@ from docopt import docopt
 
 import pygame
 from pygame.locals import *
-from Tiny import RC
+from remote_control import RC
 
 VERSION = '0.1rc'
 
