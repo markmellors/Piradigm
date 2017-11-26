@@ -25,10 +25,7 @@ class RC():
         self.start_time = None
         self.pz = piconzero
         self.pz.init()
-
-        # piconzero expects values in the range -128 to 127
-        # but values -127, -128 and 127 are treated as always on - no PWM
-        self.motor_max = 127
+        self.motor_max = 100
         self.name = "RC"
         self.killed = False
 
