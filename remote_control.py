@@ -56,7 +56,7 @@ class RC():
             except IOError:
                 # No joystick found, wait for a bit before trying again
                 logging.info('Unable to find any joysticks')
-                time.sleep(1.0)
+                time.sleep(0.1)
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
