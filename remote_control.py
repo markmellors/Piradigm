@@ -31,6 +31,7 @@ class RC():
         self.deadband = 1
         self.boost_cycles = 1
         self.boost_dwell = 9
+        self.exponential=2
         self.name = "RC"
         self.killed = False
 
@@ -47,7 +48,9 @@ class RC():
                     while joystick.connected and not self.should_die:
                         rx, ry = joystick['rx', 'ry']
                         logging.debug("joystick L/R: %s, %s" % (rx, ry))
-                        steering_left, steering_right = self.steering(rx, ry)
+                        rx = self.exp(rx , self.exponential)
+                        ry = self.exp(ry , self.exponential)
+                        steering_left, steering_right = self.steering(rx, ry)                     
                         motor_left, motor_right = self.get_motor_values(steering_left, steering_right)
                         left_counter, motor_left = self.dither(left_counter, motor_left)
                         right_counter, motor_right = self.dither(right_counter, motor_right)  
@@ -127,3 +130,13 @@ class RC():
             if counter > (self.boost_cycles + self.boost_dwell):
                 counter = 0
         return (counter, speed)
+
+    def exp(self, demand, exp):
+    #fucntion takes a demand speed from -1 to 1 and converts it to a response value
+    # with an exponential function. exponential is -inf to +inf, 0 is linear
+        if exp < 0:
+            exp = 1/(1 + abs(exp))
+        else:
+            exp += 1
+        response = math.copysign((abs(demand)**exp), demand)
+        return response
