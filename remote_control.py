@@ -27,8 +27,9 @@ class RC():
         self.pz.init()
         self.motor_max = 100
         self.slow_speed = 20
-        self.deadband=5
-        self.boost_fraction=0.4
+        self.deadband = 4
+        self.boost_cycles = 30
+        self.boost_dwell = 30
         self.name = "RC"
         self.killed = False
 
@@ -40,17 +41,30 @@ class RC():
             try:
                 with ControllerResource() as joystick:
                     logging.info('Found a joystick and connected')
+                    left_counter=0
+                    right_counter=0
                     while joystick.connected and not self.should_die:
                         rx, ry = joystick['rx', 'ry']
                         logging.debug("joystick L/R: %s, %s" % (rx, ry))
                         steering_left, steering_right = self.steering(rx, ry)
                         motor_left, motor_right = self.get_motor_values(steering_left, steering_right)
-                        if self.deadband<math.fabs(motor_left)<self.slow_speed:
-                            motor_left=motor_left+math.copysign(self.slow_speed*math.ceil(random.random()+self.boost_fraction-1),motor_left)
-                        if self.deadband<math.fabs(motor_right)<self.slow_speed:
-                            motor_right=motor_right+math.copysign(self.slow_speed*math.ceil(random.random()+self.boost_fraction-1),motor_right)
+                        if self.deadband < math.fabs(motor_left) < self.slow_speed:
+                            motor_left = motor_left - math.copysign(4, motor_left)
+                            left_counter += 1
+                            if left_counter < self.boost_cycles:
+                            	motor_left = math.copysign(self.motor_max, motor_left)
+                            if left_counter > (self.boost_cycles + self.boost_dwell):
+                                left_counter = 0
+                        if self.deadband < math.fabs(motor_right) < self.slow_speed:
+                            motor_right = motor_right - math.copysign(4, motor_right)
+                            right_counter += 1
+                            if right_counter < self.boost_cycles:
+                            	motor_right = math.copysign(self.motor_max, motor_right)
+                            if right_counter > (self.boost_cycles + self.boost_dwell):
+                                right_counter = 0
                         logging.debug("steering L/R: %s, %s" % (steering_left, steering_right))
                         logging.debug("motor value L/R: %s, %s" % (motor_left, motor_right))
+                        logging.debug("counter: %s, %s" % (left_counter, right_counter))
                         self.pz.setMotor(1, motor_right)
                         self.pz.setMotor(0, motor_left)
                         time.sleep(0.1)
