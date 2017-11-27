@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # coding: Latin-1
 
@@ -28,8 +29,8 @@ class RC():
         self.motor_max = 100
         self.slow_speed = 20
         self.deadband = 4
-        self.boost_cycles = 30
-        self.boost_dwell = 30
+        self.boost_cycles = 1
+        self.boost_dwell = 9
         self.name = "RC"
         self.killed = False
 
@@ -49,17 +50,17 @@ class RC():
                         steering_left, steering_right = self.steering(rx, ry)
                         motor_left, motor_right = self.get_motor_values(steering_left, steering_right)
                         if self.deadband < math.fabs(motor_left) < self.slow_speed:
-                            motor_left = motor_left - math.copysign(4, motor_left)
+                            motor_left = int(motor_left - math.copysign(1, motor_left))
                             left_counter += 1
                             if left_counter < self.boost_cycles:
-                            	motor_left = math.copysign(self.motor_max, motor_left)
+                            	motor_left = motor_left+int(math.copysign(self.slow_speed, motor_left))
                             if left_counter > (self.boost_cycles + self.boost_dwell):
                                 left_counter = 0
                         if self.deadband < math.fabs(motor_right) < self.slow_speed:
-                            motor_right = motor_right - math.copysign(4, motor_right)
+                            motor_right = int(motor_right - math.copysign(1, motor_right))
                             right_counter += 1
                             if right_counter < self.boost_cycles:
-                            	motor_right = math.copysign(self.motor_max, motor_right)
+                            	motor_right = motor_right+int(math.copysign(self.slow_speed, motor_right))
                             if right_counter > (self.boost_cycles + self.boost_dwell):
                                 right_counter = 0
                         logging.debug("steering L/R: %s, %s" % (steering_left, steering_right))
@@ -67,7 +68,7 @@ class RC():
                         logging.debug("counter: %s, %s" % (left_counter, right_counter))
                         self.pz.setMotor(1, motor_right)
                         self.pz.setMotor(0, motor_left)
-                        time.sleep(0.1)
+                        time.sleep(0.05)
 
                 # Joystick disconnected...
                 logging.info('Connection to joystick lost')
