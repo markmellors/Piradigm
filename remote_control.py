@@ -42,8 +42,8 @@ class RC():
             try:
                 with ControllerResource() as joystick:
                     logging.info('Found a joystick and connected')
-                    left_counter=0
-                    right_counter=0
+                    left_counter = 0
+                    right_counter = 0
                     while joystick.connected and not self.should_die:
                         rx, ry = joystick['rx', 'ry']
                         logging.debug("joystick L/R: %s, %s" % (rx, ry))
@@ -124,6 +124,6 @@ class RC():
             counter += 1
             if counter < self.boost_cycles:
                 speed = speed + int(math.copysign(self.slow_speed, speed))
-            if counter > (self.boost_cycles + self.boost_dwell):
+            elif counter > (self.boost_cycles + self.boost_dwell):
                 counter = 0
         return (counter, speed)
