@@ -31,7 +31,7 @@ class RC():
         self.deadband = 1
         self.boost_cycles = 1
         self.boost_dwell = 9
-        self.exponential=2
+        self.exponential = 2
         self.name = "RC"
         self.killed = False
 
@@ -43,8 +43,8 @@ class RC():
             try:
                 with ControllerResource() as joystick:
                     logging.info('Found a joystick and connected')
-                    left_counter=0
-                    right_counter=0
+                    left_counter = 0
+                    right_counter = 0
                     while joystick.connected and not self.should_die:
                         rx, ry = joystick['rx', 'ry']
                         logging.debug("joystick L/R: %s, %s" % (rx, ry))
@@ -122,21 +122,20 @@ class RC():
         self.killed = True
 
     def dither(self, counter, speed):
+    #function takes a speed and occassionally adds a boost, helpful at very low speeds
+    #counter is between 0 and (self.boot_cycles + self.boost_dwell) and is used to 
+    #schedule boosts. speed si ebtween -1 and +1. modified speed and counter are returned
         if self.deadband < abs(speed) < self.slow_speed:
             speed = int(speed - math.copysign(1, speed))
             counter += 1
             if counter < self.boost_cycles:
                 speed = speed + int(math.copysign(self.slow_speed, speed))
-            if counter > (self.boost_cycles + self.boost_dwell):
+            elif counter > (self.boost_cycles + self.boost_dwell):
                 counter = 0
         return (counter, speed)
 
     def exp(self, demand, exp):
-    #fucntion takes a demand speed from -1 to 1 and converts it to a response value
+    #function takes a demand speed from -1 to 1 and converts it to a response value
     # with an exponential function. exponential is -inf to +inf, 0 is linear
-        if exp < 0:
-            exp = 1/(1 + abs(exp))
-        else:
-            exp += 1
-        response = math.copysign((abs(demand)**exp), demand)
-        return response
+        exp = 1/(1 + abs(exp)) if exp < 0 else exp + 1
+        return math.copysign((abs(demand)**exp), demand)
