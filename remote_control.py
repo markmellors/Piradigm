@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # coding: Latin-1
 
@@ -6,7 +7,7 @@ import piconzero
 import math
 import time
 import logging
-
+import random
 
 logging.basicConfig(
     filename='piradigm.log',
@@ -25,10 +26,11 @@ class RC():
         self.start_time = None
         self.pz = piconzero
         self.pz.init()
-
-        # piconzero expects values in the range -128 to 127
-        # but values -127, -128 and 127 are treated as always on - no PWM
-        self.motor_max = 127
+        self.motor_max = 100
+        self.slow_speed = 20
+        self.deadband = 1
+        self.boost_cycles = 1
+        self.boost_dwell = 9
         self.name = "RC"
         self.killed = False
 
@@ -40,16 +42,21 @@ class RC():
             try:
                 with ControllerResource() as joystick:
                     logging.info('Found a joystick and connected')
+                    left_counter = 0
+                    right_counter = 0
                     while joystick.connected and not self.should_die:
                         rx, ry = joystick['rx', 'ry']
                         logging.debug("joystick L/R: %s, %s" % (rx, ry))
                         steering_left, steering_right = self.steering(rx, ry)
                         motor_left, motor_right = self.get_motor_values(steering_left, steering_right)
+                        left_counter, motor_left = self.dither(left_counter, motor_left)
+                        right_counter, motor_right = self.dither(right_counter, motor_right)  
                         logging.debug("steering L/R: %s, %s" % (steering_left, steering_right))
                         logging.debug("motor value L/R: %s, %s" % (motor_left, motor_right))
+                        logging.debug("counter: %s, %s" % (left_counter, right_counter))
                         self.pz.setMotor(1, motor_right)
                         self.pz.setMotor(0, motor_left)
-                        time.sleep(0.1)
+                        time.sleep(0.05)
 
                 # Joystick disconnected...
                 logging.info('Connection to joystick lost')
@@ -110,3 +117,13 @@ class RC():
     def stop(self):
         logging.info("RC challenge stopping")
         self.killed = True
+
+    def dither(self, counter, speed):
+        if self.deadband < abs(speed) < self.slow_speed:
+            speed = int(speed - math.copysign(1, speed))
+            counter += 1
+            if counter < self.boost_cycles:
+                speed = speed + int(math.copysign(self.slow_speed, speed))
+            elif counter > (self.boost_cycles + self.boost_dwell):
+                counter = 0
+        return (counter, speed)
