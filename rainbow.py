@@ -10,11 +10,12 @@ sys.path.append('/usr/local/lib/python2.7/site-packages')
 # import ThunderBorg
 import io
 import threading
+import pygame
+from pygame.locals import*
 import picamera
 import picamera.array
 import cv2
 import numpy
-
 print('Libraries loaded')
 
 # Global values
@@ -32,6 +33,7 @@ colour = 'blue'
 #camera settings
 imageWidth = 320  # Camera image width
 imageHeight = 240  # Camera image height
+SCREEN_SIZE = imageHeight, imageWidth
 frameRate = 3  # Camera image capture frame rate
 
 # Auto drive settings
@@ -49,14 +51,14 @@ env_vars = [
 for var_name, val in env_vars:
     os.environ[var_name] = val
 
-
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
-    def __init__(self):
+    def __init__(self, screen):
         super(StreamProcessor, self).__init__()
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
+        time.sleep(1)
         self.start()
         self.begin = 0
         
@@ -68,7 +70,7 @@ class StreamProcessor(threading.Thread):
                 try:
                     # Read the image and do some processing on it
                     self.stream.seek(0)
-                    self.ProcessImage(self.stream.array, colour)
+                    self.ProcessImage(self.stream.array, colour, screen)
                 finally:
                     # Reset the stream and event
                     self.stream.seek(0)
@@ -76,11 +78,13 @@ class StreamProcessor(threading.Thread):
                     self.event.clear()
 
     # Image processing function
-    def ProcessImage(self, image, colour):
+    def ProcessImage(self, image, colour, screen):
         # View the original image seen by the camera.
-        #if debug:
-        #    cv2.imshow('original', image)
-        #    cv2.waitKey(0)
+        if debug:
+            frame = pygame.surfarray.make_surface(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+            screen.fill([0, 0, 0])
+            screen.blit(frame, (0, 0))
+            pygame.display.update()
                 
         # Blur the image
         image = cv2.medianBlur(image, 5)
@@ -143,6 +147,7 @@ class StreamProcessor(threading.Thread):
             ball = [foundX, foundY, foundArea]
         else:
             ball = None
+        pygame.mouse.set_pos(foundY, foundX)
         # Set drives or report ball status
         self.SetSpeedFromBall(ball)
                                      
@@ -218,9 +223,13 @@ camera.resolution = (imageWidth, imageHeight)
 camera.framerate = frameRate
 imageCentreX = imageWidth / 2.0
 imageCentreY = imageHeight / 2.0
-                                                                                           
+
+print('setup pygame')
+screen = pygame.display.set_mode(SCREEN_SIZE)
+pygame.init()                                                                                           
+
 print('Setup the stream processing thread')
-processor = StreamProcessor()
+processor = StreamProcessor(screen)
                                                                                            
 print('Wait ...')
 time.sleep(2)
