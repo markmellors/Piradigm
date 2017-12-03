@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # coding: Latin
 
@@ -8,7 +9,6 @@ import sys
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
 # import ThunderBorg
-import io
 import threading
 import pygame
 from pygame.locals import*
@@ -16,11 +16,11 @@ import picamera
 import picamera.array
 import cv2
 import numpy
+from drivetrain import Drivetrain
 print('Libraries loaded')
 
 # Global values
 global running
-# global TB
 global camera
 global processor
 global debug
@@ -30,18 +30,18 @@ running = True
 debug = True
 colour = 'blue'
 
-#camera settings
+# camera settings
 imageWidth = 320  # Camera image width
 imageHeight = 240  # Camera image height
 SCREEN_SIZE = imageHeight, imageWidth
 frameRate = 3  # Camera image capture frame rate
 
 # Auto drive settings
-autoMaxPower = 1.0  # Maximum output in automatic mode
-autoMinPower = 0.2  # Minimum output in automatic mode
+autoMaxPower = 0.5  # Maximum output in automatic mode
+autoMinPower = 0.1  # Minimum output in automatic mode
 autoMinArea = 10  # Smallest target to move towards
-autoMaxArea = 10000  # Largest target to move towards
-autoFullSpeedArea = 300  # Target size at which we use the maximum allowed output
+autoMaxArea = 3000  # Largest target to move towards
+autoFullSpeedArea = 50  # Target size at which we use the maximum allowed output
 
 env_vars = [
     ("SDL_FBDEV", "/dev/fb1"),
@@ -61,7 +61,7 @@ class StreamProcessor(threading.Thread):
         time.sleep(1)
         self.start()
         self.begin = 0
-        
+  
     def run(self):
         # This method runs in a separate thread
         while not self.terminated:
@@ -85,13 +85,13 @@ class StreamProcessor(threading.Thread):
             screen.fill([0, 0, 0])
             screen.blit(frame, (0, 0))
             pygame.display.update()
-                
+ 
         # Blur the image
         image = cv2.medianBlur(image, 5)
         #if debug:
         #    cv2.imshow('blur', image)
         #    cv2.waitKey(0)
-                
+ 
         # Convert the image from 'BGR' to HSV colour space
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         #if debug:
@@ -118,18 +118,18 @@ class StreamProcessor(threading.Thread):
         # print(crange)
         # cv2.imshow('range',imrange)
         # cv2.waitKey(0)
-         
+ 
         # View the filtered image found by 'imrange'
         #if debug:
         #    cv2.imshow('imrange', imrange)
         #    cv2.waitKey(0)
-            
+ 
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         #if debug:
         #    cv2.imshow('contour', contourimage)
         #    cv2.waitKey(0)
-                  
+
         # Go through each contour
         foundArea = -1
         foundX = -1
@@ -150,51 +150,45 @@ class StreamProcessor(threading.Thread):
         pygame.mouse.set_pos(foundY, foundX)
         # Set drives or report ball status
         self.SetSpeedFromBall(ball)
-                                     
+
     # Set the motor speed from the ball position
     def SetSpeedFromBall(self, ball):
-        global TB
-        driveLeft = 0.0
-        driveRight = 0.0
+        forward = 0.0
+        turn = 0.0
         if ball:
             x = ball[0]
             area = ball[2]
             if area < autoMinArea:
+                drive.move(0, 0)
                 print('Too small / far')
+                print('%.2f, %.2f' % (forward, turn))
             elif area > autoMaxArea:
-                print('Close enough')
+                drive.move(0, -0.15)
+                print('Close enough, backing off')
+                print('%.2f, %.2f' % (forward, turn))
             else:
                 if area < autoFullSpeedArea:
-                    speed = 1.0
+                    forward = 1.0
                 else:
-                    speed = 1.0 / (area / autoFullSpeedArea)
-                speed *= autoMaxPower - autoMinPower
-                speed += autoMinPower
-                direction = (x - imageCentreX) / imageCentreX
-                if direction < 0.0:
-                    # Turn right
-                    print('Turn Right')
-                    driveLeft = speed
-                    driveRight = speed * (1.0 + direction)
-                else:
-                    # Turn left
-                    print('Turn Left')
-                    driveLeft = speed * (1.0 - direction)
-                    driveRight = speed
-                print('%.2f, %.2f' % (driveLeft, driveRight))
+                    forward = 1.0 / (area / autoFullSpeedArea)
+                forward *= autoMaxPower - autoMinPower
+                forward += autoMinPower
+                turn = (imageCentreX - x) / imageCentreX / 5
+                drive.move(turn, forward)
+                print('%.2f, %.2f' % (forward, turn))
         else:
+            # no ball, turn right
+            drive.move(0, 0)
             print('No ball')
-                                                                      
-                                                         
-# TB.SetMotor1(driveLeft)
-# TB.SetMotor2(driveRight)
-                                                                   
+            print('%.2f, %.2f' % (forward, turn))
+
+                              
 # Image capture thread
 class ImageCapture(threading.Thread):
     def __init__(self):
         super(ImageCapture, self).__init__()
         self.start()
-                                                                         
+
     def run(self):
         global camera
         global processor
@@ -204,18 +198,18 @@ class ImageCapture(threading.Thread):
         processor.terminated = True
         processor.join()
         print('Processing terminated.')
-                                                                                  
+                            
     # Stream delegation loop
     def TriggerStream(self):
-         global running
-         while running:
-             if processor.event.is_set():
-                 time.sleep(0.01)
-             else:
-                 yield processor.stream
-                 processor.event.set()
-                                                                                           
-                                                                                           
+        global running
+        while running:
+            if processor.event.is_set():
+                time.sleep(0.01)
+            else:
+                yield processor.stream
+                processor.event.set()
+
+
 # Startup sequence
 print('Setup camera')
 camera = picamera.PiCamera()
@@ -226,43 +220,46 @@ imageCentreY = imageHeight / 2.0
 
 print('setup pygame')
 screen = pygame.display.set_mode(SCREEN_SIZE)
-pygame.init()                                                                                           
+pygame.init()                                
 
 print('Setup the stream processing thread')
 processor = StreamProcessor(screen)
-                                                                                           
+
+drive = Drivetrain(timeout=120)
+
 print('Wait ...')
 time.sleep(2)
 captureThread = ImageCapture()
-                                                                                           
+              
 try:
     print('Press CTRL+C to quit')
-    ## TB.MotorsOff()
-    ## TB.SetLedShowBattery(True)
     # Loop indefinitely until we are no longer running
     while running:
         # Wait for the interval period
-        # You could have the code do other work in here 🙂
+        # You could have the code do other work in here
         time.sleep(1.0)
         # Disable all drives
-## TB.MotorsOff()
+
 except KeyboardInterrupt:
     # CTRL+C exit, disable all drives
     print('\nUser shutdown')
-## TB.MotorsOff()
+    
+#why's this net except here?
 except:
-    # Unexpected error, shut down!
+    ## Unexpected error, shut down!
     e = sys.exc_info()[0]
     print
     print(e)
     print('\nUnexpected error, shutting down!')
-## TB.MotorsOff()
+
 # Tell each thread to stop, and wait for them to end
 running = False
 captureThread.join()
 processor.terminated = True
 processor.join()
 del camera
+drive.move(0, 0)
+drive.stop()
 ##TB.MotorsOff()
 ##TB.SetLedShowBattery(False)
 ##TB.SetLeds(0,0,0)
