@@ -16,6 +16,7 @@ import picamera
 import picamera.array
 import cv2
 import numpy
+from fractions import Fraction
 from drivetrain import Drivetrain
 print('Libraries loaded')
 
@@ -34,7 +35,7 @@ colour = 'blue'
 imageWidth = 320  # Camera image width
 imageHeight = 240  # Camera image height
 SCREEN_SIZE = imageHeight, imageWidth
-frameRate = 3  # Camera image capture frame rate
+frameRate = Fraction(8)  # Camera image capture frame rate
 
 # Auto drive settings
 autoMaxPower = 0.5  # Maximum output in automatic mode
