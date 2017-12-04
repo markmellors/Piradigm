@@ -61,6 +61,7 @@ class StreamProcessor(threading.Thread):
         time.sleep(1)
         self.start()
         self.begin = 0
+        self.oldtime = 0
   
     def run(self):
         # This method runs in a separate thread
@@ -83,8 +84,14 @@ class StreamProcessor(threading.Thread):
         if debug:
             frame = pygame.surfarray.make_surface(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
             screen.fill([0, 0, 0])
+            timenow = time.clock()
+            timestep = timenow - self.oldtime
+            font = pygame.font.Font(None, 24)
+            label = font.render(str(timestep), 1, (250,250,250))
             screen.blit(frame, (0, 0))
+            screen.blit(label, (10,10))
             pygame.display.update()
+            self.oldtime = timenow
  
         # Blur the image
         image = cv2.medianBlur(image, 5)
