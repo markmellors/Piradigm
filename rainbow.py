@@ -30,6 +30,7 @@ global colour
 running = True
 debug = True
 colour = 'blue'
+MIN_CONTOUR_AREA = 1
 
 # camera settings
 imageWidth = 320  # Camera image width
@@ -63,7 +64,7 @@ class StreamProcessor(threading.Thread):
         self.start()
         self.begin = 0
         self.oldtime = 0
-  
+
     def run(self):
         # This method runs in a separate thread
         while not self.terminated:
@@ -95,13 +96,13 @@ class StreamProcessor(threading.Thread):
             screen.blit(label, (10,10))
             pygame.display.update()
             self.oldtime = timenow
- 
+
         # Blur the image
         image = cv2.medianBlur(image, 5)
         #if debug:
         #    cv2.imshow('blur', image)
         #    cv2.waitKey(0)
- 
+
         # Convert the image from 'BGR' to HSV colour space
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         #if debug:
@@ -114,13 +115,15 @@ class StreamProcessor(threading.Thread):
         # Green is between 50 and 75
         # Blue is between 20 and 35
         # Yellow is... to be found!
-        if colour == "red":
-            imrange = cv2.inRange(image, numpy.array((95, 127, 64)), numpy.array((125, 255, 255)))
-        elif colour == "green":
-            imrange = cv2.inRange(image, numpy.array((50, 127, 64)), numpy.array((75, 255, 255)))
-        elif colour == 'blue':
-            imrange = cv2.inRange(image, numpy.array((20, 64, 64)), numpy.array((35, 255, 255)))
- 
+        colour_bounds = {
+            'red': ((95, 127, 64), (125, 255, 255)),
+            'green': ((50, 127, 64), (75, 255, 255)),
+            'blue': ((20, 64, 64), (35, 255, 255)),
+            'yellow': ((20, 64, 64), (35, 255, 255)),
+        }
+        hsv_lower, hsv_upper = colour_bounds.get(colour, ((40, 0, 0), (180, 255, 255)))
+        imrange = cv2.inRange(image, numpy.array(hsv_lower), numpy.array(hsv_upper))
+
         # I used the following code to find the approximate 'hue' of the ball in
         # front of the camera
         # for crange in range(0,170,10):
@@ -128,12 +131,12 @@ class StreamProcessor(threading.Thread):
         # print(crange)
         # cv2.imshow('range',imrange)
         # cv2.waitKey(0)
- 
+
         # View the filtered image found by 'imrange'
         #if debug:
         #    cv2.imshow('imrange', imrange)
         #    cv2.waitKey(0)
- 
+
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         #if debug:
@@ -161,8 +164,10 @@ class StreamProcessor(threading.Thread):
             ball = None
         pygame.mouse.set_pos(foundY, foundX)
         if biggestContour is not None:
-            label = font.render(str(cv2.contourArea(biggestContour)), 1, (250,250,250))
-            screen.blit(label, (10,30))
+            contour_area = cv2.contourArea(biggestContour)
+            if contour_area < MIN_CONTOUR_AREA:
+                label = font.render(str(contour_area), 1, (250,250,250))
+                screen.blit(label, (10,30))
             # skate wheel at 100mm has area = 7000, from centre of course is 180, far corner is 5
         pygame.display.update()
         # Set drives or report ball status
@@ -199,7 +204,7 @@ class StreamProcessor(threading.Thread):
             print('No ball')
             print('%.2f, %.2f' % (forward, turn))
 
-                              
+
 # Image capture thread
 class ImageCapture(threading.Thread):
     def __init__(self):
@@ -215,7 +220,7 @@ class ImageCapture(threading.Thread):
         processor.terminated = True
         processor.join()
         print('Processing terminated.')
-                            
+
     # Stream delegation loop
     def TriggerStream(self):
         global running
@@ -237,7 +242,7 @@ imageCentreY = imageHeight / 2.0
 
 print('setup pygame')
 screen = pygame.display.set_mode(SCREEN_SIZE)
-pygame.init()                                
+pygame.init()
 
 print('Setup the stream processing thread')
 processor = StreamProcessor(screen)
@@ -247,7 +252,7 @@ drive = Drivetrain(timeout=120)
 print('Wait ...')
 time.sleep(2)
 captureThread = ImageCapture()
-              
+
 try:
     print('Press CTRL+C to quit')
     # Loop indefinitely until we are no longer running
@@ -260,7 +265,7 @@ try:
 except KeyboardInterrupt:
     # CTRL+C exit, disable all drives
     print('\nUser shutdown')
-    
+
 #why's this net except here?
 except:
     ## Unexpected error, shut down!
