@@ -158,7 +158,7 @@ class StreamProcessor(threading.Thread):
                 found_x = cx
                 found_y = cy
                 biggest_contour = contour
-        if found_area > 2:
+        if found_area > MIN_CONTOUR_AREA:
             ball = [found_x, found_y, found_area]
         else:
             ball = None
@@ -173,41 +173,49 @@ class StreamProcessor(threading.Thread):
             # from centre of course is 180, far corner is 5
         pygame.display.update()
         # Set drives or report ball status
-        self.set_speed_from_ball(ball)
+        self.drive_away_from_ball(ball)
+        #self.drive_toward_ball(ball)
 
 
 
     # Set the motor speed from the ball position
-    def set_speed_from_ball(self, ball):
-        forward = 0.0
+    def drive_toward_ball(self, ball):
         turn = 0.0
         if ball:
             x = ball[0]
             area = ball[2]
-            if area < AUTO_MIN_AREA:
-                drive.move(0.3, 0)
-                print('Too small / far')
-                print('%.2f, %.2f' % (forward, turn))
-            elif area > AUTO_MAX_AREA:
+            if area > AUTO_MAX_AREA:
                 drive.move(0, 0)
                 self.found = True
                 print('Close enough, stopping')
-                print('%.2f, %.2f' % (forward, turn))
             else:
-                if area < AUTO_FULL_SPEED_AREA:
-                    forward = 1.0
-                else:
-                    forward = 1.0 / (area / AUTO_FULL_SPEED_AREA)
-                forward *= AUTO_MAX_POWER - AUTO_MIN_POWER
-                forward += AUTO_MIN_POWER
+                forward = 0.12
                 turn = (image_centre_x - x) / image_centre_x / 3
                 drive.move(turn, forward)
-                print('%.2f, %.2f' % (forward, turn))
         else:
             # no ball, turn right
             drive.move(0.3, 0)
             print('No ball')
-            print('%.2f, %.2f' % (forward, turn))
+ 
+ # drive away from the ball, back to the middle
+    def drive_away_from_ball(self, ball):
+        turn = 0.0
+        if ball:
+            x = ball[0]
+            area = ball[2]
+            if area < 1000:
+                drive.move(0, 0)
+                self.found = True
+                print('far enough away, stopping')
+            else:
+                forward = -0.15
+                turn = (image_centre_x - x) / image_centre_x / 3
+                drive.move(turn, forward)
+        else:
+            #ball lost, stop
+            self.found = False
+            drive.move(0, 0)
+            print('ball lost')
 
 
 # Image capture thread
