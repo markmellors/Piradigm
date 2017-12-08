@@ -35,7 +35,7 @@ colour = 'blue'
 imageWidth = 320  # Camera image width
 imageHeight = 240  # Camera image height
 SCREEN_SIZE = imageHeight, imageWidth
-frameRate = Fraction(8)  # Camera image capture frame rate
+frameRate = Fraction(5)  # Camera image capture frame rate
 
 # Auto drive settings
 autoMaxPower = 0.5  # Maximum output in automatic mode
@@ -81,15 +81,17 @@ class StreamProcessor(threading.Thread):
 
     # Image processing function
     def ProcessImage(self, image, colour, screen):
+        # crop image to speed up processing and avoid false positives
+        image = image[60:180, 0:320]
         # View the original image seen by the camera.
         if debug:
             frame = pygame.surfarray.make_surface(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
             screen.fill([0, 0, 0])
+            font = pygame.font.Font(None, 24)
+            screen.blit(frame, (0, 0))
             timenow = time.clock()
             timestep = timenow - self.oldtime
-            font = pygame.font.Font(None, 24)
             label = font.render(str(timestep), 1, (250,250,250))
-            screen.blit(frame, (0, 0))
             screen.blit(label, (10,10))
             pygame.display.update()
             self.oldtime = timenow
@@ -142,6 +144,7 @@ class StreamProcessor(threading.Thread):
         foundArea = -1
         foundX = -1
         foundY = -1
+        biggestContour = None
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
             cx = x + (w / 2)
@@ -151,11 +154,17 @@ class StreamProcessor(threading.Thread):
                 foundArea = area
                 foundX = cx
                 foundY = cy
+                biggestContour = contour
         if foundArea > 0:
             ball = [foundX, foundY, foundArea]
         else:
             ball = None
         pygame.mouse.set_pos(foundY, foundX)
+        if biggestContour is not None:
+            label = font.render(str(cv2.contourArea(biggestContour)), 1, (250,250,250))
+            screen.blit(label, (10,30))
+            # skate wheel at 100mm has area = 7000, from centre of course is 180, far corner is 5
+        pygame.display.update()
         # Set drives or report ball status
         self.SetSpeedFromBall(ball)
 
@@ -167,11 +176,11 @@ class StreamProcessor(threading.Thread):
             x = ball[0]
             area = ball[2]
             if area < autoMinArea:
-                drive.move(0, 0)
+               # drive.move(0, 0)
                 print('Too small / far')
                 print('%.2f, %.2f' % (forward, turn))
             elif area > autoMaxArea:
-                drive.move(0, -0.15)
+                #drive.move(0, -0.15)
                 print('Close enough, backing off')
                 print('%.2f, %.2f' % (forward, turn))
             else:
@@ -182,11 +191,11 @@ class StreamProcessor(threading.Thread):
                 forward *= autoMaxPower - autoMinPower
                 forward += autoMinPower
                 turn = (imageCentreX - x) / imageCentreX / 5
-                drive.move(turn, forward)
+                # drive.move(turn, forward)
                 print('%.2f, %.2f' % (forward, turn))
         else:
             # no ball, turn right
-            drive.move(0, 0)
+            #drive.move(0, 0)
             print('No ball')
             print('%.2f, %.2f' % (forward, turn))
 
