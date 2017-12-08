@@ -63,6 +63,7 @@ class StreamProcessor(threading.Thread):
         self.begin = 0
         self.oldtime = 0
         self._colour = colour
+        self.found = False
 
     @property
     def colour(self):
@@ -189,6 +190,7 @@ class StreamProcessor(threading.Thread):
                 print('%.2f, %.2f' % (forward, turn))
             elif area > AUTO_MAX_AREA:
                 drive.move(0, 0)
+                self.found = True
                 print('Close enough, stopping')
                 print('%.2f, %.2f' % (forward, turn))
             else:
@@ -264,12 +266,8 @@ captureThread = ImageCapture()
 
 try:
     print('Press CTRL+C to quit')
-    # Loop indefinitely until we are no longer running
     while running:
-        # Wait for the interval period
-        # You could have the code do other work in here
-        time.sleep(1.0)
-        # Disable all drives
+        time.sleep(1)
 
 except KeyboardInterrupt:
     # CTRL+C exit, disable all drives
