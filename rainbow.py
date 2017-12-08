@@ -28,7 +28,7 @@ global debug
 running = True
 debug = True
 TARGET_COLOUR = 'red'
-MIN_CONTOUR_AREA = 1
+MIN_CONTOUR_AREA = 3
 
 # camera settings
 IMAGE_WIDTH = 320  # Camera image width
@@ -162,7 +162,6 @@ class StreamProcessor(threading.Thread):
                 found_y = cy
                 biggest_contour = contour
         if found_area > MIN_CONTOUR_AREA:
-            print(aspect_ratio)
             ball = [found_x, found_y, found_area]
         else:
             ball = None
@@ -200,7 +199,7 @@ class StreamProcessor(threading.Thread):
                 drive.move(turn, forward)
         else:
             # no ball, turn right
-            drive.move(0.3, 0)
+            drive.move(0.22, 0.12)
             print('No ball')
  
  # drive away from the ball, back to the middle
@@ -209,7 +208,7 @@ class StreamProcessor(threading.Thread):
         if ball:
             x = ball[0]
             area = ball[2]
-            if area < 1000:
+            if area < 1500:
                 drive.move(0, 0)
                 self.retreated = True
                 print('far enough away, stopping')
