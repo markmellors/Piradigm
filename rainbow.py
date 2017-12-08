@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # coding: Latin
 
@@ -8,7 +7,6 @@ import os
 import sys
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
-# import ThunderBorg
 import threading
 import pygame
 from pygame.locals import*
@@ -33,17 +31,17 @@ colour = 'blue'
 MIN_CONTOUR_AREA = 1
 
 # camera settings
-imageWidth = 320  # Camera image width
-imageHeight = 240  # Camera image height
-SCREEN_SIZE = imageHeight, imageWidth
+IMAGE_WIDTH = 320  # Camera image width
+IMAGE_HEIGHT = 240  # Camera image height
+SCREEN_SIZE = IMAGE_HEIGHT, IMAGE_WIDTH
 frameRate = Fraction(5)  # Camera image capture frame rate
 
 # Auto drive settings
-autoMaxPower = 0.5  # Maximum output in automatic mode
-autoMinPower = 0.1  # Minimum output in automatic mode
-autoMinArea = 10  # Smallest target to move towards
-autoMaxArea = 3000  # Largest target to move towards
-autoFullSpeedArea = 50  # Target size at which we use the maximum allowed output
+AUTO_MAX_POWER = 0.5  # Maximum output in automatic mode
+AUTO_MIN_POWER = 0.1  # Minimum output in automatic mode
+AUTO_MIN_AREA = 10  # Smallest target to move towards
+AUTO_MAX_AREA = 3000  # Largest target to move towards
+AUTO_FULL_SPEED_AREA = 50  # Target size at which we use the maximum allowed output
 
 env_vars = [
     ("SDL_FBDEV", "/dev/fb1"),
@@ -52,6 +50,7 @@ env_vars = [
 ]
 for var_name, val in env_vars:
     os.environ[var_name] = val
+
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -99,30 +98,23 @@ class StreamProcessor(threading.Thread):
 
         # Blur the image
         image = cv2.medianBlur(image, 5)
-        #if debug:
-        #    cv2.imshow('blur', image)
-        #    cv2.waitKey(0)
-
         # Convert the image from 'BGR' to HSV colour space
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        #if debug:
-        #    cv2.imshow('cvtColour', image)
-        #    cv2.waitKey(0)
-
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         # method will extract the colour we are interested in (between 0 and 180)
-        # In testing, the Hue value for red is between 95 and 125
-        # Green is between 50 and 75
-        # Blue is between 20 and 35
-        # Yellow is... to be found!
         colour_bounds = {
             'red': ((95, 127, 64), (125, 255, 255)),
             'green': ((50, 127, 64), (75, 255, 255)),
             'blue': ((20, 64, 64), (35, 255, 255)),
             'yellow': ((20, 64, 64), (35, 255, 255)),
         }
-        hsv_lower, hsv_upper = colour_bounds.get(colour, ((40, 0, 0), (180, 255, 255)))
-        imrange = cv2.inRange(image, numpy.array(hsv_lower), numpy.array(hsv_upper))
+        default_colour_bounds = ((40, 0, 0), (180, 255, 255))
+        hsv_lower, hsv_upper = colour_bounds.get(colour, default_colour_bounds)
+        imrange = cv2.inRange(
+            image,
+            numpy.array(hsv_lower),
+            numpy.array(hsv_upper)
+        )
 
         # I used the following code to find the approximate 'hue' of the ball in
         # front of the camera
@@ -132,75 +124,69 @@ class StreamProcessor(threading.Thread):
         # cv2.imshow('range',imrange)
         # cv2.waitKey(0)
 
-        # View the filtered image found by 'imrange'
-        #if debug:
-        #    cv2.imshow('imrange', imrange)
-        #    cv2.waitKey(0)
-
         # Find the contours
-        contourimage, contours, hierarchy = cv2.findContours(imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        #if debug:
-        #    cv2.imshow('contour', contourimage)
-        #    cv2.waitKey(0)
+        contourimage, contours, hierarchy = cv2.findContours(
+            imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
+        )
 
         # Go through each contour
-        foundArea = -1
-        foundX = -1
-        foundY = -1
-        biggestContour = None
+        found_area = -1
+        found_x = -1
+        found_y = -1
+        biggest_contour = None
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
             cx = x + (w / 2)
             cy = y + (h / 2)
             area = w * h
-            if foundArea < area:
-                foundArea = area
-                foundX = cx
-                foundY = cy
-                biggestContour = contour
-        if foundArea > 0:
-            ball = [foundX, foundY, foundArea]
+            if found_area < area:
+                found_area = area
+                found_x = cx
+                found_y = cy
+                biggest_contour = contour
+        if found_area > 0:
+            ball = [found_x, found_y, found_area]
         else:
             ball = None
-        pygame.mouse.set_pos(foundY, foundX)
-        if biggestContour is not None:
-            contour_area = cv2.contourArea(biggestContour)
+        pygame.mouse.set_pos(found_y, found_x)
+        if biggest_contour is not None:
+            contour_area = cv2.contourArea(biggest_contour)
             if contour_area > MIN_CONTOUR_AREA:
                 label = font.render(str(contour_area), 1, (250,250,250))
                 screen.blit(label, (10,30))
             # skate wheel at 100mm has area = 7000, from centre of course is 180, far corner is 5
         pygame.display.update()
         # Set drives or report ball status
-        self.SetSpeedFromBall(ball)
+        self.Set_speed_from_ball(ball)
 
     # Set the motor speed from the ball position
-    def SetSpeedFromBall(self, ball):
+    def Set_speed_from_ball(self, ball):
         forward = 0.0
         turn = 0.0
         if ball:
             x = ball[0]
             area = ball[2]
-            if area < autoMinArea:
+            if area < AUTO_MIN_AREA:
                # drive.move(0, 0)
                 print('Too small / far')
                 print('%.2f, %.2f' % (forward, turn))
-            elif area > autoMaxArea:
-                #drive.move(0, -0.15)
+            elif area > AUTO_MAX_AREA:
+                # drive.move(0, -0.15)
                 print('Close enough, backing off')
                 print('%.2f, %.2f' % (forward, turn))
             else:
-                if area < autoFullSpeedArea:
+                if area < AUTO_FULL_SPEED_AREA:
                     forward = 1.0
                 else:
-                    forward = 1.0 / (area / autoFullSpeedArea)
-                forward *= autoMaxPower - autoMinPower
-                forward += autoMinPower
-                turn = (imageCentreX - x) / imageCentreX / 5
+                    forward = 1.0 / (area / AUTO_FULL_SPEED_AREA)
+                forward *= AUTO_MAX_POWER - AUTO_MIN_POWER
+                forward += AUTO_MIN_POWER
+                turn = (image_centre_x - x) / image_centre_x / 5
                 # drive.move(turn, forward)
                 print('%.2f, %.2f' % (forward, turn))
         else:
             # no ball, turn right
-            #drive.move(0, 0)
+            # drive.move(0, 0)
             print('No ball')
             print('%.2f, %.2f' % (forward, turn))
 
@@ -235,10 +221,10 @@ class ImageCapture(threading.Thread):
 # Startup sequence
 print('Setup camera')
 camera = picamera.PiCamera()
-camera.resolution = (imageWidth, imageHeight)
+camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
 camera.framerate = frameRate
-imageCentreX = imageWidth / 2.0
-imageCentreY = imageHeight / 2.0
+image_centre_x = IMAGE_WIDTH / 2.0
+image_centre_y = IMAGE_HEIGHT / 2.0
 
 print('setup pygame')
 screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -266,11 +252,8 @@ except KeyboardInterrupt:
     # CTRL+C exit, disable all drives
     print('\nUser shutdown')
 
-#why's this net except here?
 except:
-    ## Unexpected error, shut down!
     e = sys.exc_info()[0]
-    print
     print(e)
     print('\nUnexpected error, shutting down!')
 
@@ -282,7 +265,4 @@ processor.join()
 del camera
 drive.move(0, 0)
 drive.stop()
-##TB.MotorsOff()
-##TB.SetLedShowBattery(False)
-##TB.SetLeds(0,0,0)
 print('Program terminated.')
