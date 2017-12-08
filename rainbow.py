@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # coding: Latin
 
@@ -26,7 +27,7 @@ global debug
 
 running = True
 debug = True
-TARGET_COLOUR = 'green'
+TARGET_COLOUR = 'red'
 MIN_CONTOUR_AREA = 1
 
 # camera settings
@@ -38,7 +39,7 @@ frameRate = Fraction(20)  # Camera image capture frame rate
 # Auto drive settings
 AUTO_MAX_POWER = 0.4  # Maximum output in automatic mode
 AUTO_MIN_POWER = 0.1  # Minimum output in automatic mode
-AUTO_MIN_AREA = 5  # Smallest target to move towards
+AUTO_MIN_AREA = 100  # Smallest target to move towards
 AUTO_MAX_AREA = 3000  # Largest target to move towards
 AUTO_FULL_SPEED_AREA = 50  # Target size at which we use the maximum allowed output
 
@@ -64,6 +65,7 @@ class StreamProcessor(threading.Thread):
         self.oldtime = 0
         self._colour = colour
         self.found = False
+        self.retreated = False
 
     @property
     def colour(self):
@@ -78,6 +80,7 @@ class StreamProcessor(threading.Thread):
         # This method runs in a separate thread
         while not self.terminated:
             # Wait for an image to be written to the stream
+            #if self.found = True
             if self.event.wait(1):
                 try:
                     # Read the image and do some processing on it
@@ -153,12 +156,14 @@ class StreamProcessor(threading.Thread):
             cx = x + (w / 2)
             cy = y + (h / 2)
             area = w * h
-            if found_area < area:
+            aspect_ratio = float(h)/w
+            if found_area < area and aspect_ratio < 2 and aspect_ratio > 0.5:
                 found_area = area
                 found_x = cx
                 found_y = cy
                 biggest_contour = contour
         if found_area > MIN_CONTOUR_AREA:
+            print(aspect_ratio)
             ball = [found_x, found_y, found_area]
         else:
             ball = None
@@ -173,8 +178,10 @@ class StreamProcessor(threading.Thread):
             # from centre of course is 180, far corner is 5
         pygame.display.update()
         # Set drives or report ball status
-        self.drive_away_from_ball(ball)
-        #self.drive_toward_ball(ball)
+        if not self.found:
+            self.drive_toward_ball(ball)
+        elif not self.retreated:
+            self.drive_away_from_ball(ball)
 
 
 
@@ -205,7 +212,7 @@ class StreamProcessor(threading.Thread):
             area = ball[2]
             if area < 1000:
                 drive.move(0, 0)
-                self.found = True
+                self.retreated = True
                 print('far enough away, stopping')
             else:
                 forward = -0.15
