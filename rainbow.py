@@ -23,11 +23,10 @@ global running
 global camera
 global processor
 global debug
-global colour
 
 running = True
 debug = True
-colour = 'green'
+TARGET_COLOUR = 'green'
 MIN_CONTOUR_AREA = 1
 
 # camera settings
@@ -54,7 +53,7 @@ for var_name, val in env_vars:
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
-    def __init__(self, screen):
+    def __init__(self, screen, colour="any"):
         super(StreamProcessor, self).__init__()
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
@@ -63,6 +62,16 @@ class StreamProcessor(threading.Thread):
         self.start()
         self.begin = 0
         self.oldtime = 0
+        self._colour = colour
+
+    @property
+    def colour(self):
+        """Set the target colour property"""
+        return self._colour
+
+    @colour.setter
+    def colour(self, colour):
+        self._colour = colour
 
     def run(self):
         # This method runs in a separate thread
@@ -72,7 +81,7 @@ class StreamProcessor(threading.Thread):
                 try:
                     # Read the image and do some processing on it
                     self.stream.seek(0)
-                    self.ProcessImage(self.stream.array, colour, screen)
+                    self.process_image(self.stream.array, screen)
                 finally:
                     # Reset the stream and event
                     self.stream.seek(0)
@@ -80,19 +89,21 @@ class StreamProcessor(threading.Thread):
                     self.event.clear()
 
     # Image processing function
-    def ProcessImage(self, image, colour, screen):
+    def process_image(self, image, screen):
         # crop image to speed up processing and avoid false positives
         image = image[60:180, 0:320]
         # View the original image seen by the camera.
         if debug:
-            frame = pygame.surfarray.make_surface(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+            frame = pygame.surfarray.make_surface(
+                cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            )
             screen.fill([0, 0, 0])
             font = pygame.font.Font(None, 24)
             screen.blit(frame, (0, 0))
             timenow = time.clock()
             timestep = timenow - self.oldtime
-            label = font.render(str(timestep), 1, (250,250,250))
-            screen.blit(label, (10,10))
+            label = font.render(str(timestep), 1, (250, 250, 250))
+            screen.blit(label, (10, 10))
             pygame.display.update()
             self.oldtime = timenow
 
@@ -109,7 +120,9 @@ class StreamProcessor(threading.Thread):
             'yellow': ((90, 66, 80), (101, 255, 200)),
         }
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
-        hsv_lower, hsv_upper = colour_bounds.get(colour, default_colour_bounds)
+        hsv_lower, hsv_upper = colour_bounds.get(
+            self.colour, default_colour_bounds
+        )
         imrange = cv2.inRange(
             image,
             numpy.array(hsv_lower),
@@ -153,17 +166,18 @@ class StreamProcessor(threading.Thread):
             contour_area = cv2.contourArea(biggest_contour)
             if contour_area > MIN_CONTOUR_AREA:
                 font = pygame.font.Font(None, 24)
-                label = font.render(str(contour_area), 1, (250,250,250))
-                screen.blit(label, (10,30))
-            # skate wheel at 100mm has area = 7000, from centre of course is 180, far corner is 5
+                label = font.render(str(contour_area), 1, (250, 250, 250))
+                screen.blit(label, (10, 30))
+            # skate wheel at 100mm has area = 7000,
+            # from centre of course is 180, far corner is 5
         pygame.display.update()
         # Set drives or report ball status
-        self.Set_speed_from_ball(ball)
+        self.set_speed_from_ball(ball)
 
-        
+
 
     # Set the motor speed from the ball position
-    def Set_speed_from_ball(self, ball):
+    def set_speed_from_ball(self, ball):
         forward = 0.0
         turn = 0.0
         if ball:
@@ -204,7 +218,11 @@ class ImageCapture(threading.Thread):
         global camera
         global processor
         print('Start the stream using the video port')
-        camera.capture_sequence(self.TriggerStream(), format='bgr', use_video_port=True)
+        camera.capture_sequence(
+            self.TriggerStream(),
+            format='bgr',
+            use_video_port=True
+        )
         print('Terminating camera processing...')
         processor.terminated = True
         processor.join()
@@ -234,7 +252,9 @@ screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.init()
 
 print('Setup the stream processing thread')
-processor = StreamProcessor(screen)
+processor = StreamProcessor(screen, colour=TARGET_COLOUR)
+# To switch target colour" on the fly, use:
+# processor.color = "blue"
 
 drive = Drivetrain(timeout=120)
 
