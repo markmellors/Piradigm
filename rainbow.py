@@ -29,7 +29,7 @@ global colour
 
 running = True
 debug = True
-colour = 'blue'
+colour = 'green'
 MIN_CONTOUR_AREA = 1
 
 # camera settings
@@ -116,10 +116,10 @@ class StreamProcessor(threading.Thread):
         # Blue is between 20 and 35
         # Yellow is... to be found!
         colour_bounds = {
-            'red': ((95, 127, 64), (125, 255, 255)),
-            'green': ((50, 127, 64), (75, 255, 255)),
-            'blue': ((20, 64, 64), (35, 255, 255)),
-            'yellow': ((20, 64, 64), (35, 255, 255)),
+            'red': ((101, 65, 80), (125, 255, 200)),
+            'green': ((46, 65, 80), (90, 255, 200)),
+            'blue': ((1, 65, 80), (46, 255, 200)),
+            'yellow': ((90, 66, 80), (101, 255, 200)),
         }
         hsv_lower, hsv_upper = colour_bounds.get(colour, ((40, 0, 0), (180, 255, 255)))
         imrange = cv2.inRange(image, numpy.array(hsv_lower), numpy.array(hsv_upper))
@@ -165,7 +165,8 @@ class StreamProcessor(threading.Thread):
         pygame.mouse.set_pos(foundY, foundX)
         if biggestContour is not None:
             contour_area = cv2.contourArea(biggestContour)
-            if contour_area < MIN_CONTOUR_AREA:
+            if contour_area > MIN_CONTOUR_AREA:
+                font = pygame.font.Font(None, 24)
                 label = font.render(str(contour_area), 1, (250,250,250))
                 screen.blit(label, (10,30))
             # skate wheel at 100mm has area = 7000, from centre of course is 180, far corner is 5
