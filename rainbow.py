@@ -80,7 +80,6 @@ class StreamProcessor(threading.Thread):
         # This method runs in a separate thread
         while not self.terminated:
             # Wait for an image to be written to the stream
-            #if self.found = True
             if self.event.wait(1):
                 try:
                     # Read the image and do some processing on it
@@ -282,7 +281,13 @@ captureThread = ImageCapture()
 try:
     print('Press CTRL+C to quit')
     while running:
-        time.sleep(1)
+        time.sleep(0.1)
+        if processor.retreated and processor.colour is not "green":
+            if processor.colour is "yellow": processor.colour = "green"
+            if processor.colour is "blue": processor.colour = "yellow"
+            if processor.colour is "red": processor.colour = "blue"
+            processor.found = False
+            processor.retreated = False
 
 except KeyboardInterrupt:
     # CTRL+C exit, disable all drives
