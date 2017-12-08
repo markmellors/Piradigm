@@ -33,12 +33,12 @@ MIN_CONTOUR_AREA = 1
 IMAGE_WIDTH = 320  # Camera image width
 IMAGE_HEIGHT = 240  # Camera image height
 SCREEN_SIZE = IMAGE_HEIGHT, IMAGE_WIDTH
-frameRate = Fraction(5)  # Camera image capture frame rate
+frameRate = Fraction(20)  # Camera image capture frame rate
 
 # Auto drive settings
-AUTO_MAX_POWER = 0.5  # Maximum output in automatic mode
+AUTO_MAX_POWER = 0.4  # Maximum output in automatic mode
 AUTO_MIN_POWER = 0.1  # Minimum output in automatic mode
-AUTO_MIN_AREA = 10  # Smallest target to move towards
+AUTO_MIN_AREA = 5  # Smallest target to move towards
 AUTO_MAX_AREA = 3000  # Largest target to move towards
 AUTO_FULL_SPEED_AREA = 50  # Target size at which we use the maximum allowed output
 
@@ -157,7 +157,7 @@ class StreamProcessor(threading.Thread):
                 found_x = cx
                 found_y = cy
                 biggest_contour = contour
-        if found_area > 0:
+        if found_area > 2:
             ball = [found_x, found_y, found_area]
         else:
             ball = None
@@ -174,6 +174,8 @@ class StreamProcessor(threading.Thread):
         # Set drives or report ball status
         self.set_speed_from_ball(ball)
 
+
+
     # Set the motor speed from the ball position
     def set_speed_from_ball(self, ball):
         forward = 0.0
@@ -182,12 +184,12 @@ class StreamProcessor(threading.Thread):
             x = ball[0]
             area = ball[2]
             if area < AUTO_MIN_AREA:
-                # drive.move(0, 0)
+                drive.move(0.3, 0)
                 print('Too small / far')
                 print('%.2f, %.2f' % (forward, turn))
             elif area > AUTO_MAX_AREA:
-                # drive.move(0, -0.15)
-                print('Close enough, backing off')
+                drive.move(0, 0)
+                print('Close enough, stopping')
                 print('%.2f, %.2f' % (forward, turn))
             else:
                 if area < AUTO_FULL_SPEED_AREA:
@@ -196,12 +198,12 @@ class StreamProcessor(threading.Thread):
                     forward = 1.0 / (area / AUTO_FULL_SPEED_AREA)
                 forward *= AUTO_MAX_POWER - AUTO_MIN_POWER
                 forward += AUTO_MIN_POWER
-                turn = (image_centre_x - x) / image_centre_x / 5
-                # drive.move(turn, forward)
+                turn = (image_centre_x - x) / image_centre_x / 3
+                drive.move(turn, forward)
                 print('%.2f, %.2f' % (forward, turn))
         else:
             # no ball, turn right
-            # drive.move(0, 0)
+            drive.move(0.3, 0)
             print('No ball')
             print('%.2f, %.2f' % (forward, turn))
 
