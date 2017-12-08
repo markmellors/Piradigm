@@ -165,7 +165,7 @@ class StreamProcessor(threading.Thread):
         pygame.mouse.set_pos(foundY, foundX)
         if biggestContour is not None:
             contour_area = cv2.contourArea(biggestContour)
-            if contour_area < MIN_CONTOUR_AREA:
+            if contour_area > MIN_CONTOUR_AREA:
                 label = font.render(str(contour_area), 1, (250,250,250))
                 screen.blit(label, (10,30))
             # skate wheel at 100mm has area = 7000, from centre of course is 180, far corner is 5
