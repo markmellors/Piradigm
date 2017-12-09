@@ -15,6 +15,7 @@ import picamera
 import picamera.array
 import cv2
 import numpy
+import random
 from fractions import Fraction
 from drivetrain import Drivetrain
 print('Libraries loaded')
@@ -66,6 +67,7 @@ class StreamProcessor(threading.Thread):
         self._colour = colour
         self.found = False
         self.retreated = False
+        self.cycle = 0
 
     @property
     def colour(self):
@@ -94,7 +96,7 @@ class StreamProcessor(threading.Thread):
     # Image processing function
     def process_image(self, image, screen):
         # crop image to speed up processing and avoid false positives
-        image = image[60:180, 0:320]
+        image = image[80:180, 0:320]
         # View the original image seen by the camera.
         if debug:
             frame = pygame.surfarray.make_surface(
@@ -194,12 +196,19 @@ class StreamProcessor(threading.Thread):
                 self.found = True
                 print('Close enough, stopping')
             else:
-                forward = 0.12
-                turn = (image_centre_x - x) / image_centre_x / 3
+                print("ball")
+                # follow 0.2, /2 good
+                forward = 0.18
+                turn = float(image_centre_x - x) / image_centre_x / 2.5
                 drive.move(turn, forward)
         else:
-            # no ball, turn right
-            drive.move(0.22, 0.12)
+            # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
+            if self.cycle > 5:
+                drive.move(0.6, 0)
+                self.cycle = 0
+            else:
+                drive.move(0, 0)
+                self.cycle += 1
             print('No ball')
  
  # drive away from the ball, back to the middle
@@ -213,8 +222,8 @@ class StreamProcessor(threading.Thread):
                 self.retreated = True
                 print('far enough away, stopping')
             else:
-                forward = -0.15
-                turn = (image_centre_x - x) / image_centre_x / 3
+                forward = -0.2
+                turn = (image_centre_x - x) / image_centre_x / 2
                 drive.move(turn, forward)
         else:
             #ball lost, stop
