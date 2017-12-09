@@ -30,8 +30,8 @@ running = True
 debug = True
 TARGET_COLOUR = 'red'
 MIN_CONTOUR_AREA = 3
-AREA_P = 1
-AREA_D = 1
+AREA_P = 0.0001
+AREA_D = 0.00003
 TURN_P = 0.5
 TURN_D = 0.15
 
@@ -72,8 +72,8 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.last_area = 0
-        self.last_error = 0
+        self.last_a_error = 0
+        self.last_t_error = 0
 
     @property
     def colour(self):
@@ -202,16 +202,20 @@ class StreamProcessor(threading.Thread):
                 self.found = True
                 print('Close enough, stopping')
             else:
-                # follow 0.2, /2 good           
-                forward = 0.18
-                error  = (image_centre_x - x) / image_centre_x
-                turn = TURN_P * error
-                if self.last_error is not 0:
+                # follow 0.2, /2 good
+                a_error = AUTO_MAX_AREA - area
+                forward = AREA_P * a_error
+                if self.last_a_error is not 0:
+                    forward -= AREA_D * (self.last_a_error - a_error)
+                t_error  = (image_centre_x - x) / image_centre_x
+                turn = TURN_P * t_error
+                if self.last_t_error is not 0:
                     #if there was a real error last time then do some damping
-                    turn -= TURN_D *(self.last_error - error)
+                    turn -= TURN_D *(self.last_t_error - t_error)
                 drive.move(turn, forward)
-                self.last_error = error
-                print('ball, %s', error)
+                self.last_t_error = t_error
+                self.last_a_error = a_error
+                print('ball, %s', t_error)
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 5:
@@ -221,7 +225,9 @@ class StreamProcessor(threading.Thread):
                 drive.move(0, 0)
                 self.cycle += 1
             print('No ball')
-            self.last_error=0
+            #reset PID errors
+            self.last_t_error = 0
+            self.last_a_error=0
  
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball):
@@ -234,11 +240,11 @@ class StreamProcessor(threading.Thread):
                 self.retreated = True
                 print('far enough away, stopping')
             else:
-                forward = -0.2
-                error = (image_centre_x - x) / image_centre_x
-                turn = TURN_P * error - TURN_D *(self.last_error - error)
+                forward = -0.25
+                t_error = (image_centre_x - x) / image_centre_x
+                turn = TURN_P * t_error - TURN_D *(self.last_t_error - t_error)
                 drive.move(turn, forward)
-                self.last_error = error
+                self.last_t_error = t_error
         else:
             #ball lost, stop
             self.found = False
