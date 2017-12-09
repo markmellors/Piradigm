@@ -6,7 +6,7 @@ from approxeng.input.selectbinder import ControllerResource
 import math
 import time
 import logging
-# from drivetrain import Drivetrain
+from drivetrain import Drivetrain
 
 logger = logging.getLogger('piradigm.' + __name__)
 
@@ -20,7 +20,7 @@ class RC():
         self.exponential = 2
         self.name = "RC"
         self.killed = False
-        # self.drive = Drivetrain(timeout=self.timeout)
+        self.drive = Drivetrain(timeout=self.timeout)
 
     def run(self):
         logger.info("running RC challenge")
@@ -33,7 +33,7 @@ class RC():
                         logger.debug("joystick L/R: %s, %s" % (rx, ry))
                         rx = self.exp(rx, self.exponential)
                         ry = self.exp(ry, self.exponential)
-                        # self.drive.move(rx, ry)
+                        self.drive.move(rx, ry)
                         time.sleep(0.05)
 
                 # Joystick disconnected...
@@ -48,7 +48,7 @@ class RC():
             logger.info("killed from keyboard")
         finally:
             logger.info("stopping")
-            # self.drive.stop()
+            self.drive.stop()
             logger.info("bye")
 
     @property
