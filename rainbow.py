@@ -30,6 +30,10 @@ running = True
 debug = True
 TARGET_COLOUR = 'red'
 MIN_CONTOUR_AREA = 3
+AREA_P = 1
+AREA_D = 1
+TURN_P = 0.5
+TURN_D = 0.15
 
 # camera settings
 IMAGE_WIDTH = 320  # Camera image width
@@ -68,6 +72,8 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
+        self.last_area = 0
+        self.last_error = 0
 
     @property
     def colour(self):
@@ -196,11 +202,16 @@ class StreamProcessor(threading.Thread):
                 self.found = True
                 print('Close enough, stopping')
             else:
-                print("ball")
-                # follow 0.2, /2 good
+                # follow 0.2, /2 good           
                 forward = 0.18
-                turn = float(image_centre_x - x) / image_centre_x / 2.5
+                error  = (image_centre_x - x) / image_centre_x
+                turn = TURN_P * error
+                if self.last_error is not 0:
+                    #if there was a real error last time then do some damping
+                    turn -= TURN_D *(self.last_error - error)
                 drive.move(turn, forward)
+                self.last_error = error
+                print('ball, %s', error)
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 5:
@@ -210,6 +221,7 @@ class StreamProcessor(threading.Thread):
                 drive.move(0, 0)
                 self.cycle += 1
             print('No ball')
+            self.last_error=0
  
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball):
@@ -223,8 +235,10 @@ class StreamProcessor(threading.Thread):
                 print('far enough away, stopping')
             else:
                 forward = -0.2
-                turn = (image_centre_x - x) / image_centre_x / 2
+                error = (image_centre_x - x) / image_centre_x
+                turn = TURN_P * error - TURN_D *(self.last_error - error)
                 drive.move(turn, forward)
+                self.last_error = error
         else:
             #ball lost, stop
             self.found = False
