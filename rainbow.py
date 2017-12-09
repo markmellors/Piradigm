@@ -117,10 +117,10 @@ class StreamProcessor(threading.Thread):
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         # method will extract the colour we are interested in (between 0 and 180)
         colour_bounds = {
-            'red': ((101, 65, 80), (125, 255, 200)),
+            'red': ((105, 65, 80), (125, 255, 200)),
             'green': ((46, 65, 80), (90, 255, 200)),
             'blue': ((1, 65, 80), (46, 255, 200)),
-            'yellow': ((90, 66, 80), (101, 255, 200)),
+            'yellow': ((90, 66, 80), (105, 255, 200)),
         }
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         hsv_lower, hsv_upper = colour_bounds.get(
