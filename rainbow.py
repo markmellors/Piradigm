@@ -15,7 +15,6 @@ import picamera
 import picamera.array
 import cv2
 import numpy
-import random
 from fractions import Fraction
 from drivetrain import Drivetrain
 print('Libraries loaded')
@@ -31,21 +30,21 @@ debug = True
 TARGET_COLOUR = 'red'
 MIN_CONTOUR_AREA = 3
 AREA_P = 0.0001
-AREA_D = 0.00003
+AREA_D = 0.0002
 TURN_P = 0.5
-TURN_D = 0.15
+TURN_D = 0.2
 
 # camera settings
 IMAGE_WIDTH = 320  # Camera image width
 IMAGE_HEIGHT = 240  # Camera image height
 SCREEN_SIZE = IMAGE_HEIGHT, IMAGE_WIDTH
-frameRate = Fraction(20)  # Camera image capture frame rate
+frameRate = Fraction(36)  # Camera image capture frame rate
 
 # Auto drive settings
 AUTO_MAX_POWER = 0.4  # Maximum output in automatic mode
 AUTO_MIN_POWER = 0.1  # Minimum output in automatic mode
 AUTO_MIN_AREA = 100  # Smallest target to move towards
-AUTO_MAX_AREA = 3000  # Largest target to move towards
+AUTO_MAX_AREA = 4000  # Largest target to move towards
 AUTO_FULL_SPEED_AREA = 50  # Target size at which we use the maximum allowed output
 
 env_vars = [
@@ -140,14 +139,6 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_upper)
         )
 
-        # I used the following code to find the approximate 'hue' of the ball in
-        # front of the camera
-        # for crange in range(0,170,10):
-        # imrange = cv2.inRange(image, numpy.array((crange, 64, 64)), numpy.array((crange+10, 255, 255)))
-        # print(crange)
-        # cv2.imshow('range',imrange)
-        # cv2.waitKey(0)
-
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(
             imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
@@ -235,7 +226,7 @@ class StreamProcessor(threading.Thread):
         if ball:
             x = ball[0]
             area = ball[2]
-            if area < 1500:
+            if area < 1000:
                 drive.move(0, 0)
                 self.retreated = True
                 print('far enough away, stopping')
