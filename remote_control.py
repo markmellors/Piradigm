@@ -17,7 +17,7 @@ class RC(BaseChallenge):
         super(RC, self).__init__(name='RC', timeout=timeout, logger=logger)
 
     def run(self):
-        self.logger.info("running RC challenge")
+        self.logger.info("running %s challenge" % self.name)
         try:
             try:
                 with ControllerResource() as joystick:
