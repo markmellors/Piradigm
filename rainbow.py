@@ -16,29 +16,20 @@ import picamera.array
 import cv2
 import numpy
 from fractions import Fraction
-from drivetrain import Drivetrain
+from base_challenge import BaseChallenge
 
 logging.config.fileConfig('logging.ini')
 logger = logging.getLogger('piradigm.' + __name__)
 
 logger.debug('Libraries loaded')
 
-# Global values
-global running
-global camera
-global processor
-global debug
-
-running = True
-debug = True
-TARGET_COLOUR = 'red'
 MIN_CONTOUR_AREA = 3
 
 # camera settings
 IMAGE_WIDTH = 320  # Camera image width
 IMAGE_HEIGHT = 240  # Camera image height
 SCREEN_SIZE = IMAGE_HEIGHT, IMAGE_WIDTH
-frameRate = Fraction(20)  # Camera image capture frame rate
+frame_rate = Fraction(20)  # Camera image capture frame rate
 
 # Auto drive settings
 AUTO_MAX_POWER = 0.4  # Maximum output in automatic mode
@@ -47,29 +38,20 @@ AUTO_MIN_AREA = 100  # Smallest target to move towards
 AUTO_MAX_AREA = 3000  # Largest target to move towards
 AUTO_FULL_SPEED_AREA = 50  # Target size at which we use the maximum allowed output
 
-env_vars = [
-    ("SDL_FBDEV", "/dev/fb1"),
-    ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
-    ("SDL_MOUSEDRV", "TSLIB"),
-]
-for var_name, val in env_vars:
-    os.environ[var_name] = val
-
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
-    def __init__(self, screen, colour="any"):
+    def __init__(self, screen=None, colour="any"):
         super(StreamProcessor, self).__init__()
+        self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
         time.sleep(1)
-        self.start()
-        self.begin = 0
-        self.oldtime = 0
         self._colour = colour
         self.found = False
         self.retreated = False
+        self.start()
 
     @property
     def colour(self):
@@ -99,21 +81,6 @@ class StreamProcessor(threading.Thread):
     def process_image(self, image, screen):
         # crop image to speed up processing and avoid false positives
         image = image[60:180, 0:320]
-        # View the original image seen by the camera.
-        if debug:
-            frame = pygame.surfarray.make_surface(
-                cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            )
-            screen.fill([0, 0, 0])
-            font = pygame.font.Font(None, 24)
-            screen.blit(frame, (0, 0))
-            timenow = time.clock()
-            timestep = timenow - self.oldtime
-            label = font.render(str(timestep), 1, (250, 250, 250))
-            screen.blit(label, (10, 10))
-            pygame.display.update()
-            self.oldtime = timenow
-
         # Blur the image
         image = cv2.medianBlur(image, 5)
         # Convert the image from 'BGR' to HSV colour space
@@ -135,14 +102,6 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
-
-        # I used the following code to find the approximate 'hue' of the ball in
-        # front of the camera
-        # for crange in range(0,170,10):
-        # imrange = cv2.inRange(image, numpy.array((crange, 64, 64)), numpy.array((crange+10, 255, 255)))
-        # print(crange)
-        # cv2.imshow('range',imrange)
-        # cv2.waitKey(0)
 
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(
@@ -172,13 +131,13 @@ class StreamProcessor(threading.Thread):
         pygame.mouse.set_pos(found_y, found_x)
         if biggest_contour is not None:
             contour_area = cv2.contourArea(biggest_contour)
-            if contour_area > MIN_CONTOUR_AREA:
+            if self.screen and contour_area > MIN_CONTOUR_AREA:
                 font = pygame.font.Font(None, 24)
                 label = font.render(str(contour_area), 1, (250, 250, 250))
-                screen.blit(label, (10, 30))
-            # skate wheel at 100mm has area = 7000,
-            # from centre of course is 180, far corner is 5
-        pygame.display.update()
+                self.screen.blit(label, (10, 30))
+                # skate wheel at 100mm has area = 7000,
+                # from centre of course is 180, far corner is 5
+                pygame.display.update()
         # Set drives or report ball status
         if not self.found:
             self.drive_toward_ball(ball)
@@ -186,6 +145,9 @@ class StreamProcessor(threading.Thread):
             self.drive_away_from_ball(ball)
 
 
+    # TODO: Move this motor control logic out of the stream processor
+    # as it is challenge logic, not stream processor logic
+    # (the clue is that the streamprocessor needs a drivetrain)
 
     # Set the motor speed from the ball position
     def drive_toward_ball(self, ball):
@@ -199,7 +161,7 @@ class StreamProcessor(threading.Thread):
                 logger.info('Close enough, stopping')
             else:
                 forward = 0.12
-                turn = (image_centre_x - x) / image_centre_x / 3
+                turn = (self.image_centre_x - x) / self.image_centre_x / 3
                 drive.move(turn, forward)
         else:
             # no ball, turn right
@@ -218,10 +180,10 @@ class StreamProcessor(threading.Thread):
                 logger.info('far enough away, stopping')
             else:
                 forward = -0.15
-                turn = (image_centre_x - x) / image_centre_x / 3
+                turn = (self.image_centre_x - x) / self.image_centre_x / 3
                 drive.move(turn, forward)
         else:
-            #ball lost, stop
+            # ball lost, stop
             self.found = False
             drive.move(0, 0)
             logger.info('ball lost')
@@ -229,87 +191,91 @@ class StreamProcessor(threading.Thread):
 
 # Image capture thread
 class ImageCapture(threading.Thread):
-    def __init__(self):
+    def __init__(self, camera=None, processor=None):
         super(ImageCapture, self).__init__()
+        self.terminated = False
+        self.camera = camera
+        self.processor = processor
         self.start()
 
     def run(self):
-        global camera
-        global processor
         logger.debug('Start the stream using the video port')
-        camera.capture_sequence(
-            self.TriggerStream(),
+        self.camera.capture_sequence(
+            self.trigger_stream(),
             format='bgr',
             use_video_port=True
         )
         logger.debug('Terminating camera processing...')
-        processor.terminated = True
-        processor.join()
+        self.processor.terminated = True
+        self.processor.join()
         logger.debug('Processing terminated.')
 
     # Stream delegation loop
-    def TriggerStream(self):
-        global running
-        while running:
-            if processor.event.is_set():
+    def trigger_stream(self):
+        while not self.terminated:
+            if self.processor.event.is_set():
                 time.sleep(0.01)
             else:
-                yield processor.stream
-                processor.event.set()
+                yield self.processor.stream
+                self.processor.event.set()
 
 
-class Rainbow():
+class Rainbow(BaseChallenge):
     """Rainbow challenge class"""
 
-    # Startup sequence
-    logger.info('Setup camera')
-    camera = picamera.PiCamera()
-    camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
-    camera.framerate = frameRate
-    image_centre_x = IMAGE_WIDTH / 2.0
-    image_centre_y = IMAGE_HEIGHT / 2.0
+    def __init__(self, timeout=120, screen=None):
+        time.sleep(0.01)
+        super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
 
-    logger.info('setup pygame')
-    screen = pygame.display.set_mode(SCREEN_SIZE)
-    pygame.init()
+    def run(self):
+        # Startup sequence
+        logger.info('Setup camera')
+        self.camera = picamera.PiCamera()
+        self.camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
+        self.camera.framerate = frame_rate
+        self.image_centre_x = IMAGE_WIDTH / 2.0
+        self.image_centre_y = IMAGE_HEIGHT / 2.0
 
-    logger.info('Setup the stream processing thread')
-    processor = StreamProcessor(screen, colour=TARGET_COLOUR)
-    # To switch target colour" on the fly, use:
-    # processor.colour = "blue"
+        logger.info('Setup the stream processing thread')
+        self.processor = StreamProcessor(
+            screen=self.screen,
+            colour=TARGET_COLOUR
+        )
+        # To switch target colour" on the fly, use:
+        # self.processor.colour = "blue"
 
-    drive = Drivetrain(timeout=120)
+        logger.info('Wait ...')
+        time.sleep(2)
+        logger.info('Setting up image capture thread')
+        self.capture_thread = ImageCapture(
+            camera=self.camera,
+            processor=self.processor
+        )
 
-    logger.info('Wait ...')
-    time.sleep(2)
-    captureThread = ImageCapture()
+        try:
+            while not self.should_die:
+                time.sleep(0.1)
+                # TODO: Tidy this
+                if self.processor.retreated and self.processor.colour is not "green":
+                    if self.processor.colour is "yellow": self.processor.colour = "green"
+                    if self.processor.colour is "blue": self.processor.colour = "yellow"
+                    if self.processor.colour is "red": self.processor.colour = "blue"
+                    self.processor.found = False
+                    self.processor.retreated = False
 
-    try:
-        logger.info('Press CTRL+C to quit')
-        while running:
-            time.sleep(0.1)
-            if processor.retreated and processor.colour is not "green":
-                if processor.colour is "yellow": processor.colour = "green"
-                if processor.colour is "blue": processor.colour = "yellow"
-                if processor.colour is "red": processor.colour = "blue"
-                processor.found = False
-                processor.retreated = False
+        except KeyboardInterrupt:
+            # CTRL+C exit, disable all drives
+            self.logger.info("killed from keyboard")
+        finally:
+            self.logger.info("stopping")
+            self.drive.stop()
+            self.logger.info("bye")
 
-    except KeyboardInterrupt:
-        # CTRL+C exit, disable all drives
-        logger.info('\nUser shutdown')
-
-    except:
-        e = sys.exc_info()[0]
-        logger.info(e)
-        logger.info('\nUnexpected error, shutting down!')
-
-    # Tell each thread to stop, and wait for them to end
-    running = False
-    captureThread.join()
-    processor.terminated = True
-    processor.join()
-    del camera
-    drive.move(0, 0)
-    drive.stop()
-    logger.info('Program terminated.')
+        # Tell each thread to stop, and wait for them to end
+        self.capture_thread.terminated = True
+        self.capture_thread.join()
+        self.processor.terminated = True
+        self.processor.join()
+        self.camera = None
+        self.drive.move(0, 0)
+        self.drive.stop()
