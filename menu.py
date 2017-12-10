@@ -9,6 +9,7 @@ Options:
   --timeout=<seconds>  Challenge timeout time in seconds. [default: 120].
 """
 import logging
+import logging.config
 import os
 import sys
 import time
@@ -35,11 +36,8 @@ CREAM = 254, 255, 250
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
 
-logging.basicConfig(
-    filename='piradigm.log',
-    level=logging.DEBUG,
-    format='%(asctime)s %(message)s'
-)
+logging.config.fileConfig('logging.ini')
+logger = logging.getLogger('piradigm')
 
 
 class Menu():
@@ -57,11 +55,11 @@ class Menu():
 
     def launch_challenge(self, new_challenge):
         """launch requested challenge thread"""
-        logging.info("launching new challenge")
+        logger.info("launching new challenge")
         self.challenge_thread = threading.Thread(target=new_challenge.run)
         self.challenge_thread.daemon = True
         self.challenge_thread.start()
-        logging.info("challenge launched - thread count: %d" % threading.active_count())
+        logger.info("challenge launched - thread count: %d" % threading.active_count())
         return new_challenge
 
     def stop_threads(self, current_challenge):
@@ -70,10 +68,10 @@ class Menu():
             current_challenge.stop()
             self.challenge_thread.join()
 
-        logging.info("challenge stopped - thread count: %d" % threading.active_count())
+        logger.info("challenge stopped - thread count: %d" % threading.active_count())
 
         current_challenge = None
-        logging.info("stopped running challenge")
+        logger.info("stopped running challenge")
 
     def setup_menu(self, surface, background_colour=BLUE):
         """Set up the menu on the specified surface"""
@@ -107,7 +105,7 @@ class Menu():
     def make_button(self, index, text, xpo, ypo, height, width, colour):
         """Make a text button at the specified x, y coordinates
         with the specified colour. Also adds a border (not configurable)"""
-        logging.debug("Making button with text '%s' at (%d, %d)", text, xpo, ypo)
+        logger.debug("Making button with text '%s' at (%d, %d)", text, xpo, ypo)
         font = pygame.font.Font(None, 24)
         label = font.render(str(text), 1, (colour))
         self.screen.blit(label, (xpo, ypo))
@@ -119,12 +117,12 @@ class Menu():
 
     def on_click(self, mousepos):
         """Click handling function to check mouse location"""
-        logging.debug("on_click: %s", mousepos)
+        logger.debug("on_click: %s", mousepos)
         # Iterate through our list of buttons and get the first one
         # whose rect returns True for pygame.Rect.collidepoint()
         try:
             button = next(obj for obj in self.buttons if obj['rect'].collidepoint(mousepos))
-            logging.info(
+            logger.info(
                 "%s clicked - launching %d",
                 button["label"], button["index"]
             )
@@ -132,7 +130,7 @@ class Menu():
             new_challenge = self.button_handler(button['index'])
             return new_challenge
         except StopIteration:
-            logging.debug(
+            logger.debug(
                 "Click at pos %s did not interact with any button",
                 mousepos
             )
@@ -141,29 +139,29 @@ class Menu():
     def button_handler(self, number):
         """Button action handler. Currently differentiates between
         exit, rc and other buttons only"""
-        logging.debug("button %d pressed", number)
+        logger.debug("button %d pressed", number)
         time.sleep(0.01)
         if number < 7:
-            logging.info("other selected")
+            logger.info("other selected")
             return "Other"
         elif number == 7:
-            logging.info("launching RC challenge")
+            logger.info("launching RC challenge")
             new_challenge = RC(timeout=self.timeout)
             return new_challenge
         elif number == 8:
-            logging.info("Exit button pressed. Exiting now.")
+            logger.info("Exit button pressed. Exiting now.")
             return "Exit"
         else:
             return None
 
     def run(self):
-        logging.info("Initialising pygame")
+        logger.info("Initialising pygame")
         pygame.init()
         clock = pygame.time.Clock()
-        logging.info("Hiding Cursor")
+        logger.info("Hiding Cursor")
         pygame.mouse.set_visible(False)
 
-        logging.info("Setting screen size to %s", SCREEN_SIZE)
+        logger.info("Setting screen size to %s", SCREEN_SIZE)
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
         self.buttons = self.setup_menu(self.screen)
         running_challenge = None
@@ -174,22 +172,22 @@ class Menu():
             pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    logging.debug("screen pressed: %s", event.pos)
+                    logger.debug("screen pressed: %s", event.pos)
                     pos = (event.pos[0], event.pos[1])
                     # for debugging purposes - adds a small dot
                     # where the screen is pressed
                     # pygame.draw.circle(screen, WHITE, pos, 2, 0)
                     requested_challenge = self.on_click(pos)
-                    logging.info("requested challenge is %s", requested_challenge)
+                    logger.info("requested challenge is %s", requested_challenge)
                     if requested_challenge:
-                        logging.info("about to stop a thread if there's one running")
+                        logger.info("about to stop a thread if there's one running")
                         if running_challenge:
-                            logging.info("about to stop thread")
+                            logger.info("about to stop thread")
                             self.stop_threads(running_challenge)
 
                     if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
                         running_challenge = self.launch_challenge(requested_challenge)
-                        logging.info("challenge %s launched", running_challenge.name)
+                        logger.info("challenge %s launched", running_challenge.name)
 
                     if requested_challenge == "Exit":
                         sys.exit()
