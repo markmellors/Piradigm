@@ -23,21 +23,8 @@ logger = logging.getLogger('piradigm.' + __name__)
 
 logger.debug('Libraries loaded')
 
-MIN_CONTOUR_AREA = 3
 
 # camera settings
-IMAGE_WIDTH = 320  # Camera image width
-IMAGE_HEIGHT = 240  # Camera image height
-SCREEN_SIZE = IMAGE_HEIGHT, IMAGE_WIDTH
-frame_rate = Fraction(20)  # Camera image capture frame rate
-
-# Auto drive settings
-AUTO_MAX_POWER = 0.4  # Maximum output in automatic mode
-AUTO_MIN_POWER = 0.1  # Minimum output in automatic mode
-AUTO_MIN_AREA = 100  # Smallest target to move towards
-AUTO_MAX_AREA = 3000  # Largest target to move towards
-AUTO_FULL_SPEED_AREA = 50  # Target size at which we use the maximum allowed output
-
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -47,10 +34,13 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        time.sleep(1)
+        self.AUTO_MAX_AREA = 3000  # Largest target to move towards
+        self.MIN_CONTOUR_AREA = 3
         self._colour = colour
         self.found = False
         self.retreated = False
+        # Why the one second sleep?
+        time.sleep(1)
         self.start()
 
     @property
@@ -124,14 +114,14 @@ class StreamProcessor(threading.Thread):
                 found_x = cx
                 found_y = cy
                 biggest_contour = contour
-        if found_area > MIN_CONTOUR_AREA:
+        if found_area > self.MIN_CONTOUR_AREA:
             ball = [found_x, found_y, found_area]
         else:
             ball = None
         pygame.mouse.set_pos(found_y, found_x)
         if biggest_contour is not None:
             contour_area = cv2.contourArea(biggest_contour)
-            if self.screen and contour_area > MIN_CONTOUR_AREA:
+            if self.screen and contour_area > self.MIN_CONTOUR_AREA:
                 font = pygame.font.Font(None, 24)
                 label = font.render(str(contour_area), 1, (250, 250, 250))
                 self.screen.blit(label, (10, 30))
@@ -155,7 +145,7 @@ class StreamProcessor(threading.Thread):
         if ball:
             x = ball[0]
             area = ball[2]
-            if area > AUTO_MAX_AREA:
+            if area > self.AUTO_MAX_AREA:
                 drive.move(0, 0)
                 self.found = True
                 logger.info('Close enough, stopping')
@@ -224,6 +214,10 @@ class Rainbow(BaseChallenge):
     """Rainbow challenge class"""
 
     def __init__(self, timeout=120, screen=None):
+        self.image_width = 320  # Camera image width
+        self.image_height = 240  # Camera image height
+        self.frame_rate = Fraction(20)  # Camera image capture frame rate
+
         time.sleep(0.01)
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
 
@@ -231,15 +225,14 @@ class Rainbow(BaseChallenge):
         # Startup sequence
         logger.info('Setup camera')
         self.camera = picamera.PiCamera()
-        self.camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
-        self.camera.framerate = frame_rate
-        self.image_centre_x = IMAGE_WIDTH / 2.0
-        self.image_centre_y = IMAGE_HEIGHT / 2.0
+        self.camera.resolution = (self.image_width, self.image_height)
+        self.camera.framerate = self.frame_rate
+        self.image_centre_x = self.image_width / 2.0
+        self.image_centre_y = self.image_height / 2.0
 
         logger.info('Setup the stream processing thread')
         self.processor = StreamProcessor(
-            screen=self.screen,
-            colour=TARGET_COLOUR
+            screen=self.screen
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
@@ -247,7 +240,7 @@ class Rainbow(BaseChallenge):
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
-        self.capture_thread = ImageCapture(
+        self.image_capture_thread = ImageCapture(
             camera=self.camera,
             processor=self.processor
         )
@@ -267,15 +260,14 @@ class Rainbow(BaseChallenge):
             # CTRL+C exit, disable all drives
             self.logger.info("killed from keyboard")
         finally:
-            self.logger.info("stopping")
+            # Tell each thread to stop, and wait for them to end
+            self.logger.info("stopping threads")
+            self.image_capture_thread.terminated = True
+            self.image_capture_thread.join()
+            self.processor.terminated = True
+            self.processor.join()
+            self.camera = None
+            self.logger.info("stopping drive")
             self.drive.stop()
             self.logger.info("bye")
 
-        # Tell each thread to stop, and wait for them to end
-        self.capture_thread.terminated = True
-        self.capture_thread.join()
-        self.processor.terminated = True
-        self.processor.join()
-        self.camera = None
-        self.drive.move(0, 0)
-        self.drive.stop()
