@@ -5,7 +5,8 @@ import numpy as np
 import cv2.aruco as aruco
 
 #small_dict = aruco.generateCustomDictionary(6, 3)
-small_dict = aruco.Dictionary_create(6, 3)
+NUM_OF_MARKERS = 6
+small_dict = aruco.Dictionary_create(NUM_OF_MARKERS, 3)
 '''
     drawMarker(...)
         drawMarker(dictionary, id, sidePixels[, img[, borderBits]]) -> img
@@ -15,16 +16,10 @@ print(small_dict)
 
 # second parameter is id number
 # last parameter is total image size
-img = aruco.drawMarker(small_dict, 2, 700)
-cv2.imwrite("marker_2.jpg", img)
+for i in range(0, NUM_OF_MARKERS):
+    img = aruco.drawMarker(small_dict, i, 700)
+    img_name = "marker_" + str(i) + ".jpg"
+    print (img_name)
+    cv2.imwrite(img_name, img)
               
 
-#number= 10
-#dimension=7;
-#cv::aruco::Dictionary dictionary = cv::aruco::generateCustomDictionary(number, dimension);
-#cv::Mat store=dictionary.bytesList;
-#cv::FileStorage fs("dic_save.yml", cv::FileStorage::WRITE);
-#fs << "MarkerSize" << dictionary.markerSize;
-#fs << "MaxCorrectionBits" << dictionary.maxCorrectionBits;
-#fs << "ByteList" << dictionary.bytesList;
-#fs.release(
