@@ -17,7 +17,11 @@ import cv2
 import numpy
 from fractions import Fraction
 from drivetrain import Drivetrain
-print('Libraries loaded')
+
+logging.config.fileConfig('logging.ini')
+logger = logging.getLogger('piradigm.' + __name__)
+
+logger.debug('Libraries loaded')
 
 # Global values
 global running
@@ -192,7 +196,7 @@ class StreamProcessor(threading.Thread):
             if area > AUTO_MAX_AREA:
                 drive.move(0, 0)
                 self.found = True
-                print('Close enough, stopping')
+                logger.info('Close enough, stopping')
             else:
                 forward = 0.12
                 turn = (image_centre_x - x) / image_centre_x / 3
@@ -200,8 +204,8 @@ class StreamProcessor(threading.Thread):
         else:
             # no ball, turn right
             drive.move(0.22, 0.12)
-            print('No ball')
- 
+            logger.info('No ball')
+
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball):
         turn = 0.0
@@ -211,7 +215,7 @@ class StreamProcessor(threading.Thread):
             if area < 1500:
                 drive.move(0, 0)
                 self.retreated = True
-                print('far enough away, stopping')
+                logger.info('far enough away, stopping')
             else:
                 forward = -0.15
                 turn = (image_centre_x - x) / image_centre_x / 3
@@ -220,7 +224,7 @@ class StreamProcessor(threading.Thread):
             #ball lost, stop
             self.found = False
             drive.move(0, 0)
-            print('ball lost')
+            logger.info('ball lost')
 
 
 # Image capture thread
@@ -232,16 +236,16 @@ class ImageCapture(threading.Thread):
     def run(self):
         global camera
         global processor
-        print('Start the stream using the video port')
+        logger.debug('Start the stream using the video port')
         camera.capture_sequence(
             self.TriggerStream(),
             format='bgr',
             use_video_port=True
         )
-        print('Terminating camera processing...')
+        logger.debug('Terminating camera processing...')
         processor.terminated = True
         processor.join()
-        print('Processing terminated.')
+        logger.debug('Processing terminated.')
 
     # Stream delegation loop
     def TriggerStream(self):
@@ -254,55 +258,58 @@ class ImageCapture(threading.Thread):
                 processor.event.set()
 
 
-# Startup sequence
-print('Setup camera')
-camera = picamera.PiCamera()
-camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
-camera.framerate = frameRate
-image_centre_x = IMAGE_WIDTH / 2.0
-image_centre_y = IMAGE_HEIGHT / 2.0
+class Rainbow():
+    """Rainbow challenge class"""
 
-print('setup pygame')
-screen = pygame.display.set_mode(SCREEN_SIZE)
-pygame.init()
+    # Startup sequence
+    logger.info('Setup camera')
+    camera = picamera.PiCamera()
+    camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
+    camera.framerate = frameRate
+    image_centre_x = IMAGE_WIDTH / 2.0
+    image_centre_y = IMAGE_HEIGHT / 2.0
 
-print('Setup the stream processing thread')
-processor = StreamProcessor(screen, colour=TARGET_COLOUR)
-# To switch target colour" on the fly, use:
-# processor.color = "blue"
+    logger.info('setup pygame')
+    screen = pygame.display.set_mode(SCREEN_SIZE)
+    pygame.init()
 
-drive = Drivetrain(timeout=120)
+    logger.info('Setup the stream processing thread')
+    processor = StreamProcessor(screen, colour=TARGET_COLOUR)
+    # To switch target colour" on the fly, use:
+    # processor.colour = "blue"
 
-print('Wait ...')
-time.sleep(2)
-captureThread = ImageCapture()
+    drive = Drivetrain(timeout=120)
 
-try:
-    print('Press CTRL+C to quit')
-    while running:
-        time.sleep(0.1)
-        if processor.retreated and processor.colour is not "green":
-            if processor.colour is "yellow": processor.colour = "green"
-            if processor.colour is "blue": processor.colour = "yellow"
-            if processor.colour is "red": processor.colour = "blue"
-            processor.found = False
-            processor.retreated = False
+    logger.info('Wait ...')
+    time.sleep(2)
+    captureThread = ImageCapture()
 
-except KeyboardInterrupt:
-    # CTRL+C exit, disable all drives
-    print('\nUser shutdown')
+    try:
+        logger.info('Press CTRL+C to quit')
+        while running:
+            time.sleep(0.1)
+            if processor.retreated and processor.colour is not "green":
+                if processor.colour is "yellow": processor.colour = "green"
+                if processor.colour is "blue": processor.colour = "yellow"
+                if processor.colour is "red": processor.colour = "blue"
+                processor.found = False
+                processor.retreated = False
 
-except:
-    e = sys.exc_info()[0]
-    print(e)
-    print('\nUnexpected error, shutting down!')
+    except KeyboardInterrupt:
+        # CTRL+C exit, disable all drives
+        logger.info('\nUser shutdown')
 
-# Tell each thread to stop, and wait for them to end
-running = False
-captureThread.join()
-processor.terminated = True
-processor.join()
-del camera
-drive.move(0, 0)
-drive.stop()
-print('Program terminated.')
+    except:
+        e = sys.exc_info()[0]
+        logger.info(e)
+        logger.info('\nUnexpected error, shutting down!')
+
+    # Tell each thread to stop, and wait for them to end
+    running = False
+    captureThread.join()
+    processor.terminated = True
+    processor.join()
+    del camera
+    drive.move(0, 0)
+    drive.stop()
+    logger.info('Program terminated.')

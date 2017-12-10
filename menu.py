@@ -146,7 +146,7 @@ class Menu():
             return "Other"
         elif number == 7:
             logger.info("launching RC challenge")
-            new_challenge = RC(timeout=self.timeout)
+            new_challenge = RC(timeout=self.timeout, screen=self.screen)
             return new_challenge
         elif number == 8:
             logger.info("Exit button pressed. Exiting now.")
