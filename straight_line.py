@@ -39,15 +39,16 @@ last_t_error = 0
 speed = 0
 MIN_SPEED = 0.3
 MAX_SPEED = 1
-STEERING_OFFSET = 0.0  #more positive make it turn left
+STEERING_OFFSET = 0.01  #more positive make it turn left
 STRAIGHT_TOLERANCE = 0.2
 ACC_RATE = 0.2
+CROP_WIDTH = 360
 
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
         frame = np.rot90(frameBuf.array)        
         video.truncate(0)
-        frame = frame[50:400, 220:380]
+        frame = frame[(screen_centre - CROP_WIDTH/2):(screen_centre + CROP_WIDTH/2), 220:380]
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
@@ -65,7 +66,7 @@ try:
             found_y = sum([arr[0] for arr in corners[0][0]])  / 4
             found_x = sum([arr[1] for arr in corners[0][0]])  / 4
             pygame.mouse.set_pos(int(found_x), int(found_y))
-            t_error = (screen_centre - found_x) / screen_centre
+            t_error = (CROP_WIDTH/2 - found_x) / (CROP_WIDTH / 2)
             turn = STEERING_OFFSET - TURN_P * t_error
             if last_t_error is not 0:
                 #if there was a real error last time then do some damping
