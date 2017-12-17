@@ -61,7 +61,7 @@ class StreamProcessor(threading.Thread):
                 try:
                     # Read the image and do some processing on it
                     self.stream.seek(0)
-                    self.process_image(self.stream.array, screen)
+                    self.process_image(self.stream.array, self.screen)
                 finally:
                     # Reset the stream and event
                     self.stream.seek(0)
