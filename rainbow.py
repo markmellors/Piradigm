@@ -29,13 +29,13 @@ logger.debug('Libraries loaded')
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
-    def __init__(self, screen=None, camera=None, colour="any"):
+    def __init__(self, screen=None, camera=None, drive=None, colour="any"):
         super(StreamProcessor, self).__init__()
         self.camera = camera
         image_width, image_height = self.camera.resolution
         self.image_centre_x = image_width / 2.0
         self.image_centre_y = image_height / 2.0
-
+        self.drive = drive
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
@@ -152,16 +152,16 @@ class StreamProcessor(threading.Thread):
             x = ball[0]
             area = ball[2]
             if area > self.AUTO_MAX_AREA:
-                drive.move(0, 0)
+                self.drive.move(0, 0)
                 self.found = True
                 logger.info('Close enough, stopping')
             else:
                 forward = 0.12
                 turn = (self.image_centre_x - x) / self.image_centre_x / 3
-                drive.move(turn, forward)
+                self.drive.move(turn, forward)
         else:
             # no ball, turn right
-            drive.move(0.22, 0.12)
+            self.drive.move(0.22, 0.12)
             logger.info('No ball')
 
  # drive away from the ball, back to the middle
@@ -171,17 +171,17 @@ class StreamProcessor(threading.Thread):
             x = ball[0]
             area = ball[2]
             if area < 1500:
-                drive.move(0, 0)
+                self.drive.move(0, 0)
                 self.retreated = True
                 logger.info('far enough away, stopping')
             else:
                 forward = -0.15
                 turn = (self.image_centre_x - x) / self.image_centre_x / 3
-                drive.move(turn, forward)
+                self.drive.move(turn, forward)
         else:
             # ball lost, stop
             self.found = False
-            drive.move(0, 0)
+            self.drive.move(0, 0)
             logger.info('ball lost')
 
 
@@ -235,9 +235,11 @@ class Rainbow(BaseChallenge):
         self.camera.framerate = self.frame_rate
 
         logger.info('Setup the stream processing thread')
+        # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
             screen=self.screen,
-            camera=self.camera
+            camera=self.camera,
+            drive=self.drive
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
