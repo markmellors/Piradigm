@@ -31,6 +31,11 @@ logger.debug('Libraries loaded')
 class StreamProcessor(threading.Thread):
     def __init__(self, screen=None, camera=None, colour="any"):
         super(StreamProcessor, self).__init__()
+        self.camera = camera
+        image_width, image_height = self.camera.resolution
+        self.image_centre_x = image_width / 2.0
+        self.image_centre_y = image_height / 2.0
+
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
@@ -228,8 +233,6 @@ class Rainbow(BaseChallenge):
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
-        self.image_centre_x = self.image_width / 2.0
-        self.image_centre_y = self.image_height / 2.0
 
         logger.info('Setup the stream processing thread')
         self.processor = StreamProcessor(
