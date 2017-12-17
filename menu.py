@@ -36,9 +36,9 @@ CREAM = 254, 255, 250
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
 
-logging.config.fileConfig('logging.ini')
+logging_ini_path = os.path.join(sys.path[0], 'logging.ini')
+logging.config.fileConfig(logging_ini_path)
 logger = logging.getLogger('piradigm')
-
 
 class Menu():
 
