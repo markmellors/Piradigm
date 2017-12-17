@@ -29,7 +29,7 @@ logger.debug('Libraries loaded')
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
-    def __init__(self, screen=None, colour="any"):
+    def __init__(self, screen=None, camera=None, colour="any"):
         super(StreamProcessor, self).__init__()
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
@@ -233,7 +233,8 @@ class Rainbow(BaseChallenge):
 
         logger.info('Setup the stream processing thread')
         self.processor = StreamProcessor(
-            screen=self.screen
+            screen=self.screen,
+            camera=self.camera
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
