@@ -3,8 +3,9 @@
 # coding: Latin
 
 # Load library functions we want
-import time
+import logging
 import os
+import time
 import sys
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
