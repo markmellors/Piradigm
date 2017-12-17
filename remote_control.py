@@ -14,6 +14,7 @@ logger = logging.getLogger('piradigm.' + __name__)
 class RC(BaseChallenge):
     def __init__(self, timeout=120, screen=None):
         time.sleep(0.01)
+        self.exponential = 2
         super(RC, self).__init__(name='RC', timeout=timeout, logger=logger)
 
     def run(self):
