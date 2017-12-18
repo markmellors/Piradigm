@@ -33,19 +33,16 @@ AREA_P = 0.0001
 AREA_D = 0.0002
 TURN_P = 0.5
 TURN_D = 0.2
+MAX_AREA = 4000
+BACK_OFF_AREA = 1000
+BACK_OFF_SPEED = -0.25
+FAST_SEARCH_TURN = 0.6
 
 # camera settings
 IMAGE_WIDTH = 320  # Camera image width
 IMAGE_HEIGHT = 240  # Camera image height
 SCREEN_SIZE = IMAGE_HEIGHT, IMAGE_WIDTH
 frameRate = Fraction(36)  # Camera image capture frame rate
-
-# Auto drive settings
-AUTO_MAX_POWER = 0.4  # Maximum output in automatic mode
-AUTO_MIN_POWER = 0.1  # Minimum output in automatic mode
-AUTO_MIN_AREA = 100  # Smallest target to move towards
-AUTO_MAX_AREA = 4000  # Largest target to move towards
-AUTO_FULL_SPEED_AREA = 50  # Target size at which we use the maximum allowed output
 
 env_vars = [
     ("SDL_FBDEV", "/dev/fb1"),
@@ -188,21 +185,20 @@ class StreamProcessor(threading.Thread):
         if ball:
             x = ball[0]
             area = ball[2]
-            if area > AUTO_MAX_AREA:
+            if area > MAX_AREA:
                 drive.move(0, 0)
                 self.found = True
                 print('Close enough, stopping')
             else:
                 # follow 0.2, /2 good
-                a_error = AUTO_MAX_AREA - area
+                a_error = MAX_AREA - area
                 forward = AREA_P * a_error
-                if self.last_a_error is not 0:
-                    forward -= AREA_D * (self.last_a_error - a_error)
                 t_error  = (image_centre_x - x) / image_centre_x
                 turn = TURN_P * t_error
-                if self.last_t_error is not 0:
+                if self.last_t_error is not None:
                     #if there was a real error last time then do some damping
                     turn -= TURN_D *(self.last_t_error - t_error)
+                    forward -= AREA_D * (self.last_a_error - a_error)
                 drive.move(turn, forward)
                 self.last_t_error = t_error
                 self.last_a_error = a_error
@@ -210,15 +206,14 @@ class StreamProcessor(threading.Thread):
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 5:
-                drive.move(0.6, 0)
+                drive.move(FAST_SEARCH_TURN, 0)
                 self.cycle = 0
             else:
                 drive.move(0, 0)
                 self.cycle += 1
             print('No ball')
             #reset PID errors
-            self.last_t_error = 0
-            self.last_a_error=0
+            self.last_t_error = None
  
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball):
@@ -226,12 +221,12 @@ class StreamProcessor(threading.Thread):
         if ball:
             x = ball[0]
             area = ball[2]
-            if area < 1000:
+            if area < BACK_OFF_AREA:
                 drive.move(0, 0)
                 self.retreated = True
                 print('far enough away, stopping')
             else:
-                forward = -0.25
+                forward = BACK_OFF_SPEED
                 t_error = (image_centre_x - x) / image_centre_x
                 turn = TURN_P * t_error - TURN_D *(self.last_t_error - t_error)
                 drive.move(turn, forward)
