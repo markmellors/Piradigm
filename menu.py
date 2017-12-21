@@ -19,6 +19,8 @@ from docopt import docopt
 
 import pygame
 from pygame.locals import *
+import sgc
+from sgc.locals import *
 from remote_control import RC
 
 VERSION = '0.1rc'
@@ -81,15 +83,16 @@ class Menu():
         # set up the fixed items on the menu
         # Add buttons and labels
         menu_config = [
-            ("Speed", 20, 10, 62, 100, WHITE),
-            ("Maze", 130, 10, 62, 100, WHITE),
-            ("Rainbow", 20, 77, 62, 100, WHITE),
-            ("Golf", 130, 77, 62, 100, WHITE),
-            ("Pi Noon", 20, 144, 62, 100, WHITE),
-            ("Obstacle", 130, 144, 62, 100, WHITE),
-            ("Shooting", 20, 211, 62, 100, WHITE),
-            ("RC", 130, 211, 62, 100, WHITE),
-            ("Exit", 20, 278, 40, 210, WHITE),
+            ("Speed", 6, 6), #, 62, 100, WHITE),
+            ("Maze", 122, 6), #, 62, 100, WHITE),
+            ("Rainbow", 6, 70), #, 62, 100, WHITE),
+            ("Golf", 122, 70), #, 62, 100, WHITE),
+            ("Pi Noon", 6, 134), #, 62, 100, WHITE),
+            ("Obstacle", 122, 134), #, 62, 100, WHITE),
+            ("Shooting", 6, 198), #, 62, 100, WHITE),
+            ("RC", 122, 198), #, 62, 100, WHITE),
+            ("Exit", 6, 262), #, 40, 210, WHITE),
+            ("Stop", 122, 262),
         ]
 
         # perform list comprehension on menu_config, wherein we call
@@ -102,17 +105,13 @@ class Menu():
             in enumerate(menu_config)
         ]
 
-    def make_button(self, index, text, xpo, ypo, height, width, colour):
-        """Make a text button at the specified x, y coordinates
-        with the specified colour. Also adds a border (not configurable)"""
+    def make_button(self, index, text, xpo, ypo):
+        """Make a text button at the specified x, y coordinates"""
         logger.debug("Making button with text '%s' at (%d, %d)", text, xpo, ypo)
-        font = pygame.font.Font(None, 24)
-        label = font.render(str(text), 1, (colour))
-        self.screen.blit(label, (xpo, ypo))
         return dict(
             index=index,
             label=text,
-            rect=pygame.draw.rect(self.screen, CREAM, (xpo - 5, ypo - 5, width, height), 1)
+            btn = sgc.Button(label=text, pos=(xpo, ypo))
         )
 
     def on_click(self, mousepos):
@@ -157,20 +156,25 @@ class Menu():
     def run(self):
         logger.info("Initialising pygame")
         pygame.init()
+        pygame.font.init()
         clock = pygame.time.Clock()
         logger.info("Hiding Cursor")
         pygame.mouse.set_visible(False)
 
         logger.info("Setting screen size to %s", SCREEN_SIZE)
-        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        self.screen = sgc.surface.Screen(SCREEN_SIZE)
         self.buttons = self.setup_menu(self.screen)
+        for btn in self.buttons:
+           btn['btn'].add(btn['index'])
         running_challenge = None
 
         # While loop to manage touch screen inputs
         while True:
-            clock.tick(30)
+            time = clock.tick(30)
             pygame.display.update()
+            sgc.update(time)
             for event in pygame.event.get():
+                sgc.event(event)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     logger.debug("screen pressed: %s", event.pos)
                     pos = (event.pos[0], event.pos[1])
