@@ -21,6 +21,7 @@ import pygame
 from pygame.locals import *
 import sgc
 from sgc.locals import *
+from my_button import MyButton
 from remote_control import RC
 
 VERSION = '0.1rc'
@@ -112,7 +113,7 @@ class Menu():
         return dict(
             index=index,
             label=text,
-            btn = sgc.Button(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour)
+            btn = sgc.Button(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour) if index is 5 else MyButton(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour)
         )
 
     def on_click(self, mousepos):
