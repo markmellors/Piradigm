@@ -27,8 +27,9 @@ screen_height = 640
 
 camera = picamera.PiCamera()
 camera.resolution = (screen_width, screen_height)
-#camera.iso = 800
-camera.shutter_speed = 8000
+camera.framerate = 30
+camera.iso = 800
+camera.shutter_speed = 12000
 pygame.init()
 screen = pygame.display.set_mode([240, 320])
 video = picamera.array.PiRGBArray(camera)
