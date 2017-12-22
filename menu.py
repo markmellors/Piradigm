@@ -156,6 +156,25 @@ class Menu():
         else:
             return None
 
+    def joystick_handler(self, button):
+       if button['dright']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       if button['dleft']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       if button['ddown']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       if button['dup']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       
+        
     def run(self):
         logger.info("Initialising pygame")
         pygame.init()
@@ -179,17 +198,7 @@ class Menu():
                 sgc.update(time)
                 if joystick.connected:
                     #print("joystick connected")
-                    presses = joystick.check_presses()
-                    if presses['dright']:
-                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-                    if presses['dleft']:
-                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-                    if presses['ddown']:
-                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-                    if presses['dup']:
-                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+                    self.joystick_handler(joystick.check_presses())
                 for event in pygame.event.get():
                     sgc.event(event)
                     if event.type == pygame.MOUSEBUTTONDOWN:
