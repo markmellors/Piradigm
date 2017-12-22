@@ -23,6 +23,7 @@ import sgc
 from sgc.locals import *
 from my_button import MyButton
 from remote_control import RC
+from approxeng.input.selectbinder import ControllerResource
 
 VERSION = '0.1rc'
 
@@ -113,7 +114,7 @@ class Menu():
         return dict(
             index=index,
             label=text,
-            btn = sgc.Button(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour) if index is 5 else MyButton(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour)
+            btn = MyButton(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour)
         )
 
     def on_click(self, mousepos):
@@ -169,41 +170,53 @@ class Menu():
         for btn in self.buttons:
            btn['btn'].add(btn['index'])
         running_challenge = None
-        #highlight a random button
-        self.buttons[random.randint(0,9)]['btn']._draw_rect = True
         
         # While loop to manage touch screen inputs
-        while True:
-            time = clock.tick(30)
-            pygame.display.update()
-            sgc.update(time)
-            for event in pygame.event.get():
-                sgc.event(event)
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    logger.debug("screen pressed: %s", event.pos)
-                    pos = (event.pos[0], event.pos[1])
-                    # for debugging purposes - adds a small dot
-                    # where the screen is pressed
-                    # pygame.draw.circle(screen, WHITE, pos, 2, 0)
-                    requested_challenge = self.on_click(pos)
-                    logger.info("requested challenge is %s", requested_challenge)
-                    if requested_challenge:
-                        logger.info("about to stop a thread if there's one running")
-                        if running_challenge:
-                            logger.info("about to stop thread")
-                            self.stop_threads(running_challenge)
+        with ControllerResource() as joystick:
+            while True:
+                time = clock.tick(30)
+                pygame.display.update()
+                sgc.update(time)
+                if joystick.connected:
+                    #print("joystick connected")
+                    presses = joystick.check_presses()
+                    if presses['dright']:
+                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+                    if presses['dleft']:
+                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+                    if presses['ddown']:
+                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+                    if presses['dup']:
+                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+                for event in pygame.event.get():
+                    sgc.event(event)
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        logger.debug("screen pressed: %s", event.pos)
+                        pos = (event.pos[0], event.pos[1])
+                        # for debugging purposes - adds a small dot
+                        # where the screen is pressed
+                        # pygame.draw.circle(screen, WHITE, pos, 2, 0)
+                        requested_challenge = self.on_click(pos)
+                        logger.info("requested challenge is %s", requested_challenge)
+                        if requested_challenge:
+                            logger.info("about to stop a thread if there's one running")
+                            if running_challenge:
+                                logger.info("about to stop thread")
+                                self.stop_threads(running_challenge)
 
-                    if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
-                        running_challenge = self.launch_challenge(requested_challenge)
-                        logger.info("challenge %s launched", running_challenge.name)
+                        if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
+                            running_challenge = self.launch_challenge(requested_challenge)
+                            logger.info("challenge %s launched", running_challenge.name)
 
-                    if requested_challenge == "Exit":
-                        sys.exit()
-                # ensure there is always a safe way to end the program
-                # if the touch screen fails
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        sys.exit()
+                        if requested_challenge == "Exit":
+                            sys.exit()
+                    # ensure there is always a safe way to end the program
+                    # if the touch screen fails
+                    if event.type == KEYDOWN:
+                        if event.key == K_ESCAPE:
+                            sys.exit()
 
 
 if __name__ == "__main__":
