@@ -27,6 +27,8 @@ screen_height = 640
 
 camera = picamera.PiCamera()
 camera.resolution = (screen_width, screen_height)
+#camera.iso = 800
+camera.shutter_speed = 8000
 pygame.init()
 screen = pygame.display.set_mode([240, 320])
 video = picamera.array.PiRGBArray(camera)
@@ -85,9 +87,9 @@ try:
                 speed = max(speed - ACC_RATE, MIN_SPEED)
             drive.move (turn, speed)
             last_t_error = t_error
-            print(t_error)
+            print(camera.exposure_speed)
         else:
-            Found = False
+            found = False
             speed = max(0, speed - ACC_RATE)
             drive.move(STEERING_OFFSET, speed)
             last_t_error = 0 
