@@ -47,6 +47,7 @@ i = 0
 TIMEOUT = 4.0
 START_TIME = time.clock()
 END_TIME = START_TIME + TIMEOUT
+found = False
 
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
@@ -58,9 +59,6 @@ try:
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
-        img_name = "img" + str(i) + ".jpg"
-        cv2.imwrite(img_name, gray)
-        i += 1
         #print(parameters)
         '''    detectMarkers(...)
             detectMarkers(image, dictionary[, corners[, ids[, parameters[, rejectedI
@@ -69,6 +67,7 @@ try:
         #lists of ids and the corners beloning to each id
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, small_dict, parameters=parameters)
         if ids != None:
+            found = True
             #if found, comptue the centre and move the cursor there
             #print(corners)
             found_y = sum([arr[0] for arr in corners[0][0]])  / 4
@@ -88,6 +87,7 @@ try:
             last_t_error = t_error
             print(t_error)
         else:
+            Found = False
             speed = max(0, speed - ACC_RATE)
             drive.move(STEERING_OFFSET, speed)
             last_t_error = 0 
@@ -96,7 +96,12 @@ try:
         screen.fill([0,0,0])
         screen.blit(frame, (0,0))
         pygame.display.update()
-        
+        if found:
+         img_name = str(i) + "Fimg.jpg"
+        else:
+         img_name = str(i) + "NFimg.jpg"
+        cv2.imwrite(img_name, gray)
+        i += 1
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 raise KeyboardInterrupt
