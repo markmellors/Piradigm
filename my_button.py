@@ -23,3 +23,16 @@ class MyButton(sgc.Button):
             frame_rb_c = [c*0.6 for c in cols[img]]
             draw.polygon(self._images[img], frame_lt_c, self._frame_lt)
             draw.polygon(self._images[img], frame_rb_c, self._frame_rb)
+
+    def _dotted_rect(self, col=(255,255,255)):
+        """Draw a dotted rectangle to show keyboard focus."""
+        self.image.lock()
+        for i in range(0, self.rect.w, 1):
+            # Draw horizontal lines
+            self.image.set_at((i, 0), col)
+            self.image.set_at((i, self.rect.h-1), col)
+        for i in range(0, self.rect.h, 1):
+            # Draw vertical lines
+            self.image.set_at((0, i), col)
+            self.image.set_at((self.rect.w-1, i), col)
+        self.image.unlock()
