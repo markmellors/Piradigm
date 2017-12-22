@@ -9,7 +9,7 @@ from pygame.locals import*
 import picamera
 import picamera.array
 from drivetrain import Drivetrain  
-
+import time
    
 env_vars = [
     ("SDL_FBDEV", "/dev/fb1"),
@@ -44,8 +44,14 @@ STRAIGHT_TOLERANCE = 0.2
 ACC_RATE = 0.2
 CROP_WIDTH = 360
 i = 0
+TIMEOUT = 4.0
+START_TIME = time.clock()
+END_TIME = START_TIME + TIMEOUT
+
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
+        if time.clock() > END_TIME:
+           raise KeyboardInterrupt
         frame = np.rot90(frameBuf.array)        
         video.truncate(0)
         frame = frame[(screen_centre - CROP_WIDTH/2):(screen_centre + CROP_WIDTH/2), 220:380]
@@ -55,7 +61,6 @@ try:
         img_name = "img" + str(i) + ".jpg"
         cv2.imwrite(img_name, gray)
         i += 1
-                                
         #print(parameters)
         '''    detectMarkers(...)
             detectMarkers(image, dictionary[, corners[, ids[, parameters[, rejectedI
@@ -91,7 +96,7 @@ try:
         screen.fill([0,0,0])
         screen.blit(frame, (0,0))
         pygame.display.update()
-                                                                         
+        
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 raise KeyboardInterrupt
