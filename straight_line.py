@@ -37,13 +37,13 @@ small_dict = aruco.Dictionary_create(6, 3)
 print("setup complete, looking")
 last_t_error = 0
 speed = 0
-MIN_SPEED = 0.3
+MIN_SPEED = 0
 MAX_SPEED = 1
-STEERING_OFFSET = 0.01  #more positive make it turn left
+STEERING_OFFSET = 0.0  #more positive make it turn left
 STRAIGHT_TOLERANCE = 0.2
 ACC_RATE = 0.2
 CROP_WIDTH = 360
-
+i = 0
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
         frame = np.rot90(frameBuf.array)        
@@ -52,6 +52,9 @@ try:
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
+        img_name = "img" + str(i) + ".jpg"
+        cv2.imwrite(img_name, gray)
+        i += 1
                                 
         #print(parameters)
         '''    detectMarkers(...)
@@ -93,5 +96,6 @@ try:
             if event.type == KEYDOWN:
                 raise KeyboardInterrupt
 except KeyboardInterrupt,SystemExit:
+    drive.move(0,0)
     pygame.quit()
     cv2.destroyAllWindows()
