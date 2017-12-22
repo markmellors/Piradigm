@@ -16,7 +16,7 @@ import time
 import threading
 
 from docopt import docopt
-
+import random
 import pygame
 from pygame.locals import *
 import sgc
@@ -34,6 +34,7 @@ SCREEN_SIZE = width, height = 240, 320
 
 # colours
 BLUE = 26, 0, 255
+SKY = 100, 50, 255
 CREAM = 254, 255, 250
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
@@ -75,7 +76,7 @@ class Menu():
         current_challenge = None
         logger.info("stopped running challenge")
 
-    def setup_menu(self, surface, background_colour=BLUE):
+    def setup_menu(self, surface, background_colour=BLACK):
         """Set up the menu on the specified surface"""
         # flood fill the surface with the background colour
         surface.fill(background_colour)
@@ -83,16 +84,16 @@ class Menu():
         # set up the fixed items on the menu
         # Add buttons and labels
         menu_config = [
-            ("Speed", 6, 6), #, 62, 100, WHITE),
-            ("Maze", 122, 6), #, 62, 100, WHITE),
-            ("Rainbow", 6, 70), #, 62, 100, WHITE),
-            ("Golf", 122, 70), #, 62, 100, WHITE),
-            ("Pi Noon", 6, 134), #, 62, 100, WHITE),
-            ("Obstacle", 122, 134), #, 62, 100, WHITE),
-            ("Shooting", 6, 198), #, 62, 100, WHITE),
-            ("RC", 122, 198), #, 62, 100, WHITE),
-            ("Exit", 6, 262), #, 40, 210, WHITE),
-            ("Stop", 122, 262),
+            ("Speed", 6, 6, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Maze", 122, 6, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Rainbow", 6, 70, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Golf", 122, 70, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Pi Noon", 6, 134, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Obstacle", 122, 134, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Shooting", 6, 198, BLUE, WHITE), #, 62, 100, WHITE),
+            ("RC", 122, 198, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Exit", 6, 262, BLUE, WHITE), #, 40, 210, WHITE),
+            ("Stop", 122, 262, BLUE, WHITE),
         ]
 
         # perform list comprehension on menu_config, wherein we call
@@ -105,13 +106,13 @@ class Menu():
             in enumerate(menu_config)
         ]
 
-    def make_button(self, index, text, xpo, ypo):
+    def make_button(self, index, text, xpo, ypo, colour, text_colour):
         """Make a text button at the specified x, y coordinates"""
         logger.debug("Making button with text '%s' at (%d, %d)", text, xpo, ypo)
         return dict(
             index=index,
             label=text,
-            btn = sgc.Button(label=text, pos=(xpo, ypo))
+            btn = sgc.Button(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour)
         )
 
     def on_click(self, mousepos):
@@ -167,7 +168,9 @@ class Menu():
         for btn in self.buttons:
            btn['btn'].add(btn['index'])
         running_challenge = None
-
+        #highlight a random button
+        self.buttons[random.randint(0,9)]['btn']._draw_rect = True
+        
         # While loop to manage touch screen inputs
         while True:
             time = clock.tick(30)
