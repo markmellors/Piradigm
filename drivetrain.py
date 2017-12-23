@@ -16,9 +16,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 #battery voltage check contasts
-BATT_ADC_GAIN = 0.006868
-BATT_ADC_OFFSET = 2.720536
+BATT_ADC_GAIN = 0.02909
+BATT_ADC_OFFSET = -15.06
 BATT_ADC_PIN = 3
+BATT_MIN_V = 7.45
 
 #value to set if motor speed should be held consistent across battery discharge
 NORMALISE_MOTOR_SPEED = True 
@@ -31,6 +32,7 @@ class Drivetrain():
         self.start_time = time.clock()
         self.pz = piconzero
         self.pz.init()
+        time.sleep(0.5)
         self.motor_max = 100
         self.pz.setInputConfig(BATT_ADC_PIN, 1)
         self.slow_speed = 20
@@ -41,6 +43,7 @@ class Drivetrain():
         self.killed = False
         self.left_counter = 0
         self.right_counter = 0
+        self.average_voltage = self.get_battery_voltage()
 
     def move(self, forward, turn):
         steering_left, steering_right = self.steering(forward, turn)
@@ -50,10 +53,18 @@ class Drivetrain():
         logging.debug("steering L/R: %s, %s" % (steering_left, steering_right))
         logging.debug("motor value L/R: %s, %s" % (motor_left, motor_right))
         logging.debug("counter: %s, %s" % (self.left_counter, self.right_counter))
-        self.pz.setMotor(1, motor_right)
-        self.pz.setMotor(0, motor_left)
-        voltage = self.get_battery_voltage()
-        print(voltage)
+        #smooth out transients
+        self.average_voltage = 0.9 * self.average_voltage + 0.1 * self.get_battery_voltage()
+        if (self.average_voltage > BATT_MIN_V):
+            if NORMALISE_MOTOR_SPEED:
+                motor_right = int(float(motor_right)* BATT_MIN_V / self.average_voltage)
+                motor_left = int(float(motor_left) * BATT_MIN_V / self.average_voltage)    
+            self.pz.setMotor(1, motor_right)
+            self.pz.setMotor(0, motor_left)
+        else:
+            print("stopping, battery voltage too low for motors, at:", self.average_voltage)
+            self.pz.setMotor(1, 0)
+            self.pz.setMotor(0, 0)
 
     @property
     def should_die(self):
@@ -88,7 +99,7 @@ class Drivetrain():
         
     def get_battery_voltage(self):
         """uses an ADC channel to read battery voltage"""
-        return BATT_ADC_GAIN * self.pz.readInput(BATT_ADC_PIN) + BATT_ADC_OFFSET
+        return BATT_ADC_GAIN * float(self.pz.readInput(BATT_ADC_PIN)) + BATT_ADC_OFFSET
         
     def get_motor_values(self, steering_left, steering_right):
         motor_left = int(steering_left * self.motor_max) * -1
