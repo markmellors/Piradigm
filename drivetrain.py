@@ -15,6 +15,13 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+#battery voltage check contasts
+BATT_ADC_GAIN = 0.006868
+BATT_ADC_OFFSET = 2.720536
+BATT_ADC_PIN = 3
+
+#value to set if motor speed should be held consistent across battery discharge
+NORMALISE_MOTOR_SPEED = True 
 
 class Drivetrain():
     def __init__(self, timeout=120):
@@ -25,6 +32,7 @@ class Drivetrain():
         self.pz = piconzero
         self.pz.init()
         self.motor_max = 100
+        self.pz.setInputConfig(BATT_ADC_PIN, 1)
         self.slow_speed = 20
         self.deadband = 1
         self.boost_cycles = 1
@@ -44,6 +52,8 @@ class Drivetrain():
         logging.debug("counter: %s, %s" % (self.left_counter, self.right_counter))
         self.pz.setMotor(1, motor_right)
         self.pz.setMotor(0, motor_left)
+        voltage = self.get_battery_voltage()
+        print(voltage)
 
     @property
     def should_die(self):
@@ -75,7 +85,11 @@ class Drivetrain():
         right = max(-1, min(right, 1))
 
         return left, right
-
+        
+    def get_battery_voltage(self):
+        """uses an ADC channel to read battery voltage"""
+        return BATT_ADC_GAIN * self.pz.readInput(BATT_ADC_PIN) + BATT_ADC_OFFSET
+        
     def get_motor_values(self, steering_left, steering_right):
         motor_left = int(steering_left * self.motor_max) * -1
         motor_right = int(steering_right * self.motor_max) * -1
