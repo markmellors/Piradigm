@@ -4,6 +4,7 @@
 
 # Load library functions we want
 import logging
+import logging.config
 import os
 import time
 import sys
