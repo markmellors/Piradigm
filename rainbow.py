@@ -23,8 +23,6 @@ logging.config.fileConfig('logging.ini')
 logger = logging.getLogger('piradigm.' + __name__)
 
 logger.debug('Libraries loaded')
-
-
 # camera settings
 
 # Image stream processing thread
@@ -40,11 +38,21 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.AUTO_MAX_AREA = 3000  # Largest target to move towards
+        self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
         self._colour = colour
         self.found = False
         self.retreated = False
+        self.cycle = 0
+        self.last_a_error = 0
+        self.last_t_error = 0
+        self.AREA_P = 0.0001
+        self.AREA_D = 0.0002
+        self.TURN_P = 0.5
+        self.TURN_D = 0.2
+        self.BACK_OFF_AREA = 1000
+        self.BACK_OFF_SPEED = -0.25
+        self.FAST_SEARCH_TURN = 0.6
         # Why the one second sleep?
         time.sleep(1)
         self.start()
@@ -76,8 +84,7 @@ class StreamProcessor(threading.Thread):
     # Image processing function
     def process_image(self, image, screen):
         # crop image to speed up processing and avoid false positives
-        image = image[60:180, 0:320]
-        # Blur the image
+        image = image[80:180, 0:320]
         image = cv2.medianBlur(image, 5)
         # Convert the image from 'BGR' to HSV colour space
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
@@ -151,18 +158,34 @@ class StreamProcessor(threading.Thread):
         if ball:
             x = ball[0]
             area = ball[2]
-            if area > self.AUTO_MAX_AREA:
+            if area > self.MAX_AREA:
                 self.drive.move(0, 0)
-                self.found = True
                 logger.info('Close enough, stopping')
             else:
-                forward = 0.12
-                turn = (self.image_centre_x - x) / self.image_centre_x / 3
+                # follow 0.2, /2 good
+                a_error = self.MAX_AREA - area
+                forward = self.AREA_P * a_error
+                t_error  = (self.image_centre_x - x) / self.image_centre_x
+                turn = self.TURN_P * t_error
+                if self.last_t_error is not None:
+                    #if there was a real error last time then do some damping
+                    turn -= self.TURN_D *(self.last_t_error - t_error)
+                    forward -= self.AREA_D * (self.last_a_error - a_error)
                 self.drive.move(turn, forward)
+                self.last_t_error = t_error
+                self.last_a_error = a_error
+                print('ball, %s', t_error)
         else:
-            # no ball, turn right
-            self.drive.move(0.22, 0.12)
+            # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
+            if self.cycle > 5:
+                self.drive.move(self.FAST_SEARCH_TURN, 0)
+                self.cycle = 0
+            else:
+                self.drive.move(0, 0)
+                self.cycle += 1
             logger.info('No ball')
+            # reset PID errors
+            self.last_t_error = None
 
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball):
@@ -170,14 +193,15 @@ class StreamProcessor(threading.Thread):
         if ball:
             x = ball[0]
             area = ball[2]
-            if area < 1500:
+            if area < self.BACK_OFF_AREA:
                 self.drive.move(0, 0)
                 self.retreated = True
                 logger.info('far enough away, stopping')
             else:
-                forward = -0.15
-                turn = (self.image_centre_x - x) / self.image_centre_x / 3
+                t_error = (self.image_centre_x - x) / self.image_centre_x
+                turn = self.TURN_P * t_error - self.TURN_D *(self.last_t_error - t_error)
                 self.drive.move(turn, forward)
+                self.last_t_error = t_error
         else:
             # ball lost, stop
             self.found = False
