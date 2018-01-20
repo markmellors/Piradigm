@@ -124,7 +124,7 @@ class Menu():
         logger.debug("%s button pressed", event.label)
         if event.label is "RC":
             logger.info("launching RC challenge")
-            new_challenge = RC(timeout=self.timeout)
+            new_challenge = RC(timeout=self.timeout, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
@@ -175,14 +175,14 @@ class Menu():
         running_challenge = None
         
         # While loop to manage touch screen inputs
-        with ControllerResource() as joystick:
+        with ControllerResource() as self.joystick:
             while True:
                 time = clock.tick(30)
                 pygame.display.update()
                 sgc.update(time)
-                if joystick.connected:
+                if self.joystick.connected:
                     #print("joystick connected")
-                    self.joystick_handler(joystick.check_presses())
+                    self.joystick_handler(self.joystick.check_presses())
                 for event in pygame.event.get():
                     sgc.event(event)
                     if event.type== GUI:

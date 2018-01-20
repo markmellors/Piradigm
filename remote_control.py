@@ -12,7 +12,7 @@ logger = logging.getLogger('piradigm.' + __name__)
 
 
 class RC():
-    def __init__(self, timeout=120):
+    def __init__(self, timeout=120, joystick=ControllerResource()):
         time.sleep(0.01)
         logger.info("initialising RC")
         self.timeout = timeout
@@ -21,20 +21,19 @@ class RC():
         self.name = "RC"
         self.killed = False
         self.drive = Drivetrain(timeout=self.timeout)
+        self.joystick=joystick
 
     def run(self):
         logger.info("running RC challenge")
         try:
             try:
-                with ControllerResource() as joystick:
-                    logger.info('Found a joystick and connected')
-                    while joystick.connected and not self.should_die:
-                        rx, ry = joystick['rx', 'ry']
-                        logger.debug("joystick L/R: %s, %s" % (rx, ry))
-                        rx = self.exp(rx, self.exponential)
-                        ry = self.exp(ry, self.exponential)
-                        self.drive.move(rx, ry)
-                        time.sleep(0.05)
+                while self.joystick.connected and not self.should_die:
+                    rx, ry = self.joystick['rx', 'ry']
+                    logger.debug("joystick L/R: %s, %s" % (rx, ry))
+                    rx = self.exp(rx, self.exponential)
+                    ry = self.exp(ry, self.exponential)
+                    self.drive.move(rx, ry)
+                    time.sleep(0.05)
 
                 # Joystick disconnected...
                 logger.info('Connection to joystick lost')
