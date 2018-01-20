@@ -89,6 +89,11 @@ class StreamProcessor(threading.Thread):
         screen = pygame.display.get_surface()
         # crop image to speed up processing and avoid false positives
         image = image[80:180, 0:320]
+        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+        screen.fill([0, 0, 0])
+        font = pygame.font.Font(None, 24)
+        screen.blit(frame, (0, 0))        
         image = cv2.medianBlur(image, 5)
         # Convert the image from 'BGR' to HSV colour space
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
