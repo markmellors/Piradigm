@@ -30,6 +30,7 @@ VERSION = '0.2STC'
 arguments = docopt(__doc__, version=VERSION)
 
 # Global variables
+BUTTON_CLICK_TIME = 0.5
 
 # screen size
 SCREEN_SIZE = width, height = 240, 320
@@ -176,6 +177,10 @@ class Menu():
        if button['select']:
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 0, 'scancode': 28, 'key': pygame.K_RETURN, 'unicode': "u'\t'"}))
+           time.sleep(BUTTON_CLICK_TIME)
+           pygame.event.post(pygame.event.Event(pygame.KEYUP,{
+               'mod': 0, 'scancode': 28, 'key': pygame.K_RETURN, 'unicode': "u'\t'"}))
+           
        
         
     def run(self):
@@ -204,6 +209,9 @@ class Menu():
                     self.joystick_handler(joystick.check_presses())
                 for event in pygame.event.get():
                     sgc.event(event)
+                    if event.type== GUI:
+                        if event.widget_type is "Button":
+                            print event.label
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         logger.debug("screen pressed: %s", event.pos)
                         pos = (event.pos[0], event.pos[1])

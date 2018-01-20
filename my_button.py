@@ -1,4 +1,5 @@
 import sgc
+import pygame
 from sgc.locals import *
 from pygame import draw
 
@@ -36,3 +37,17 @@ class MyButton(sgc.Button):
             self.image.set_at((0, i), col)
             self.image.set_at((self.rect.w-1, i), col)
         self.image.unlock()
+
+    def _create_event(self, gui_type, **kwargs):
+        """
+        Returns a GUI `pygame.event.Event` object. The first argument must be
+        the value for `gui_type` and should roughly describe the event.
+        Optional keyword arguments can also be passed with additional
+        attributes for the event.
+              
+        """
+        return pygame.event.Event(
+            GUI,
+            dict(kwargs, **{"gui_type": gui_type, "widget_type": "Button",
+                            "label": self._settings["label"][0],
+                            "widget": self}))
