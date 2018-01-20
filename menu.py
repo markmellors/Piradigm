@@ -25,7 +25,7 @@ from my_button import MyButton
 from remote_control import RC
 from approxeng.input.selectbinder import ControllerResource
 
-VERSION = '0.1rc'
+VERSION = '0.2STC'
 
 arguments = docopt(__doc__, version=VERSION)
 
@@ -173,6 +173,9 @@ class Menu():
                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       if button['select']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 0, 'scancode': 28, 'key': pygame.K_RETURN, 'unicode': "u'\t'"}))
        
         
     def run(self):
