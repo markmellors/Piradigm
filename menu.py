@@ -23,22 +23,16 @@ import sgc
 from sgc.locals import *
 from my_button import MyButton
 from remote_control import RC
-<<<<<<< HEAD
 from rainbow import Rainbow
-=======
 from approxeng.input.selectbinder import ControllerResource
->>>>>>> SGC
 
 VERSION = '0.2SGC'
 
 arguments = docopt(__doc__, version=VERSION)
 
 # Global variables
-<<<<<<< HEAD
 # TODO - Kill these
-=======
 BUTTON_CLICK_TIME = 0.5
->>>>>>> SGC
 
 # screen size
 SCREEN_SIZE = width, height = 240, 320
@@ -128,24 +122,15 @@ class Menu():
 
     def button_handler(self, event):
         """Button action handler. Currently differentiates between
-        exit, rc and other buttons only"""
-<<<<<<< HEAD
-        logger.debug("button %d pressed", number)
-        time.sleep(0.01)
-
-        if number == 2:
-            logger.info("launching Rainbow challenge")
-            new_challenge = Rainbow(timeout=self.timeout, screen=self.screen)
-            return new_challenge
-        elif number == 7:
-            logger.info("launching RC challenge")
-            new_challenge = RC(timeout=self.timeout, screen=self.screen)
-=======
+        exit, rc, rainbow and other buttons only"""
         logger.debug("%s button pressed", event.label)
         if event.label is "RC":
             logger.info("launching RC challenge")
-            new_challenge = RC(timeout=self.timeout, joystick=self.joystick)
->>>>>>> SGC
+            new_challenge = RC(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
+        elif event.label is "Rainbow":
+            logger.info("launching Rainbow challenge")
+            new_challenge = Rainbow(timeout=self.timeout, screen=self.screen)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
@@ -190,9 +175,10 @@ class Menu():
         clock = pygame.time.Clock()
         logger.info("Hiding Cursor")
         pygame.mouse.set_visible(False)
-
         logger.info("Setting screen size to %s", SCREEN_SIZE)
-        self.screen = sgc.surface.Screen(SCREEN_SIZE)
+        #pygame.display.init()
+        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        controls = sgc.surface.Screen(SCREEN_SIZE)
         self.buttons = self.setup_menu(self.screen)
         for btn in self.buttons:
            btn['btn'].add(btn['index'])
@@ -223,8 +209,9 @@ class Menu():
                                 sys.exit()
                     # ensure there is always a safe way to end the program
                     # if the touch screen fails
-                    elif event.key == K_ESCAPE:
-                        sys.exit()
+                    elif event.type== KEYDOWN:
+                        if event.key == K_ESCAPE:
+                            sys.exit()
 
 
 if __name__ == "__main__":

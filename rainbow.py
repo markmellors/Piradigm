@@ -13,6 +13,8 @@ sys.path.append('/usr/local/lib/python2.7/site-packages')
 import threading
 import pygame
 from pygame.locals import*
+import sgc
+from sgc.locals import *
 import picamera
 import picamera.array
 import cv2
@@ -84,6 +86,7 @@ class StreamProcessor(threading.Thread):
 
     # Image processing function
     def process_image(self, image, screen):
+        screen = pygame.display.get_surface()
         # crop image to speed up processing and avoid false positives
         image = image[80:180, 0:320]
         image = cv2.medianBlur(image, 5)
@@ -248,17 +251,18 @@ class Rainbow(BaseChallenge):
         self.image_width = 320  # Camera image width
         self.image_height = 240  # Camera image height
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
-
+        self.screen = screen
         time.sleep(0.01)
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
 
     def run(self):
         # Startup sequence
+        pygame.mouse.set_visible(True)
         logger.info('Setup camera')
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
-
+        
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
@@ -301,5 +305,6 @@ class Rainbow(BaseChallenge):
             self.camera = None
             self.logger.info("stopping drive")
             self.drive.stop()
+            pygame.mouse.set_visible(False)
             self.logger.info("bye")
 

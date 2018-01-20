@@ -11,43 +11,22 @@ from base_challenge import BaseChallenge
 logger = logging.getLogger('piradigm.' + __name__)
 
 
-<<<<<<< HEAD
+
 class RC(BaseChallenge):
-    def __init__(self, timeout=120, screen=None):
-=======
-class RC():
-    def __init__(self, timeout=120, joystick=None):
->>>>>>> SGC
+    def __init__(self, timeout=120, screen=None, joystick=None):
         time.sleep(0.01)
         self.exponential = 2
-<<<<<<< HEAD
         super(RC, self).__init__(name='RC', timeout=timeout, logger=logger)
-=======
-        self.name = "RC"
-        self.killed = False
-        self.drive = Drivetrain(timeout=self.timeout)
         if not joystick:
             logger.info("No joystick available for RC, stopping")
             self.timeout = 0
         else:    
             self.joystick = joystick
->>>>>>> SGC
 
     def run(self):
         self.logger.info("running %s challenge" % self.name)
         try:
             try:
-<<<<<<< HEAD
-                with ControllerResource() as joystick:
-                    self.logger.info('Found a joystick and connected')
-                    while joystick.connected and not self.should_die:
-                        rx, ry = joystick['rx', 'ry']
-                        self.logger.debug("joystick L/R: %s, %s" % (rx, ry))
-                        rx = self.exp(rx, self.exponential)
-                        ry = self.exp(ry, self.exponential)
-                        self.drive.move(rx, ry)
-                        time.sleep(0.05)
-=======
                 while self.joystick.connected and not self.should_die:
                     rx, ry = self.joystick['rx', 'ry']
                     logger.debug("joystick L/R: %s, %s" % (rx, ry))
@@ -55,7 +34,7 @@ class RC():
                     ry = self.exp(ry, self.exponential)
                     self.drive.move(rx, ry)
                     time.sleep(0.05)
->>>>>>> SGC
+
 
                 # Joystick disconnected...
                 self.logger.info('Connection to joystick lost')
