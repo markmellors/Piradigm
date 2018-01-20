@@ -4,4 +4,3 @@
 *.sublime-workspace
 Pipfile.lock
 Pipfile
-sgc/

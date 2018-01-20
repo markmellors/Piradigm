@@ -25,7 +25,7 @@ from my_button import MyButton
 from remote_control import RC
 from approxeng.input.selectbinder import ControllerResource
 
-VERSION = '0.2STC'
+VERSION = '0.2SGC'
 
 arguments = docopt(__doc__, version=VERSION)
 
@@ -130,27 +130,27 @@ class Menu():
             logger.info("Exit button pressed. Exiting now.")
             return "Exit"
         else:
-            logger.info("other selected")
+            logger.info("unsupported button selected (%s)", event.label)
             return "Other"
 
     def joystick_handler(self, button):
        if button['dright']:
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-       if button['dleft']:
+       elif button['dleft']:
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-       if button['ddown']:
+       elif button['ddown']:
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-       if button['dup']:
+       elif button['dup']:
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-       if button['select']:
+       elif button['select']:
            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                'mod': 0, 'scancode': 28, 'key': pygame.K_RETURN, 'unicode': "u'\t'"}))
            time.sleep(BUTTON_CLICK_TIME)
@@ -181,7 +181,6 @@ class Menu():
                 pygame.display.update()
                 sgc.update(time)
                 if self.joystick.connected:
-                    #print("joystick connected")
                     self.joystick_handler(self.joystick.check_presses())
                 for event in pygame.event.get():
                     sgc.event(event)
@@ -196,13 +195,12 @@ class Menu():
                             if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
                                 running_challenge = self.launch_challenge(requested_challenge)
                                 logger.info("challenge %s launched", running_challenge.name)
-                            if requested_challenge == "Exit":
+                            elif requested_challenge == "Exit":
                                 sys.exit()
                     # ensure there is always a safe way to end the program
                     # if the touch screen fails
-                    if event.type == KEYDOWN:
-                        if event.key == K_ESCAPE:
-                            sys.exit()
+                    elif event.key == K_ESCAPE:
+                        sys.exit()
 
 
 if __name__ == "__main__":

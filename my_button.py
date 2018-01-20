@@ -20,7 +20,7 @@ class MyButton(sgc.Button):
         for img in cols:
             self._images[img].fill(cols[img])
             # Draw a frame around the edges of the button
-            frame_lt_c = [min(c*1.3,255) for c in cols[img]]
+            frame_lt_c = [min(c*1.3, 255) for c in cols[img]]
             frame_rb_c = [c*0.6 for c in cols[img]]
             draw.polygon(self._images[img], frame_lt_c, self._frame_lt)
             draw.polygon(self._images[img], frame_rb_c, self._frame_rb)

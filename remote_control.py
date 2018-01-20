@@ -12,7 +12,7 @@ logger = logging.getLogger('piradigm.' + __name__)
 
 
 class RC():
-    def __init__(self, timeout=120, joystick=ControllerResource()):
+    def __init__(self, timeout=120, joystick=None):
         time.sleep(0.01)
         logger.info("initialising RC")
         self.timeout = timeout
@@ -21,7 +21,11 @@ class RC():
         self.name = "RC"
         self.killed = False
         self.drive = Drivetrain(timeout=self.timeout)
-        self.joystick=joystick
+        if not joystick:
+            logger.info("No joystick available for RC, stopping")
+            self.timeout = 0
+        else:    
+            self.joystick = joystick
 
     def run(self):
         logger.info("running RC challenge")
