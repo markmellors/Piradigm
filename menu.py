@@ -16,24 +16,36 @@ import time
 import threading
 
 from docopt import docopt
-
+import random
 import pygame
 from pygame.locals import *
+import sgc
+from sgc.locals import *
+from my_button import MyButton
 from remote_control import RC
+<<<<<<< HEAD
 from rainbow import Rainbow
+=======
+from approxeng.input.selectbinder import ControllerResource
+>>>>>>> SGC
 
-VERSION = '0.1rc'
+VERSION = '0.2SGC'
 
 arguments = docopt(__doc__, version=VERSION)
 
 # Global variables
+<<<<<<< HEAD
 # TODO - Kill these
+=======
+BUTTON_CLICK_TIME = 0.5
+>>>>>>> SGC
 
 # screen size
 SCREEN_SIZE = width, height = 240, 320
 
 # colours
 BLUE = 26, 0, 255
+SKY = 100, 50, 255
 CREAM = 254, 255, 250
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
@@ -75,7 +87,7 @@ class Menu():
         current_challenge = None
         logger.info("stopped running challenge")
 
-    def setup_menu(self, surface, background_colour=BLUE):
+    def setup_menu(self, surface, background_colour=BLACK):
         """Set up the menu on the specified surface"""
         # flood fill the surface with the background colour
         surface.fill(background_colour)
@@ -83,15 +95,16 @@ class Menu():
         # set up the fixed items on the menu
         # Add buttons and labels
         menu_config = [
-            ("Speed", 20, 10, 62, 100, WHITE),
-            ("Maze", 130, 10, 62, 100, WHITE),
-            ("Rainbow", 20, 77, 62, 100, WHITE),
-            ("Golf", 130, 77, 62, 100, WHITE),
-            ("Pi Noon", 20, 144, 62, 100, WHITE),
-            ("Obstacle", 130, 144, 62, 100, WHITE),
-            ("Shooting", 20, 211, 62, 100, WHITE),
-            ("RC", 130, 211, 62, 100, WHITE),
-            ("Exit", 20, 278, 40, 210, WHITE),
+            ("Speed", 6, 6, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Maze", 122, 6, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Rainbow", 6, 70, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Golf", 122, 70, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Pi Noon", 6, 134, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Obstacle", 122, 134, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Shooting", 6, 198, BLUE, WHITE), #, 62, 100, WHITE),
+            ("RC", 122, 198, BLUE, WHITE), #, 62, 100, WHITE),
+            ("Exit", 6, 262, BLUE, WHITE), #, 40, 210, WHITE),
+            ("Stop", 122, 262, BLUE, WHITE),
         ]
 
         # perform list comprehension on menu_config, wherein we call
@@ -104,43 +117,19 @@ class Menu():
             in enumerate(menu_config)
         ]
 
-    def make_button(self, index, text, xpo, ypo, height, width, colour):
-        """Make a text button at the specified x, y coordinates
-        with the specified colour. Also adds a border (not configurable)"""
+    def make_button(self, index, text, xpo, ypo, colour, text_colour):
+        """Make a text button at the specified x, y coordinates"""
         logger.debug("Making button with text '%s' at (%d, %d)", text, xpo, ypo)
-        font = pygame.font.Font(None, 24)
-        label = font.render(str(text), 1, (colour))
-        self.screen.blit(label, (xpo, ypo))
         return dict(
             index=index,
             label=text,
-            rect=pygame.draw.rect(self.screen, CREAM, (xpo - 5, ypo - 5, width, height), 1)
+            btn = MyButton(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour)
         )
 
-    def on_click(self, mousepos):
-        """Click handling function to check mouse location"""
-        logger.debug("on_click: %s", mousepos)
-        # Iterate through our list of buttons and get the first one
-        # whose rect returns True for pygame.Rect.collidepoint()
-        try:
-            button = next(obj for obj in self.buttons if obj['rect'].collidepoint(mousepos))
-            logger.info(
-                "%s clicked - launching %d",
-                button["label"], button["index"]
-            )
-            # Call button_handler with the matched button's index value
-            new_challenge = self.button_handler(button['index'])
-            return new_challenge
-        except StopIteration:
-            logger.debug(
-                "Click at pos %s did not interact with any button",
-                mousepos
-            )
-            return None
-
-    def button_handler(self, number):
+    def button_handler(self, event):
         """Button action handler. Currently differentiates between
         exit, rc and other buttons only"""
+<<<<<<< HEAD
         logger.debug("button %d pressed", number)
         time.sleep(0.01)
 
@@ -151,57 +140,90 @@ class Menu():
         elif number == 7:
             logger.info("launching RC challenge")
             new_challenge = RC(timeout=self.timeout, screen=self.screen)
+=======
+        logger.debug("%s button pressed", event.label)
+        if event.label is "RC":
+            logger.info("launching RC challenge")
+            new_challenge = RC(timeout=self.timeout, joystick=self.joystick)
+>>>>>>> SGC
             return new_challenge
-        elif number == 8:
+        elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
             return "Exit"
         elif number < 7:
             logger.info("other selected")
             return "Other"
         else:
-            return None
+            logger.info("unsupported button selected (%s)", event.label)
+            return "Other"
 
+    def joystick_handler(self, button):
+       if button['dright']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       elif button['dleft']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       elif button['ddown']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       elif button['dup']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+       elif button['select']:
+           pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+               'mod': 0, 'scancode': 28, 'key': pygame.K_RETURN, 'unicode': "u'\t'"}))
+           time.sleep(BUTTON_CLICK_TIME)
+           pygame.event.post(pygame.event.Event(pygame.KEYUP,{
+               'mod': 0, 'scancode': 28, 'key': pygame.K_RETURN, 'unicode': "u'\t'"}))
+           
+       
+        
     def run(self):
         logger.info("Initialising pygame")
         pygame.init()
+        pygame.font.init()
         clock = pygame.time.Clock()
         logger.info("Hiding Cursor")
         pygame.mouse.set_visible(False)
 
         logger.info("Setting screen size to %s", SCREEN_SIZE)
-        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        self.screen = sgc.surface.Screen(SCREEN_SIZE)
         self.buttons = self.setup_menu(self.screen)
+        for btn in self.buttons:
+           btn['btn'].add(btn['index'])
         running_challenge = None
-
+        
         # While loop to manage touch screen inputs
-        while True:
-            clock.tick(30)
-            pygame.display.update()
-            for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    logger.debug("screen pressed: %s", event.pos)
-                    pos = (event.pos[0], event.pos[1])
-                    # for debugging purposes - adds a small dot
-                    # where the screen is pressed
-                    # pygame.draw.circle(screen, WHITE, pos, 2, 0)
-                    requested_challenge = self.on_click(pos)
-                    logger.info("requested challenge is %s", requested_challenge)
-                    if requested_challenge:
-                        logger.info("about to stop a thread if there's one running")
-                        if running_challenge:
-                            logger.info("about to stop thread")
-                            self.stop_threads(running_challenge)
-
-                    if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
-                        running_challenge = self.launch_challenge(requested_challenge)
-                        logger.info("challenge %s launched", running_challenge.name)
-
-                    if requested_challenge == "Exit":
-                        sys.exit()
-                # ensure there is always a safe way to end the program
-                # if the touch screen fails
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
+        with ControllerResource() as self.joystick:
+            while True:
+                time = clock.tick(30)
+                pygame.display.update()
+                sgc.update(time)
+                if self.joystick.connected:
+                    self.joystick_handler(self.joystick.check_presses())
+                for event in pygame.event.get():
+                    sgc.event(event)
+                    if event.type== GUI:
+                        if event.widget_type is "Button":
+                            requested_challenge = self.button_handler(event)
+                            if requested_challenge:
+                                logger.info("about to stop a thread if there's one running")
+                                if running_challenge:
+                                    logger.info("about to stop thread")
+                                    self.stop_threads(running_challenge)
+                            if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
+                                running_challenge = self.launch_challenge(requested_challenge)
+                                logger.info("challenge %s launched", running_challenge.name)
+                            elif requested_challenge == "Exit":
+                                sys.exit()
+                    # ensure there is always a safe way to end the program
+                    # if the touch screen fails
+                    elif event.key == K_ESCAPE:
                         sys.exit()
 
 
