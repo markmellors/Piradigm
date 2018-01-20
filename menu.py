@@ -20,12 +20,14 @@ from docopt import docopt
 import pygame
 from pygame.locals import *
 from remote_control import RC
+from rainbow import Rainbow
 
 VERSION = '0.1rc'
 
 arguments = docopt(__doc__, version=VERSION)
 
 # Global variables
+# TODO - Kill these
 
 # screen size
 SCREEN_SIZE = width, height = 240, 320
@@ -141,16 +143,21 @@ class Menu():
         exit, rc and other buttons only"""
         logger.debug("button %d pressed", number)
         time.sleep(0.01)
-        if number < 7:
-            logger.info("other selected")
-            return "Other"
+
+        if number == 2:
+            logger.info("launching Rainbow challenge")
+            new_challenge = Rainbow(timeout=self.timeout, screen=self.screen)
+            return new_challenge
         elif number == 7:
             logger.info("launching RC challenge")
-            new_challenge = RC(timeout=self.timeout)
+            new_challenge = RC(timeout=self.timeout, screen=self.screen)
             return new_challenge
         elif number == 8:
             logger.info("Exit button pressed. Exiting now.")
             return "Exit"
+        elif number < 7:
+            logger.info("other selected")
+            return "Other"
         else:
             return None
 
