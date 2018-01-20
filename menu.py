@@ -118,44 +118,20 @@ class Menu():
             btn = MyButton(label=text, pos=(xpo, ypo), col=colour, label_col=text_colour)
         )
 
-    def on_click(self, mousepos):
-        """Click handling function to check mouse location"""
-        logger.debug("on_click: %s", mousepos)
-        # Iterate through our list of buttons and get the first one
-        # whose rect returns True for pygame.Rect.collidepoint()
-        try:
-            button = next(obj for obj in self.buttons if obj['rect'].collidepoint(mousepos))
-            logger.info(
-                "%s clicked - launching %d",
-                button["label"], button["index"]
-            )
-            # Call button_handler with the matched button's index value
-            new_challenge = self.button_handler(button['index'])
-            return new_challenge
-        except StopIteration:
-            logger.debug(
-                "Click at pos %s did not interact with any button",
-                mousepos
-            )
-            return None
-
-    def button_handler(self, number):
+    def button_handler(self, event):
         """Button action handler. Currently differentiates between
         exit, rc and other buttons only"""
-        logger.debug("button %d pressed", number)
-        time.sleep(0.01)
-        if number < 7:
-            logger.info("other selected")
-            return "Other"
-        elif number == 7:
+        logger.debug("%s button pressed", event.label)
+        if event.label is "RC":
             logger.info("launching RC challenge")
             new_challenge = RC(timeout=self.timeout)
             return new_challenge
-        elif number == 8:
+        elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
             return "Exit"
         else:
-            return None
+            logger.info("other selected")
+            return "Other"
 
     def joystick_handler(self, button):
        if button['dright']:
@@ -211,27 +187,17 @@ class Menu():
                     sgc.event(event)
                     if event.type== GUI:
                         if event.widget_type is "Button":
-                            print event.label
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        logger.debug("screen pressed: %s", event.pos)
-                        pos = (event.pos[0], event.pos[1])
-                        # for debugging purposes - adds a small dot
-                        # where the screen is pressed
-                        # pygame.draw.circle(screen, WHITE, pos, 2, 0)
-                        requested_challenge = self.on_click(pos)
-                        logger.info("requested challenge is %s", requested_challenge)
-                        if requested_challenge:
-                            logger.info("about to stop a thread if there's one running")
-                            if running_challenge:
-                                logger.info("about to stop thread")
-                                self.stop_threads(running_challenge)
-
-                        if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
-                            running_challenge = self.launch_challenge(requested_challenge)
-                            logger.info("challenge %s launched", running_challenge.name)
-
-                        if requested_challenge == "Exit":
-                            sys.exit()
+                            requested_challenge = self.button_handler(event)
+                            if requested_challenge:
+                                logger.info("about to stop a thread if there's one running")
+                                if running_challenge:
+                                    logger.info("about to stop thread")
+                                    self.stop_threads(running_challenge)
+                            if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
+                                running_challenge = self.launch_challenge(requested_challenge)
+                                logger.info("challenge %s launched", running_challenge.name)
+                            if requested_challenge == "Exit":
+                                sys.exit()
                     # ensure there is always a safe way to end the program
                     # if the touch screen fails
                     if event.type == KEYDOWN:
