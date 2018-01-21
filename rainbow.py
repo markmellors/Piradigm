@@ -144,7 +144,7 @@ class StreamProcessor(threading.Thread):
             cv2.drawContours(mask, [biggest_contour], -1, 255, -1)
             mask = cv2.erode(mask, None, iterations=2)
             mean = cv2.mean(image, mask=mask)[:3]
-            print mean
+            #print mean
             ball = [found_x, found_y, found_area]
         else:
             ball = None
@@ -332,4 +332,5 @@ class Rainbow(BaseChallenge):
             self.drive.stop()
             pygame.mouse.set_visible(False)
             self.logger.info("bye")
+            pygame.event.post(pygame.event.Event(USEREVENT+1,message="challenge finished"))
 

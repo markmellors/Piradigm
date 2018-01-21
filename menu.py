@@ -194,6 +194,8 @@ class Menu():
                     if event.type== GUI:
                         if event.widget_type is "Button":
                             requested_challenge = self.button_handler(event)
+                            for btn in self.buttons:
+                                btn['btn'].remove(btn['index'])
                             if requested_challenge:
                                 logger.info("about to stop a thread if there's one running")
                                 if running_challenge:
@@ -209,6 +211,11 @@ class Menu():
                     elif event.type== KEYDOWN:
                         if event.key == K_ESCAPE:
                             sys.exit()
+                    elif event.type == (USEREVENT+1):
+                        print event.message
+                        self.screen.fill(BLACK)
+                        for btn in self.buttons:
+                            btn['btn'].add(btn['index'])
 
 
 if __name__ == "__main__":
