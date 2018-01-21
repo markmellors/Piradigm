@@ -101,10 +101,10 @@ class StreamProcessor(threading.Thread):
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         # method will extract the colour we are interested in (between 0 and 180)
         colour_bounds = {
-            'red': ((105, 65, 80), (125, 255, 200)),
-            'green': ((46, 65, 80), (90, 255, 200)),
-            'blue': ((1, 65, 80), (46, 255, 200)),
-            'yellow': ((90, 66, 80), (105, 255, 200)),
+            'red': ((110, 100, 80), (125, 255, 200)),
+            'green': ((46, 100, 80), (90, 255, 200)),
+            'blue': ((1, 100, 80), (46, 255, 200)),
+            'yellow': ((100, 100, 80), (105, 255, 200)),
         }
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         hsv_lower, hsv_upper = colour_bounds.get(
@@ -220,7 +220,9 @@ class StreamProcessor(threading.Thread):
             else:
                 forward = self.BACK_OFF_SPEED
                 t_error = (self.image_centre_x - x) / self.image_centre_x
-                turn = self.TURN_P * t_error - self.TURN_D *(self.last_t_error - t_error)
+                turn = self.TURN_P * t_error
+                if self.last_t_error is not None:
+                    turn -= self.TURN_D *(self.last_t_error - t_error)
                 if self.DRIVING:
                     self.drive.move(turn, forward)
                 self.last_t_error = t_error
