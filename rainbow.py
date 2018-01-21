@@ -169,6 +169,7 @@ class StreamProcessor(threading.Thread):
             area = ball[2]
             if area > self.MAX_AREA:
                 self.drive.move(0, 0)
+                self.found = True
                 logger.info('Close enough to %s ball, stopping' % (targetcolour))
             else:
                 # follow 0.2, /2 good
@@ -207,6 +208,7 @@ class StreamProcessor(threading.Thread):
                 self.retreated = True
                 logger.info('far enough away from %s, stopping' % (targetcolour))
             else:
+                forward = self.BACK_OFF_SPEED
                 t_error = (self.image_centre_x - x) / self.image_centre_x
                 turn = self.TURN_P * t_error - self.TURN_D *(self.last_t_error - t_error)
                 self.drive.move(turn, forward)
@@ -273,7 +275,7 @@ class Rainbow(BaseChallenge):
             screen=self.screen,
             camera=self.camera,
             drive=self.drive,
-            colour="green"
+            colour="red"
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
@@ -296,6 +298,9 @@ class Rainbow(BaseChallenge):
                     if self.processor.colour is "red": self.processor.colour = "blue"
                     self.processor.found = False
                     self.processor.retreated = False
+                elif self.processor.retreated and self.processor.colour is "green":
+                    print "finished"
+                    self.timeout = 0
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
