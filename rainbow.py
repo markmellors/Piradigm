@@ -115,7 +115,9 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
-
+        frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
+        screen.blit(frame, (100, 0)) 
+        pygame.display.update()
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(
             imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
@@ -138,17 +140,17 @@ class StreamProcessor(threading.Thread):
                 found_y = cy
                 biggest_contour = contour
         if found_area > self.MIN_CONTOUR_AREA:
+            mask = numpy.zeros(image.shape[:2], dtype="uint8")
+            cv2.drawContours(mask, [biggest_contour], -1, 255, -1)
+            mask = cv2.erode(mask, None, iterations=2)
+            mean = cv2.mean(image, mask=mask)[:3]
+            print mean
             ball = [found_x, found_y, found_area]
         else:
             ball = None
         pygame.mouse.set_pos(found_y, 320 - found_x)
         if biggest_contour is not None:
             contour_area = cv2.contourArea(biggest_contour)
-            mask = numpy.zeros(image.shape[:2], dtype="uint8")
-            cv2.drawContours(mask, [biggest_contour], -1, 255, -1)
-            mask = cv2.erode(mask, None, iterations=2)
-            mean = cv2.mean(image, mask=mask)[:3]
-            print mean
             if self.screen and contour_area > self.MIN_CONTOUR_AREA:
                 font = pygame.font.Font(None, 24)
                 label = font.render(str(contour_area), 1, (250, 250, 250))
