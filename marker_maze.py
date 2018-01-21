@@ -16,8 +16,8 @@ env_vars = [
     ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
     ("SDL_MOUSEDRV", "TSLIB"),
 ]
-TURN_P = 0.2
-TURN_D = 0.4
+TURN_P = 2
+TURN_D = 0.2
 
 for var_name, val in env_vars:
     os.environ[var_name] = val
@@ -44,6 +44,7 @@ MIN_SPEED = 0
 STRAIGHT_SPEED = 0.25
 STEERING_OFFSET = 0.0  #more positive make it turn left
 STRAIGHT_TOLERANCE = 0.2
+FIND_TURN_SPEED = 0.30
 ACC_RATE = 0.1
 CROP_WIDTH = 360
 i = 0
@@ -142,18 +143,13 @@ try:
             if last_t_error is not 0:
                 #if there was a real error last time then do some damping
                 turn += TURN_D *(last_t_error - t_error)
-            if abs(t_error) < STRAIGHT_TOLERANCE and abs(last_t_error) < STRAIGHT_TOLERANCE:
-                #if we're going straight, floor it
-                speed = min(STRAIGHT_SPEED, speed + ACC_RATE)
-            else:
-                speed = max(speed - ACC_RATE, MIN_SPEED)
-            drive.move (turn, speed)
+            turn = min(max(turn,-0.4),0.4)
+            drive.move (turn, STRAIGHT_SPEED)
             last_t_error = t_error
             print(camera.exposure_speed)
         else:
             found = False
-            speed = max(0, speed - ACC_RATE)
-            drive.move(STEERING_OFFSET, speed)
+            drive.move(FIND_TURN_SPEED, 0)
             last_t_error = 0 
         # Display the resulting frame
         frame = pygame.surfarray.make_surface(frame)
