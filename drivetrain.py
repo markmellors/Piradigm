@@ -86,7 +86,7 @@ class DriveTrain():
         return min(max_val, max(min_val, val))
 
     def stop(self):
-        logging.info("RC challenge stopping")
+        logging.info("Drivetrain stopping")
         self.pz.stop()
         self.pz.cleanup()
         self.killed = True
