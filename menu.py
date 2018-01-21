@@ -135,9 +135,6 @@ class Menu():
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
             return "Exit"
-        elif number < 7:
-            logger.info("other selected")
-            return "Other"
         else:
             logger.info("unsupported button selected (%s)", event.label)
             return "Other"
