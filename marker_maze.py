@@ -41,7 +41,7 @@ print("setup complete, looking")
 last_t_error = 0
 speed = 0
 MIN_SPEED = 0
-MAX_SPEED = 1
+STRAIGHT_SPEED = 0.5
 STEERING_OFFSET = 0.0  #more positive make it turn left
 STRAIGHT_TOLERANCE = 0.2
 ACC_RATE = 0.2
@@ -53,6 +53,49 @@ END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
 TURN_WIDTH = 120
+S_TURN = 0.58
+NINTY_TURN = 0.39
+MAX_SPEED = 1
+MOVE_TIME = 0.05
+TURN_TIME = 0.05
+S_CYCLES = 9
+NINTY_CYCLES = 5
+
+def ninty_right():
+    count = 0
+    while count < NINTY_CYCLES:
+        drive.move(0, MAX_SPEED)
+        time.sleep(MOVE_TIME)
+        drive.move(NINTY_TURN, 0)
+        time.sleep(TURN_TIME)
+        count += 1
+def ninty_left():
+    count = 0
+    while count < NINTY_CYCLES:
+        drive.move(0, MAX_SPEED)
+        time.sleep(MOVE_TIME)
+        drive.move(-NINTY_TURN, 0)
+        time.sleep(TURN_TIME)
+        count += 1
+
+def s_right():
+    count = 0
+    while count < S_CYCLES:
+        drive.move(0, MAX_SPEED)
+        time.sleep(MOVE_TIME)
+        drive.move(S_TURN, 0)
+        time.sleep(TURN_TIME)
+        count += 1
+
+def s_left():
+    count = 0
+    while count < S_CYCLES:
+        drive.move(0, MAX_SPEED)
+        time.sleep(MOVE_TIME)
+        drive.move(-S_TURN, 0)
+        time.sleep(TURN_TIME)
+        count += 1
+
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
         if time.clock() > END_TIME:
@@ -102,7 +145,7 @@ try:
                 turn += TURN_D *(last_t_error - t_error)
             if abs(t_error) < STRAIGHT_TOLERANCE and abs(last_t_error) < STRAIGHT_TOLERANCE:
                 #if we're going straight, floor it
-                speed = min(MAX_SPEED, speed + ACC_RATE)
+                speed = min(STRAIGHT_SPEED, speed + ACC_RATE)
             else:
                 speed = max(speed - ACC_RATE, MIN_SPEED)
             drive.move (turn, speed)
