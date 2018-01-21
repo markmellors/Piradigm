@@ -102,9 +102,9 @@ class StreamProcessor(threading.Thread):
         # method will extract the colour we are interested in (between 0 and 180)
         colour_bounds = {
             'red': ((115, 100, 80), (130, 255, 230)),
-            'green': ((40, 150, 80), (70, 255, 230)),
+            'green': ((40, 100, 80), (80, 255, 230)),
             'blue': ((1, 100, 80), (25, 255, 230)),
-            'yellow': ((80, 100, 80), (110, 255, 230)),
+            'yellow': ((80, 80, 80), (110, 255, 230)),
         }
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         hsv_lower, hsv_upper = colour_bounds.get(
