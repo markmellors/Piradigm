@@ -56,7 +56,7 @@ class StreamProcessor(threading.Thread):
         self.BACK_OFF_AREA = 1000
         self.BACK_OFF_SPEED = -0.25
         self.FAST_SEARCH_TURN = 0.6
-        self.DRIVING = True
+        self.DRIVING = False
         # Why the one second sleep?
         time.sleep(1)
         self.start()
@@ -325,6 +325,8 @@ class Rainbow(BaseChallenge):
             self.image_capture_thread.join()
             self.processor.terminated = True
             self.processor.join()
+            #release camera
+            self.camera.close()
             self.camera = None
             self.logger.info("stopping drive")
             self.drive.stop()
