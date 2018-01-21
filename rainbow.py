@@ -56,6 +56,7 @@ class StreamProcessor(threading.Thread):
         self.BACK_OFF_AREA = 1000
         self.BACK_OFF_SPEED = -0.25
         self.FAST_SEARCH_TURN = 0.6
+        self.DRIVING = False
         # Why the one second sleep?
         time.sleep(1)
         self.start()
@@ -140,7 +141,7 @@ class StreamProcessor(threading.Thread):
             ball = [found_x, found_y, found_area]
         else:
             ball = None
-        pygame.mouse.set_pos(found_y, found_x)
+        pygame.mouse.set_pos(found_y, 320 - found_x)
         if biggest_contour is not None:
             contour_area = cv2.contourArea(biggest_contour)
             mask = numpy.zeros(image.shape[:2], dtype="uint8")
@@ -186,14 +187,16 @@ class StreamProcessor(threading.Thread):
                     #if there was a real error last time then do some damping
                     turn -= self.TURN_D *(self.last_t_error - t_error)
                     forward -= self.AREA_D * (self.last_a_error - a_error)
-                self.drive.move(turn, forward)
+                if self.DRIVING:
+                    self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 self.last_a_error = a_error
                 print ('%s ball, %s' % (targetcolour, t_error))
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 5:
-                self.drive.move(self.FAST_SEARCH_TURN, 0)
+                if self.DRIVING:
+                    self.drive.move(self.FAST_SEARCH_TURN, 0)
                 self.cycle = 0
             else:
                 self.drive.move(0, 0)
@@ -216,7 +219,8 @@ class StreamProcessor(threading.Thread):
                 forward = self.BACK_OFF_SPEED
                 t_error = (self.image_centre_x - x) / self.image_centre_x
                 turn = self.TURN_P * t_error - self.TURN_D *(self.last_t_error - t_error)
-                self.drive.move(turn, forward)
+                if self.DRIVING:
+                    self.drive.move(turn, forward)
                 self.last_t_error = t_error
         else:
             # ball lost, stop
