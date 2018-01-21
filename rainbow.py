@@ -152,9 +152,9 @@ class StreamProcessor(threading.Thread):
                 pygame.display.update()
         # Set drives or report ball status
         if not self.found:
-            self.drive_toward_ball(ball)
+            self.drive_toward_ball(ball, self.colour)
         elif not self.retreated:
-            self.drive_away_from_ball(ball)
+            self.drive_away_from_ball(ball, self.colour)
 
 
     # TODO: Move this motor control logic out of the stream processor
@@ -162,14 +162,14 @@ class StreamProcessor(threading.Thread):
     # (the clue is that the streamprocessor needs a drivetrain)
 
     # Set the motor speed from the ball position
-    def drive_toward_ball(self, ball):
+    def drive_toward_ball(self, ball, targetcolour):
         turn = 0.0
         if ball:
             x = ball[0]
             area = ball[2]
             if area > self.MAX_AREA:
                 self.drive.move(0, 0)
-                logger.info('Close enough, stopping')
+                logger.info('Close enough to %s ball, stopping' % (targetcolour))
             else:
                 # follow 0.2, /2 good
                 a_error = self.MAX_AREA - area
@@ -183,7 +183,7 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 self.last_a_error = a_error
-                print('ball, %s', t_error)
+                print ('%s ball, %s' % (targetcolour, t_error))
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 5:
@@ -192,12 +192,12 @@ class StreamProcessor(threading.Thread):
             else:
                 self.drive.move(0, 0)
                 self.cycle += 1
-            logger.info('No ball')
+            logger.info('No %s ball' % (targetcolour))
             # reset PID errors
             self.last_t_error = None
 
  # drive away from the ball, back to the middle
-    def drive_away_from_ball(self, ball):
+    def drive_away_from_ball(self, ball, targetcolour):
         turn = 0.0
         if ball:
             x = ball[0]
@@ -205,7 +205,7 @@ class StreamProcessor(threading.Thread):
             if area < self.BACK_OFF_AREA:
                 self.drive.move(0, 0)
                 self.retreated = True
-                logger.info('far enough away, stopping')
+                logger.info('far enough away from %s, stopping' % (targetcolour))
             else:
                 t_error = (self.image_centre_x - x) / self.image_centre_x
                 turn = self.TURN_P * t_error - self.TURN_D *(self.last_t_error - t_error)
@@ -215,7 +215,7 @@ class StreamProcessor(threading.Thread):
             # ball lost, stop
             self.found = False
             self.drive.move(0, 0)
-            logger.info('ball lost')
+            logger.info('%s ball lost' % (targetcolour))
 
 
 # Image capture thread
@@ -262,7 +262,6 @@ class Rainbow(BaseChallenge):
 
     def run(self):
         # Startup sequence
-        pygame.mouse.set_visible(True)
         logger.info('Setup camera')
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
@@ -273,7 +272,8 @@ class Rainbow(BaseChallenge):
         self.processor = StreamProcessor(
             screen=self.screen,
             camera=self.camera,
-            drive=self.drive
+            drive=self.drive,
+            colour="green"
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
@@ -285,7 +285,7 @@ class Rainbow(BaseChallenge):
             camera=self.camera,
             processor=self.processor
         )
-
+        pygame.mouse.set_visible(True)
         try:
             while not self.should_die:
                 time.sleep(0.1)
