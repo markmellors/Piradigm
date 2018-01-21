@@ -143,6 +143,11 @@ class StreamProcessor(threading.Thread):
         pygame.mouse.set_pos(found_y, found_x)
         if biggest_contour is not None:
             contour_area = cv2.contourArea(biggest_contour)
+            mask = numpy.zeros(image.shape[:2], dtype="uint8")
+            cv2.drawContours(mask, [biggest_contour], -1, 255, -1)
+            mask = cv2.erode(mask, None, iterations=2)
+            mean = cv2.mean(image, mask=mask)[:3]
+            print mean
             if self.screen and contour_area > self.MIN_CONTOUR_AREA:
                 font = pygame.font.Font(None, 24)
                 label = font.render(str(contour_area), 1, (250, 250, 250))
