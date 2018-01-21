@@ -16,8 +16,8 @@ env_vars = [
     ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
     ("SDL_MOUSEDRV", "TSLIB"),
 ]
-TURN_P = 0.4
-TURN_D = 1
+TURN_P = 0.2
+TURN_D = 0.4
 
 for var_name, val in env_vars:
     os.environ[var_name] = val
@@ -41,25 +41,25 @@ print("setup complete, looking")
 last_t_error = 0
 speed = 0
 MIN_SPEED = 0
-STRAIGHT_SPEED = 0.5
+STRAIGHT_SPEED = 0.25
 STEERING_OFFSET = 0.0  #more positive make it turn left
 STRAIGHT_TOLERANCE = 0.2
-ACC_RATE = 0.2
+ACC_RATE = 0.1
 CROP_WIDTH = 360
 i = 0
-TIMEOUT = 4.0
+TIMEOUT = 30.0
 START_TIME = time.clock()
 END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
-TURN_WIDTH = 120
+TURN_WIDTH = 70
 S_TURN = 0.58
 NINTY_TURN = 0.39
 MAX_SPEED = 1
 MOVE_TIME = 0.05
 TURN_TIME = 0.05
 S_CYCLES = 9
-NINTY_CYCLES = 5
+NINTY_CYCLES = 7
 
 def ninty_right():
     count = 0
@@ -119,21 +119,20 @@ try:
             #print(corners)
             found_y = sum([arr[0] for arr in corners[0][0]])  / 4
             found_x = sum([arr[1] for arr in corners[0][0]])  / 4
-            width = abs(corners[0][0][1][0]-corners[0][0][2][0]+corners[0][0][4][0]-corners[0][0][3][0])/2
+            width = abs(corners[0][0][0][0]-corners[0][0][1][0]+corners[0][0][3][0]-corners[0][0][2][0])/2
+            print ('marker width %s' % width)
             if width > TURN_WIDTH:
-                if turn_number is 0:
-                    turn_number +=1
+                turn_number += 1
+                print ('Close to marker making turn %s' % turn_number)
+                if turn_number is 1:
                     ninty_right()
-                elif turn_number is 1:
-                    turn_number +=1
-                    s_right()
                 elif turn_number is 2:
-                    turn_number +=1
-                    s_left()
+                    s_right()
                 elif turn_number is 3:
-                    turn_number +=1
+                    s_left()
+                elif turn_number is 4:
                     ninty_left()
-                else
+                else:
                     print('finished!')
                     drive.move(0,0)
                     END_TIME = time.clock()
@@ -165,7 +164,8 @@ try:
          img_name = str(i) + "Fimg.jpg"
         else:
          img_name = str(i) + "NFimg.jpg"
-        cv2.imwrite(img_name, gray)
+        #filesave for debugging: 
+        #cv2.imwrite(img_name, gray)
         i += 1
         for event in pygame.event.get():
             if event.type == KEYDOWN:
