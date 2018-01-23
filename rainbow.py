@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 # coding: Latin
 
-# Load library functions we want
+# Load all standard tools for image processing challenges
 from img_base_class import *
 
 # Image stream processing thread

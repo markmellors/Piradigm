@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: Latin
 
+# this file contains all the common elements of a threaded image processing challenge
 # Load library functions we want
 import logging
 import logging.config
@@ -23,7 +24,6 @@ from base_challenge import BaseChallenge
 
 logging.config.fileConfig('logging.ini')
 logger = logging.getLogger('piradigm.' + __name__)
-
 logger.debug('Libraries loaded')
 
 
