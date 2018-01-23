@@ -262,7 +262,36 @@ class ImageCapture(threading.Thread):
             else:
                 yield self.processor.stream
                 self.processor.event.set()
+                
+def setup_labels(self,surface):
+    """setup the controls for the rainbow challenge"""
+    label_config = [
+        ("colour", 20, 10, BLACK, WHITE),
+    ]
+    return [
+        self.make_labels(index, *item)
+        for index, item
+        in enumerate(menu_config)
+    ]
 
+def setup_controls(self,surface):
+   control_config = [
+       ("hue_min", 25, 15, WHITE, BLACK),
+   ]
+   return [
+        self.make_labels(index, *item)
+        for index, item
+        in enumerate(menu_config)
+   ]
+   
+def make_control(self, index, text, xpo, ypo, colour, text_colour):
+   """make a text label at the specified position"""
+   logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
+   return dict(
+       index=index,
+       label=text,
+       lbl = Label(label-text, pos=(xpo, ypo), col=colour)
+   )
 
 class Rainbow(BaseChallenge):
     """Rainbow challenge class"""
@@ -278,6 +307,7 @@ class Rainbow(BaseChallenge):
     def run(self):
         # Startup sequence
         logger.info('Setup camera')
+        
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
@@ -292,7 +322,9 @@ class Rainbow(BaseChallenge):
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
-
+        self.labels = self.setup_labels(self.screen)
+        for lbl in self.labels:
+           lbl['lbl'].add(lbl['index'])
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
@@ -326,6 +358,8 @@ class Rainbow(BaseChallenge):
             self.processor.terminated = True
             self.processor.join()
             #release camera
+            for lbl in self.labels:
+                lbl['lbl'].remove(lbl['index'])
             self.camera.close()
             self.camera = None
             self.logger.info("stopping drive")
