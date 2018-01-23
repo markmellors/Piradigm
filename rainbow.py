@@ -5,12 +5,6 @@
 # Load library functions we want
 from img_base_class import *
 
-logging.config.fileConfig('logging.ini')
-logger = logging.getLogger('piradigm.' + __name__)
-
-logger.debug('Libraries loaded')
-# camera settings
-
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
     def __init__(self, screen=None, camera=None, drive=None, colour="any"):
@@ -216,35 +210,6 @@ class StreamProcessor(threading.Thread):
             logger.info('%s ball lost' % (targetcolour))
 
 
-# Image capture thread
-class ImageCapture(threading.Thread):
-    def __init__(self, camera=None, processor=None):
-        super(ImageCapture, self).__init__()
-        self.terminated = False
-        self.camera = camera
-        self.processor = processor
-        self.start()
-
-    def run(self):
-        logger.debug('Start the stream using the video port')
-        self.camera.capture_sequence(
-            self.trigger_stream(),
-            format='bgr',
-            use_video_port=True
-        )
-        logger.debug('Terminating camera processing...')
-        self.processor.terminated = True
-        self.processor.join()
-        logger.debug('Processing terminated.')
-
-    # Stream delegation loop
-    def trigger_stream(self):
-        while not self.terminated:
-            if self.processor.event.is_set():
-                time.sleep(0.01)
-            else:
-                yield self.processor.stream
-                self.processor.event.set()
 
 
 class Rainbow(BaseChallenge):
