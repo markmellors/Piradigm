@@ -274,7 +274,7 @@ def setup_labels(surface):
     BLACK = 0, 0, 0
     WHITE = 255, 255, 255
     label_config = [
-        ("colour", 150, 10, WHITE, BLACK),
+        ("colour", 120, 100, WHITE),
     ]
     return [
         make_labels(index, *item)
@@ -291,7 +291,7 @@ def setup_controls(surface):
     BLACK = 0, 0, 0
     WHITE = 255, 255, 255
     control_config = [
-       ("hue_min", 150, 50, WHITE, BLACK),
+       ("hue_min", 120, 60, WHITE, BLACK),
     ]
     return [
         make_controls(index, *item)
@@ -299,7 +299,7 @@ def setup_controls(surface):
         in enumerate(control_config)
     ]
    
-def make_labels(index, text, xpo, ypo, colour, text_colour):
+def make_labels(index, text, xpo, ypo, colour):
     """make a text label at the specified position"""
     logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
     return dict(
@@ -363,6 +363,7 @@ class Rainbow(BaseChallenge):
         try:
             while not self.should_die:
                 time.sleep(0.1)
+                sgc.update(time)
                 # TODO: Tidy this
                 if self.processor.retreated and self.processor.colour is not "green":
                     if self.processor.colour is "yellow": self.processor.colour = "green"
