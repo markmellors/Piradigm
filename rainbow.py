@@ -3,7 +3,7 @@
 # coding: Latin
 
 # Load library functions we want
-import img_base_class import *
+from img_base_class import *
 
 logging.config.fileConfig('logging.ini')
 logger = logging.getLogger('piradigm.' + __name__)
