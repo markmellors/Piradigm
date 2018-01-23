@@ -1,4 +1,5 @@
 
+
 #!/usr/bin/env python
 # coding: Latin
 
@@ -263,35 +264,58 @@ class ImageCapture(threading.Thread):
                 yield self.processor.stream
                 self.processor.event.set()
                 
-def setup_labels(self,surface):
+def setup_labels(surface):
     """setup the controls for the rainbow challenge"""
+    # colours
+    #why do these need repeating when theyre in menu.py? aren't they global?
+    BLUE = 26, 0, 255
+    SKY = 100, 50, 255
+    CREAM = 254, 255, 250
+    BLACK = 0, 0, 0
+    WHITE = 255, 255, 255
     label_config = [
-        ("colour", 20, 10, BLACK, WHITE),
+        ("colour", 150, 10, WHITE, BLACK),
     ]
     return [
-        self.make_labels(index, *item)
+        make_labels(index, *item)
         for index, item
-        in enumerate(menu_config)
+        in enumerate(label_config)
     ]
 
-def setup_controls(self,surface):
-   control_config = [
-       ("hue_min", 25, 15, WHITE, BLACK),
-   ]
-   return [
-        self.make_labels(index, *item)
+def setup_controls(surface):
+    # colours
+    #why do these need repeating when theyre in menu.py? aren't they global?
+    BLUE = 26, 0, 255
+    SKY = 100, 50, 255
+    CREAM = 254, 255, 250
+    BLACK = 0, 0, 0
+    WHITE = 255, 255, 255
+    control_config = [
+       ("hue_min", 150, 50, WHITE, BLACK),
+    ]
+    return [
+        make_controls(index, *item)
         for index, item
-        in enumerate(menu_config)
-   ]
+        in enumerate(control_config)
+    ]
    
-def make_control(self, index, text, xpo, ypo, colour, text_colour):
-   """make a text label at the specified position"""
-   logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
-   return dict(
-       index=index,
-       label=text,
-       lbl = Label(label-text, pos=(xpo, ypo), col=colour)
-   )
+def make_labels(index, text, xpo, ypo, colour, text_colour):
+    """make a text label at the specified position"""
+    logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
+    return dict(
+        index=index,
+        label=text,
+        lbl = sgc.Label(text=text, pos=(xpo, ypo), col=colour)
+    )
+   
+def make_controls(index, text, xpo, ypo, colour, text_colour):
+    """make a text label at the specified position"""
+    logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
+    return dict(
+        index=index,
+        label=text,
+        ctrl = sgc.InputBox(label=text, pos=(xpo, ypo), col_focus=colour, col_focus_not=colour, label_side="top")
+    )
 
 class Rainbow(BaseChallenge):
     """Rainbow challenge class"""
@@ -322,9 +346,12 @@ class Rainbow(BaseChallenge):
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
-        self.labels = self.setup_labels(self.screen)
+        self.labels = setup_labels(self.screen)
         for lbl in self.labels:
            lbl['lbl'].add(lbl['index'])
+        self.controls = setup_controls(self.screen)
+        for ctrl in self.controls:
+           ctrl['ctrl'].add(ctrl['index'])
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
@@ -360,6 +387,8 @@ class Rainbow(BaseChallenge):
             #release camera
             for lbl in self.labels:
                 lbl['lbl'].remove(lbl['index'])
+            for ctrl in self.controls:
+                ctrl['ctrl'].remove(ctrl['index'])
             self.camera.close()
             self.camera = None
             self.logger.info("stopping drive")
