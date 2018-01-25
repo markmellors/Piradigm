@@ -130,7 +130,7 @@ class Menu():
             return new_challenge
         elif event.label is "Rainbow":
             logger.info("launching Rainbow challenge")
-            new_challenge = Rainbow(timeout=self.timeout, screen=self.screen)
+            new_challenge = Rainbow(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")

@@ -22,6 +22,7 @@ import cv2
 import numpy
 from fractions import Fraction
 from base_challenge import BaseChallenge
+from approxeng.input.selectbinder import ControllerResource
 
 logging.config.fileConfig('logging.ini')
 logger = logging.getLogger('piradigm.' + __name__)
@@ -48,6 +49,7 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
+        self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
         self.AREA_P = 0.0001
@@ -92,10 +94,11 @@ class StreamProcessor(threading.Thread):
         # crop image to speed up processing and avoid false positives
         image = image[80:180, 0:320]
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
-        screen.fill([0, 0, 0])
-        font = pygame.font.Font(None, 24)
-        screen.blit(frame, (0, 0))        
+        if not self.menu:
+            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+            screen.fill([0, 0, 0])
+            font = pygame.font.Font(None, 24)
+            screen.blit(frame, (0, 0))        
         image = cv2.medianBlur(image, 5)
         # Convert the image from 'BGR' to HSV colour space
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
@@ -116,9 +119,10 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
-        frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-        screen.blit(frame, (100, 0)) 
-        pygame.display.update()
+        if not self.menu:
+            frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
+            screen.blit(frame, (100, 0)) 
+            pygame.display.update()
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(
             imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
@@ -291,7 +295,13 @@ def setup_controls(surface):
     BLACK = 0, 0, 0
     WHITE = 255, 255, 255
     control_config = [
-       ("hue_min", 120, 60, WHITE, BLACK),
+       ("hue_min", 10, 10, BLACK, WHITE),
+       ("hue_max", 10, 60, BLACK, WHITE),
+       ("sat_min", 10, 110, BLACK, WHITE),
+       ("sat_max", 10, 160, BLACK, WHITE),
+       ("val_min", 10, 210, BLACK, BLACK),
+       ("val_max", 10, 260, BLACK, BLACK),
+       
     ]
     return [
         make_controls(index, *item)
@@ -314,24 +324,37 @@ def make_controls(index, text, xpo, ypo, colour, text_colour):
     return dict(
         index=index,
         label=text,
-        ctrl = sgc.InputBox(label=text, pos=(xpo, ypo), col_focus=colour, col_focus_not=colour, label_side="top")
+        ctrl = sgc.Scale(label=text, pos=(xpo, ypo), col=colour, min=0, max=255, label_col=text_colour, label_side="top")
     )
 
 class Rainbow(BaseChallenge):
     """Rainbow challenge class"""
 
-    def __init__(self, timeout=120, screen=None):
+    def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 320  # Camera image width
         self.image_height = 240  # Camera image height
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
+        self.menu = False
+        self.joystick=joystick
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
+
+    def joystick_handler(self, button):
+        if button['circle']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 77, 'key': pygame.K_RIGHT, 'unicode': "u'\t'"}))
+        elif button['square']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 75, 'key': pygame.K_LEFT, 'unicode': "u'\t'"}))
+        elif button['start']:
+            self.menu = not self.menu
+            print ("start pressed, menu now %s" % self.menu)
 
     def run(self):
         # Startup sequence
         logger.info('Setup camera')
-        
+        screen = pygame.display.get_surface()        
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
@@ -347,11 +370,7 @@ class Rainbow(BaseChallenge):
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
         self.labels = setup_labels(self.screen)
-        for lbl in self.labels:
-           lbl['lbl'].add(lbl['index'])
         self.controls = setup_controls(self.screen)
-        for ctrl in self.controls:
-           ctrl['ctrl'].add(ctrl['index'])
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
@@ -365,6 +384,24 @@ class Rainbow(BaseChallenge):
                 time.sleep(0.1)
                 sgc.update(time)
                 # TODO: Tidy this
+                if self.joystick.connected:
+                    self.joystick_handler(self.joystick.check_presses())
+                self.processor.menu=self.menu
+                if self.menu:
+                    screen.fill([0, 0, 0])
+                    for lbl in self.labels:
+                        if not lbl['lbl'].active():
+                            lbl['lbl'].add(lbl['index'])
+                    for ctrl in self.controls:
+                        if not ctrl['ctrl'].active():
+                            ctrl['ctrl'].add(ctrl['index'])
+                else:
+                    for lbl in self.labels:
+                        if lbl['lbl'].active():
+                            lbl['lbl'].remove(lbl['index'])
+                    for ctrl in self.controls:
+                        if ctrl['ctrl'].active():
+                            ctrl['ctrl'].remove(ctrl['index'])
                 if self.processor.retreated and self.processor.colour is not "green":
                     if self.processor.colour is "yellow": self.processor.colour = "green"
                     if self.processor.colour is "blue": self.processor.colour = "yellow"
@@ -386,10 +423,6 @@ class Rainbow(BaseChallenge):
             self.processor.terminated = True
             self.processor.join()
             #release camera
-            for lbl in self.labels:
-                lbl['lbl'].remove(lbl['index'])
-            for ctrl in self.controls:
-                ctrl['ctrl'].remove(ctrl['index'])
             self.camera.close()
             self.camera = None
             self.logger.info("stopping drive")
