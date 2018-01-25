@@ -50,7 +50,7 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.menu = False
+        self.menu = True
         self.last_a_error = 0
         self.last_t_error = 0
         self.AREA_P = 0.0001
@@ -270,39 +270,6 @@ class ImageCapture(threading.Thread):
             else:
                 yield self.processor.stream
                 self.processor.event.set()
-                
-def setup_controls(surface):
-    # colours
-    #why do these need repeating when theyre in menu.py? aren't they global?
-    BLUE = 26, 0, 255
-    SKY = 100, 50, 255
-    CREAM = 254, 255, 250
-    BLACK = 0, 0, 0
-    WHITE = 255, 255, 255
-    control_config = [
-       ("min hue", 5, 90, BLACK, WHITE),
-       ("max hue", 115, 90, BLACK, WHITE),
-       ("min saturation", 5, 165, BLACK, WHITE),
-       ("max saturation", 115, 165, BLACK, WHITE),
-       ("min value", 5, 240, BLACK, WHITE),
-       ("max value", 115, 240, WHITE, WHITE),
-       
-    ]
-    return [
-        make_controls(index, *item)
-        for index, item
-        in enumerate(control_config)
-    ]
-   
-
-def make_controls(index, text, xpo, ypo, colour, text_colour):
-    """make a text label at the specified position"""
-    logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
-    return dict(
-        index=index,
-        label=text,
-        ctrl = MyScale(label=text, pos=(xpo, ypo), col=colour, min=0, max=255, label_col=text_colour, label_side="top")
-    )
 
 class Rainbow(BaseChallenge):
     """Rainbow challenge class"""
@@ -313,9 +280,41 @@ class Rainbow(BaseChallenge):
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
-        self.menu = False
+        self.menu = True
         self.joystick=joystick
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
+                
+    def setup_controls(self):
+        # colours
+        #why do these need repeating when theyre in menu.py? aren't they global?
+        BLUE = 26, 0, 255
+        SKY = 100, 50, 255
+        CREAM = 254, 255, 250
+        BLACK = 0, 0, 0
+        WHITE = 255, 255, 255
+        control_config = [
+           ("min hue", 5, 90, BLACK, WHITE),
+           ("max hue", 115, 90, BLACK, WHITE),
+           ("min saturation", 5, 165, BLACK, WHITE),
+           ("max saturation", 115, 165, BLACK, WHITE),
+           ("min value", 5, 240, BLACK, WHITE),
+           ("max value", 115, 240, WHITE, WHITE),
+        ]
+        return [
+            self.make_controls(index, *item)
+            for index, item
+            in enumerate(control_config)
+        ]
+   
+
+    def make_controls(self, index, text, xpo, ypo, colour, text_colour):
+        """make a slider control at the specified position"""
+        logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
+        return dict(
+            index=index,
+            label=text,
+            ctrl = MyScale(label=text, pos=(xpo, ypo), col=colour, min=0, max=255, label_col=text_colour, label_side="top")
+        )
 
     def joystick_handler(self, button):
         if button['circle']:
@@ -326,14 +325,16 @@ class Rainbow(BaseChallenge):
                 'mod': 0, 'scancode': 75, 'key': pygame.K_LEFT, 'unicode': "u'\t'"}))
         elif button['start']:
             self.menu = not self.menu
-            data = json.load(open('rainbow.json'))
-            colour=self.processor.colour
-            print self.processor.colour_bounds
-            print data
             if self.menu:
+                #menu requested, get values from config file
+                data = json.load(open('rainbow.json'))
+                colour = self.processor.colour
                 self.processor.colour_bounds[colour] = data[colour]
-                print self.processor.colour_bounds
-
+            else:
+                #menu closing, store values in file
+                data = self.processor.colour_bounds
+                with open('rainbow.json', 'w') as f:
+                    json.dump(data, f)
 
     def run(self):
         # Startup sequence
@@ -353,11 +354,15 @@ class Rainbow(BaseChallenge):
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
-        self.controls = setup_controls(self.screen)
+        self.controls = self.setup_controls()
         if self.menu:
             screen.fill([0, 0, 0])
+            colour = self.processor.colour
+            colour_bounds = self.processor.colour_bounds[colour]
             for ctrl in self.controls:
                 ctrl['ctrl'].add(ctrl['index'])
+                i = ctrl['index']
+                ctrl['ctrl'].value = colour_bounds[i % 2][int(i/3)]
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
@@ -375,9 +380,13 @@ class Rainbow(BaseChallenge):
                 self.processor.menu = self.menu
                 if self.menu:
                     screen.fill([0, 0, 0])
+                    colour = self.processor.colour
+                    colour_bounds = self.processor.colour_bounds[colour]
                     for ctrl in self.controls:
                         if not ctrl['ctrl'].active():
                             ctrl['ctrl'].add(ctrl['index'], fade=False)
+                            i = ctrl['index']
+                            ctrl['ctrl'].value = colour_bounds[i % 2][int(i/3)]
                 else:
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
