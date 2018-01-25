@@ -394,6 +394,9 @@ class Rainbow(BaseChallenge):
             self.image_capture_thread.join()
             self.processor.terminated = True
             self.processor.join()
+            for ctrl in self.controls:
+                if ctrl['ctrl'].active():
+                    ctrl['ctrl'].remove(fade=False)
             #release camera
             self.camera.close()
             self.camera = None
