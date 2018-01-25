@@ -16,6 +16,7 @@ import pygame
 from pygame.locals import*
 import sgc
 from sgc.locals import *
+from my_button import MyScale
 import picamera
 import picamera.array
 import cv2
@@ -49,7 +50,7 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.menu = False
+        self.menu = True
         self.last_a_error = 0
         self.last_t_error = 0
         self.AREA_P = 0.0001
@@ -268,24 +269,6 @@ class ImageCapture(threading.Thread):
                 yield self.processor.stream
                 self.processor.event.set()
                 
-def setup_labels(surface):
-    """setup the controls for the rainbow challenge"""
-    # colours
-    #why do these need repeating when theyre in menu.py? aren't they global?
-    BLUE = 26, 0, 255
-    SKY = 100, 50, 255
-    CREAM = 254, 255, 250
-    BLACK = 0, 0, 0
-    WHITE = 255, 255, 255
-    label_config = [
-        ("colour", 120, 100, WHITE),
-    ]
-    return [
-        make_labels(index, *item)
-        for index, item
-        in enumerate(label_config)
-    ]
-
 def setup_controls(surface):
     # colours
     #why do these need repeating when theyre in menu.py? aren't they global?
@@ -295,12 +278,12 @@ def setup_controls(surface):
     BLACK = 0, 0, 0
     WHITE = 255, 255, 255
     control_config = [
-       ("hue_min", 10, 10, BLACK, WHITE),
-       ("hue_max", 10, 60, BLACK, WHITE),
-       ("sat_min", 10, 110, BLACK, WHITE),
-       ("sat_max", 10, 160, BLACK, WHITE),
-       ("val_min", 10, 210, BLACK, BLACK),
-       ("val_max", 10, 260, BLACK, BLACK),
+       ("min hue", 5, 90, BLACK, WHITE),
+       ("max hue", 115, 90, BLACK, WHITE),
+       ("min saturation", 5, 165, BLACK, WHITE),
+       ("max saturation", 115, 165, BLACK, WHITE),
+       ("min value", 5, 240, BLACK, WHITE),
+       ("max value", 115, 240, WHITE, WHITE),
        
     ]
     return [
@@ -309,22 +292,14 @@ def setup_controls(surface):
         in enumerate(control_config)
     ]
    
-def make_labels(index, text, xpo, ypo, colour):
-    """make a text label at the specified position"""
-    logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
-    return dict(
-        index=index,
-        label=text,
-        lbl = sgc.Label(text=text, pos=(xpo, ypo), col=colour)
-    )
-   
+
 def make_controls(index, text, xpo, ypo, colour, text_colour):
     """make a text label at the specified position"""
     logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
     return dict(
         index=index,
         label=text,
-        ctrl = sgc.Scale(label=text, pos=(xpo, ypo), col=colour, min=0, max=255, label_col=text_colour, label_side="top")
+        ctrl = MyScale(label=text, pos=(xpo, ypo), col=colour, min=0, max=255, label_col=text_colour, label_side="top")
     )
 
 class Rainbow(BaseChallenge):
@@ -336,7 +311,7 @@ class Rainbow(BaseChallenge):
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
-        self.menu = False
+        self.menu = True
         self.joystick=joystick
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
 
@@ -369,8 +344,11 @@ class Rainbow(BaseChallenge):
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
-        self.labels = setup_labels(self.screen)
         self.controls = setup_controls(self.screen)
+        if self.menu:
+            screen.fill([0, 0, 0])
+            for ctrl in self.controls:
+                ctrl['ctrl'].add(ctrl['index'])
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
@@ -381,27 +359,21 @@ class Rainbow(BaseChallenge):
         pygame.mouse.set_visible(True)
         try:
             while not self.should_die:
-                time.sleep(0.1)
-                sgc.update(time)
+                time.sleep(0.01)
                 # TODO: Tidy this
                 if self.joystick.connected:
                     self.joystick_handler(self.joystick.check_presses())
-                self.processor.menu=self.menu
+                self.processor.menu = self.menu
                 if self.menu:
                     screen.fill([0, 0, 0])
-                    for lbl in self.labels:
-                        if not lbl['lbl'].active():
-                            lbl['lbl'].add(lbl['index'])
                     for ctrl in self.controls:
                         if not ctrl['ctrl'].active():
-                            ctrl['ctrl'].add(ctrl['index'])
+                            ctrl['ctrl'].add(ctrl['index'], fade=False)
                 else:
-                    for lbl in self.labels:
-                        if lbl['lbl'].active():
-                            lbl['lbl'].remove(lbl['index'])
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
-                            ctrl['ctrl'].remove(ctrl['index'])
+                            ctrl['ctrl'].remove(fade=False)
+                sgc.update(time)
                 if self.processor.retreated and self.processor.colour is not "green":
                     if self.processor.colour is "yellow": self.processor.colour = "green"
                     if self.processor.colour is "blue": self.processor.colour = "yellow"

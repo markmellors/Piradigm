@@ -51,3 +51,6 @@ class MyButton(sgc.Button):
             dict(kwargs, **{"gui_type": gui_type, "widget_type": "Button",
                             "label": self._settings["label"][0],
                             "widget": self}))
+
+class MyScale(sgc.Scale):
+    _default_size = (100,40)
