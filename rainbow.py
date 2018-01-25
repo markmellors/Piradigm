@@ -10,7 +10,7 @@ import os
 import time
 import sys
 sys.path.append('/usr/local/lib/python2.7/site-packages')
-
+import json
 import threading
 import pygame
 from pygame.locals import*
@@ -50,13 +50,21 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.menu = True
+        self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
         self.AREA_P = 0.0001
         self.AREA_D = 0.0002
         self.TURN_P = 0.5
         self.TURN_D = 0.2
+        self.colour_bounds = {
+            'red': ((115, 100, 80), (130, 255, 230)),
+            'green': ((40, 100, 80), (80, 255, 230)),
+            'blue': ((1, 100, 80), (25, 255, 230)),
+            'yellow': ((80, 80, 80), (110, 255, 230)),
+        }
+        self.hsv_lower = (0, 0, 0)
+        self.hsv_upper = (0, 0, 0)
         self.BACK_OFF_AREA = 1000
         self.BACK_OFF_SPEED = -0.25
         self.FAST_SEARCH_TURN = 0.6
@@ -105,14 +113,8 @@ class StreamProcessor(threading.Thread):
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         # method will extract the colour we are interested in (between 0 and 180)
-        colour_bounds = {
-            'red': ((115, 100, 80), (130, 255, 230)),
-            'green': ((40, 100, 80), (80, 255, 230)),
-            'blue': ((1, 100, 80), (25, 255, 230)),
-            'yellow': ((80, 80, 80), (110, 255, 230)),
-        }
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
-        hsv_lower, hsv_upper = colour_bounds.get(
+        hsv_lower, hsv_upper = self.colour_bounds.get(
             self.colour, default_colour_bounds
         )
         imrange = cv2.inRange(
@@ -311,7 +313,7 @@ class Rainbow(BaseChallenge):
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
-        self.menu = True
+        self.menu = False
         self.joystick=joystick
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
 
@@ -324,7 +326,14 @@ class Rainbow(BaseChallenge):
                 'mod': 0, 'scancode': 75, 'key': pygame.K_LEFT, 'unicode': "u'\t'"}))
         elif button['start']:
             self.menu = not self.menu
-            print ("start pressed, menu now %s" % self.menu)
+            data = json.load(open('rainbow.json'))
+            colour=self.processor.colour
+            print self.processor.colour_bounds
+            print data
+            if self.menu:
+                self.processor.colour_bounds[colour] = data[colour]
+                print self.processor.colour_bounds
+
 
     def run(self):
         # Startup sequence
