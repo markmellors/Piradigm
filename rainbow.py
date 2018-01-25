@@ -50,19 +50,14 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.menu = True
+        self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
         self.AREA_P = 0.0001
         self.AREA_D = 0.0002
         self.TURN_P = 0.5
         self.TURN_D = 0.2
-        self.colour_bounds = {
-            'red': ((115, 100, 80), (130, 255, 230)),
-            'green': ((40, 100, 80), (80, 255, 230)),
-            'blue': ((1, 100, 80), (25, 255, 230)),
-            'yellow': ((80, 80, 80), (110, 255, 230)),
-        }
+        self.colour_bounds = json.load(open('rainbow.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.BACK_OFF_AREA = 1000
@@ -280,7 +275,7 @@ class Rainbow(BaseChallenge):
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
-        self.menu = True
+        self.menu = False
         self.joystick=joystick
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
                 
@@ -325,14 +320,20 @@ class Rainbow(BaseChallenge):
                 'mod': 0, 'scancode': 75, 'key': pygame.K_LEFT, 'unicode': "u'\t'"}))
         elif button['start']:
             self.menu = not self.menu
+            colour = self.processor.colour
             if self.menu:
                 #menu requested, get values from config file
                 data = json.load(open('rainbow.json'))
-                colour = self.processor.colour
                 self.processor.colour_bounds[colour] = data[colour]
+                
             else:
                 #menu closing, store values in file
+                #update atets changes
+                for ctrl in self.controls:
+                    i = ctrl['index']
+                    self.processor.colour_bounds[colour][i % 2][int(i/2)] = ctrl['ctrl'].value
                 data = self.processor.colour_bounds
+                print data
                 with open('rainbow.json', 'w') as f:
                     json.dump(data, f)
 
@@ -362,7 +363,7 @@ class Rainbow(BaseChallenge):
             for ctrl in self.controls:
                 ctrl['ctrl'].add(ctrl['index'])
                 i = ctrl['index']
-                ctrl['ctrl'].value = colour_bounds[i % 2][int(i/3)]
+                ctrl['ctrl'].value = colour_bounds[i % 2][int(i/2)]
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
@@ -386,7 +387,7 @@ class Rainbow(BaseChallenge):
                         if not ctrl['ctrl'].active():
                             ctrl['ctrl'].add(ctrl['index'], fade=False)
                             i = ctrl['index']
-                            ctrl['ctrl'].value = colour_bounds[i % 2][int(i/3)]
+                            ctrl['ctrl'].value = colour_bounds[i % 2][int(i/2)]
                 else:
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
