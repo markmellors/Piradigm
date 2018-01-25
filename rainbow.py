@@ -2,7 +2,11 @@
 
 #!/usr/bin/env python
 # coding: Latin
-
+"""rainbow challenge code. start button shows or hides a menu to
+   adjust key parameters for current ball colour. use '4 dot' and
+   '6 dot' buttons to adjust values, up/down/left right on dpad to
+   navigate values
+"""
 # Load library functions we want
 import logging
 import logging.config
@@ -312,6 +316,7 @@ class Rainbow(BaseChallenge):
         )
 
     def joystick_handler(self, button):
+        #if left or right buttons on right side of joystick pressed, treat them like arrow buttons
         if button['circle']:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                 'mod': 0, 'scancode': 77, 'key': pygame.K_RIGHT, 'unicode': "u'\t'"}))
@@ -319,21 +324,16 @@ class Rainbow(BaseChallenge):
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                 'mod': 0, 'scancode': 75, 'key': pygame.K_LEFT, 'unicode': "u'\t'"}))
         elif button['start']:
+            #start button brings up or hides menu
             self.menu = not self.menu
             colour = self.processor.colour
-            if self.menu:
-                #menu requested, get values from config file
-                data = json.load(open('rainbow.json'))
-                self.processor.colour_bounds[colour] = data[colour]
-                
-            else:
+            if not self.menu:
                 #menu closing, store values in file
-                #update atets changes
+                #first, get new values
                 for ctrl in self.controls:
                     i = ctrl['index']
                     self.processor.colour_bounds[colour][i % 2][int(i/2)] = ctrl['ctrl'].value
                 data = self.processor.colour_bounds
-                print data
                 with open('rainbow.json', 'w') as f:
                     json.dump(data, f)
 
@@ -356,14 +356,6 @@ class Rainbow(BaseChallenge):
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
         self.controls = self.setup_controls()
-        if self.menu:
-            screen.fill([0, 0, 0])
-            colour = self.processor.colour
-            colour_bounds = self.processor.colour_bounds[colour]
-            for ctrl in self.controls:
-                ctrl['ctrl'].add(ctrl['index'])
-                i = ctrl['index']
-                ctrl['ctrl'].value = colour_bounds[i % 2][int(i/2)]
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
@@ -383,6 +375,7 @@ class Rainbow(BaseChallenge):
                     screen.fill([0, 0, 0])
                     colour = self.processor.colour
                     colour_bounds = self.processor.colour_bounds[colour]
+                    #add the controls and give them their initial values
                     for ctrl in self.controls:
                         if not ctrl['ctrl'].active():
                             ctrl['ctrl'].add(ctrl['index'], fade=False)
