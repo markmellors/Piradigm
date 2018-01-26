@@ -65,6 +65,7 @@ MARKER1 = 3
 MARKER2 = 5
 target_id = MARKER1
 MAX_TURN_SPEED = 0.35
+loop_start_time=0
 
 def turn_right():
     drive.move(NINTY_TURN, 0)
@@ -119,6 +120,8 @@ try:
                 drive.move (turn, STRAIGHT_SPEED)
                 last_t_error = t_error
                 #print(camera.exposure_speed)
+                print time.clock()-loop_start_time
+                loop_start_time = time.clock()
             else:
                 if target_id == MARKER1:
                     turn_right()
