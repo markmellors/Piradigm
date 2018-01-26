@@ -16,8 +16,13 @@ env_vars = [
     ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
     ("SDL_MOUSEDRV", "TSLIB"),
 ]
-TURN_P = 0.01
-TURN_D = 0.02
+#0.02, 0.02 barely any detectable response
+#0.5, 0.02 some response, no damping
+#0.5, 0.2 nearly enough damping
+#0.5, 0.3 either over or under damped!
+#0.5, 0.25 too much hdamping
+TURN_P = 0.5
+TURN_D = 0.2
 
 for var_name, val in env_vars:
     os.environ[var_name] = val
@@ -52,28 +57,26 @@ found = False
 turn_number = 0
 TURN_TARGET = 10
 TURN_WIDTH = 70
-NINTY_TURN = 0.35
+NINTY_TURN = 0.4 #0.4 (0.1, 0.1) works 10/10. 0.45(0.1,0.1) works 50%
 MAX_SPEED = 0
-MOVE_TIME = 0.1
+SETTLE_TIME = 0.1
 TURN_TIME = 0.1
 MARKER1 = 3
 MARKER2 = 5
 target_id = MARKER1
-MAX_TURN_SPEED = 0.2
+MAX_TURN_SPEED = 0.4
 
 def turn_right():
-    drive.move(0, MAX_SPEED)
-    time.sleep(MOVE_TIME)
     drive.move(NINTY_TURN, 0)
     time.sleep(TURN_TIME)
     drive.move(0,0)
+    time.sleep(SETTLE_TIME)
 
 def turn_left():
-    drive.move(0, MAX_SPEED)
-    time.sleep(MOVE_TIME)
     drive.move(-NINTY_TURN, 0)
     time.sleep(TURN_TIME)
     drive.move(0,0)
+    time.sleep(SETTLE_TIME)
 
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
@@ -103,7 +106,7 @@ try:
                 print ('marker width %s' % width)
                 if width > TURN_WIDTH:
                     #marker approached, start looking for new target marker
-                    target_id = MARKER1+MARKER2-target_id
+                    target_id = MARKER1 + MARKER2 - target_id
                     turn_number += 1
                     print ('Close to marker making turn %s' % turn_number)
                 pygame.mouse.set_pos(int(found_x), int(found_y))
@@ -115,7 +118,7 @@ try:
                 turn = min(max(turn,-MAX_TURN_SPEED),MAX_TURN_SPEED)
                 drive.move (turn, STRAIGHT_SPEED)
                 last_t_error = t_error
-                print(camera.exposure_speed)
+                #print(camera.exposure_speed)
             else:
                 if target_id == MARKER1:
                     turn_right()
@@ -124,10 +127,15 @@ try:
                 found = False
                 last_t_error = 0 
         else:
-            if target_id == MARKER1:
-                turn_right()
+            #if marker was found, then probably best to stop and look
+            if found:
+                drive.move(0,0)
             else:
-                turn_left()
+            #otherwise, go looking for the marker
+                if target_id == MARKER1:
+                    turn_right()
+                else:
+                    turn_left()
             found = False
             last_t_error = 0   
         # Display the resulting frame
