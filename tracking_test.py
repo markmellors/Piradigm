@@ -21,14 +21,14 @@ env_vars = [
 #0.5, 0.2 nearly enough damping
 #0.5, 0.3 either over or under damped!
 #0.5, 0.25 too much hdamping
-TURN_P = 0.5
+TURN_P = 0.4
 TURN_D = 0.2
 
 for var_name, val in env_vars:
     os.environ[var_name] = val
-screen_width = 240
+screen_width = 320
 screen_centre = screen_width / 2
-screen_height = 320
+screen_height = 240
 
 camera = picamera.PiCamera()
 camera.resolution = (screen_width, screen_height)
@@ -48,7 +48,7 @@ speed = 0
 MIN_SPEED = 0
 STRAIGHT_SPEED = 0.15
 STEERING_OFFSET = 0.0  #more positive make it turn left
-CROP_WIDTH = 240
+CROP_WIDTH = 320
 i = 0
 TIMEOUT = 30.0
 START_TIME = time.clock()
@@ -56,7 +56,7 @@ END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
 TURN_TARGET = 10
-TURN_WIDTH = 70
+TURN_WIDTH = 60
 NINTY_TURN = 0.4 #0.4 (0.1, 0.1) works 10/10. 0.45(0.1,0.1) works 50%
 MAX_SPEED = 0
 SETTLE_TIME = 0.1
@@ -64,7 +64,7 @@ TURN_TIME = 0.1
 MARKER1 = 3
 MARKER2 = 5
 target_id = MARKER1
-MAX_TURN_SPEED = 0.4
+MAX_TURN_SPEED = 0.35
 
 def turn_right():
     drive.move(NINTY_TURN, 0)
@@ -84,7 +84,7 @@ try:
            raise KeyboardInterrupt
         frame = np.rot90(frameBuf.array)        
         video.truncate(0)
-        frame = frame[(screen_centre - CROP_WIDTH/2):(screen_centre + CROP_WIDTH/2), 70:230]
+        frame = frame[(screen_centre - CROP_WIDTH/2):(screen_centre + CROP_WIDTH/2), 30:190]
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
