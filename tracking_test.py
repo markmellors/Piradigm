@@ -16,8 +16,8 @@ env_vars = [
     ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
     ("SDL_MOUSEDRV", "TSLIB"),
 ]
-TURN_P = 2
-TURN_D = 0.2
+TURN_P = 0.01
+TURN_D = 0.02
 
 for var_name, val in env_vars:
     os.environ[var_name] = val
@@ -41,7 +41,7 @@ print("setup complete, looking")
 last_t_error = 0
 speed = 0
 MIN_SPEED = 0
-STRAIGHT_SPEED = 0.25
+STRAIGHT_SPEED = 0.15
 STEERING_OFFSET = 0.0  #more positive make it turn left
 CROP_WIDTH = 240
 i = 0
@@ -52,26 +52,26 @@ found = False
 turn_number = 0
 TURN_TARGET = 10
 TURN_WIDTH = 70
-NINTY_TURN = 0.3
-MAX_SPEED = 1
-MOVE_TIME = 0.05
-TURN_TIME = 0.05
+NINTY_TURN = 0.35
+MAX_SPEED = 0
+MOVE_TIME = 0.1
+TURN_TIME = 0.1
 MARKER1 = 3
 MARKER2 = 5
 target_id = MARKER1
-MAX_TURN_SPEED = 0.4
+MAX_TURN_SPEED = 0.2
 
 def turn_right():
-    #drive.move(0, MAX_SPEED)
+    drive.move(0, MAX_SPEED)
     time.sleep(MOVE_TIME)
-    #drive.move(NINTY_TURN, 0)
+    drive.move(NINTY_TURN, 0)
     time.sleep(TURN_TIME)
     drive.move(0,0)
 
 def turn_left():
-    #drive.move(0, MAX_SPEED)
+    drive.move(0, MAX_SPEED)
     time.sleep(MOVE_TIME)
-    #drive.move(-NINTY_TURN, 0)
+    drive.move(-NINTY_TURN, 0)
     time.sleep(TURN_TIME)
     drive.move(0,0)
 
@@ -113,7 +113,7 @@ try:
                     #if there was a real error last time then do some damping
                     turn += TURN_D *(last_t_error - t_error)
                 turn = min(max(turn,-MAX_TURN_SPEED),MAX_TURN_SPEED)
-                #drive.move (turn, STRAIGHT_SPEED)
+                drive.move (turn, STRAIGHT_SPEED)
                 last_t_error = t_error
                 print(camera.exposure_speed)
             else:
