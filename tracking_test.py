@@ -16,13 +16,17 @@ env_vars = [
     ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
     ("SDL_MOUSEDRV", "TSLIB"),
 ]
+#for speed = 0.15:
 #0.02, 0.02 barely any detectable response
 #0.5, 0.02 some response, no damping
 #0.5, 0.2 nearly enough damping
 #0.5, 0.3 either over or under damped!
-#0.5, 0.25 too much hdamping
-TURN_P = 0.4
-TURN_D = 0.2
+#0.5, 0.25 too much damping
+#for speed=0.25
+#0.4,0.2 still ok but less responsive
+#0.5, 0.3 ok (and max response increased to 0.5 - too much
+TURN_P = 0.6
+TURN_D = 0.3
 
 for var_name, val in env_vars:
     os.environ[var_name] = val
@@ -46,7 +50,7 @@ print("setup complete, looking")
 last_t_error = 0
 speed = 0
 MIN_SPEED = 0
-STRAIGHT_SPEED = 0.15
+STRAIGHT_SPEED = 0.3  #0.15 fine, 0.25 fine
 STEERING_OFFSET = 0.0  #more positive make it turn left
 CROP_WIDTH = 320
 i = 0
@@ -56,15 +60,15 @@ END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
 TURN_TARGET = 10
-TURN_WIDTH = 60
-NINTY_TURN = 1 #0.4 (0.1, 0.1) works 10/10. 0.45(0.1,0.1) works 50%. 0.8 (0.05,0.05) works 100%  1(0.05, 0.05) works 90%, as does 1(0.04,0.04)
+TURN_WIDTH = 40  #60 was good with speed 0.15. with speed 0.25, hit targets
+NINTY_TURN = 0.8 #0.4 (0.1, 0.1) works 10/10. 0.45(0.1,0.1) works 50%. 0.8 (0.05,0.05) works 100%  1(0.05, 0.05) works 90%, as does 1(0.04,0.04)
 MAX_SPEED = 0
 SETTLE_TIME = 0.05
 TURN_TIME = 0.04
 MARKER1 = 3
 MARKER2 = 5
 target_id = MARKER1
-MAX_TURN_SPEED = 0.35
+MAX_TURN_SPEED = 0.25
 loop_start_time=0
 
 def turn_right():
@@ -104,7 +108,7 @@ try:
                 found_x = sum([arr[0] for arr in corners[0][0]])  / 4
                 found_y = sum([arr[1] for arr in corners[0][0]])  / 4
                 width = abs(corners[0][0][0][0]-corners[0][0][1][0]+corners[0][0][3][0]-corners[0][0][2][0])/2
-                print ('marker width %s' % width)
+                #print ('marker width %s' % width)
                 if width > TURN_WIDTH:
                     #marker approached, start looking for new target marker
                     target_id = MARKER1 + MARKER2 - target_id
@@ -117,10 +121,15 @@ try:
                     #if there was a real error last time then do some damping
                     turn -= TURN_D *(last_t_error - t_error)
                 turn = min(max(turn,-MAX_TURN_SPEED),MAX_TURN_SPEED)
-                drive.move (turn, STRAIGHT_SPEED)
+                print turn
+                #if we're rate limting the turn, go slow
+                if abs(turn) == MAX_TURN_SPEED:
+                    drive.move (turn, STRAIGHT_SPEED/2)
+                else:
+                    drive.move (turn, STRAIGHT_SPEED)
                 last_t_error = t_error
                 #print(camera.exposure_speed)
-                print time.clock()-loop_start_time
+                #print time.clock()-loop_start_time
                 loop_start_time = time.clock()
             else:
                 if target_id == MARKER1:
