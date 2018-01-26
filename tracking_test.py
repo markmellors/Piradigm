@@ -82,9 +82,9 @@ try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
         if time.clock() > END_TIME or turn_number > TURN_TARGET:
            raise KeyboardInterrupt
-        frame = np.rot90(frameBuf.array)        
+        frame = (frameBuf.array)
         video.truncate(0)
-        frame = frame[(screen_centre - CROP_WIDTH/2):(screen_centre + CROP_WIDTH/2), 30:190]
+        frame = frame[30:190, (screen_centre - CROP_WIDTH/2):(screen_centre + CROP_WIDTH/2)]
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
@@ -100,8 +100,8 @@ try:
                 found = True
                 #if found, comptue the centre and move the cursor there
                 #print(corners)
-                found_y = sum([arr[0] for arr in corners[0][0]])  / 4
-                found_x = sum([arr[1] for arr in corners[0][0]])  / 4
+                found_x = sum([arr[0] for arr in corners[0][0]])  / 4
+                found_y = sum([arr[1] for arr in corners[0][0]])  / 4
                 width = abs(corners[0][0][0][0]-corners[0][0][1][0]+corners[0][0][3][0]-corners[0][0][2][0])/2
                 print ('marker width %s' % width)
                 if width > TURN_WIDTH:
@@ -109,12 +109,12 @@ try:
                     target_id = MARKER1 + MARKER2 - target_id
                     turn_number += 1
                     print ('Close to marker making turn %s' % turn_number)
-                pygame.mouse.set_pos(int(found_x), int(found_y))
+                pygame.mouse.set_pos(int(found_y), int(found_x))
                 t_error = (CROP_WIDTH/2 - found_x) / (CROP_WIDTH / 2)
-                turn = STEERING_OFFSET - TURN_P * t_error
+                turn = STEERING_OFFSET + TURN_P * t_error
                 if last_t_error is not 0:
                     #if there was a real error last time then do some damping
-                    turn += TURN_D *(last_t_error - t_error)
+                    turn -= TURN_D *(last_t_error - t_error)
                 turn = min(max(turn,-MAX_TURN_SPEED),MAX_TURN_SPEED)
                 drive.move (turn, STRAIGHT_SPEED)
                 last_t_error = t_error
@@ -139,7 +139,7 @@ try:
             found = False
             last_t_error = 0   
         # Display the resulting frame
-        frame = pygame.surfarray.make_surface(frame)
+        frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
         screen.fill([0,0,0])
         screen.blit(frame, (0,0))
         pygame.display.update()
