@@ -49,7 +49,8 @@ try:
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, small_dict, parameters=parameters)
         if ids != None:
             #if found, comptue the centre and move the cursor there
-            print(corners)
+            print(ids[0][0])
+            #print(corners)
             found_x = sum([arr[0] for arr in corners[0][0]])  / 4
             found_y = sum([arr[1] for arr in corners[0][0]])  / 4
             pygame.mouse.set_pos(int(found_y), int(found_x))
