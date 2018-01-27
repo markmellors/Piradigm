@@ -144,14 +144,15 @@ try:
                 print ("looking for marker %d" % turn_number)
                 if found:
                     drive.move(0,0)
-                if turn_number <= 2:
-                    if turn_number == 1:
-                        brake()
-                    turn_right()
                 else:
-                    if turn_number == 4:
-                        brake()
-                    turn_left()
+                    if turn_number <= 2:
+                        if turn_number == 1:
+                            brake()
+                        turn_right()
+                    else:
+                        if turn_number == 4:
+                            brake()
+                        turn_left()
                 found = False
                 last_t_error = 0 
         else:
