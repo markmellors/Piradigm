@@ -50,7 +50,7 @@ print("setup complete, looking")
 last_t_error = 0
 speed = 0
 MIN_SPEED = 0
-STRAIGHT_SPEED = 0.3  #0.15 fine, 0.25 fine
+STRAIGHT_SPEED = 0.5  #0.15 fine, 0.25 fine
 STEERING_OFFSET = 0.0  #more positive make it turn left
 CROP_WIDTH = 320
 i = 0
@@ -60,7 +60,7 @@ END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
 TURN_TARGET = 10
-TURN_WIDTH = 40  #60 was good with speed 0.15. with speed 0.25, hit targets
+TURN_WIDTH = 30  #60 was good with speed 0.15. with speed 0.25, hit targets. 40 ok at speed 0.3
 NINTY_TURN = 0.8 #0.4 (0.1, 0.1) works 10/10. 0.45(0.1,0.1) works 50%. 0.8 (0.05,0.05) works 100%  1(0.05, 0.05) works 90%, as does 1(0.04,0.04)
 MAX_SPEED = 0
 SETTLE_TIME = 0.05
@@ -124,7 +124,7 @@ try:
                 print turn
                 #if we're rate limting the turn, go slow
                 if abs(turn) == MAX_TURN_SPEED:
-                    drive.move (turn, STRAIGHT_SPEED/2)
+                    drive.move (turn, STRAIGHT_SPEED / 3)
                 else:
                     drive.move (turn, STRAIGHT_SPEED)
                 last_t_error = t_error
