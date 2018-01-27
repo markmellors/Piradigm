@@ -111,7 +111,6 @@ try:
             if ids[marker_to_track][0] == turn_number:
                 m = marker_to_track
                 found = True
-                #print corners
                 #if found, comptue the centre and move the cursor there
                 found_y = sum([arr[0] for arr in corners[m][0]])  / 4
                 found_x = sum([arr[1] for arr in corners[m][0]])  / 4
@@ -125,7 +124,6 @@ try:
                         drive.move(0,0)
                         END_TIME = time.clock()
                 pygame.mouse.set_pos(int(found_x), int(CROP_WIDTH-found_y))
-                #print int(found_y), int(found_x)
                 t_error = (CROP_WIDTH/2 - found_y) / (CROP_WIDTH / 2)
                 turn = STEERING_OFFSET + TURN_P * t_error
                 if last_t_error is not 0:
@@ -182,7 +180,7 @@ try:
         else:
          img_name = str(i) + "NFimg.jpg"
         #filesave for debugging: 
-        cv2.imwrite(img_name, gray)
+        #cv2.imwrite(img_name, gray)
         i += 1
         for event in pygame.event.get():
             if event.type == KEYDOWN:
