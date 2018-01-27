@@ -51,7 +51,7 @@ END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
 TURN_TARGET = 5
-TURN_WIDTH = 30
+TURN_WIDTH = 35
 NINTY_TURN = 0.8
 MAX_SPEED = 0
 SETTLE_TIME = 0.05
@@ -119,12 +119,13 @@ try:
                         END_TIME = time.clock()
                 pygame.mouse.set_pos(int(found_x), int(CROP_WIDTH-found_y))
                 #print int(found_y), int(found_x)
-                t_error = (CROP_WIDTH/2 - found_x) / (CROP_WIDTH / 2)
+                t_error = (CROP_WIDTH/2 - found_y) / (CROP_WIDTH / 2)
                 turn = STEERING_OFFSET + TURN_P * t_error
                 if last_t_error is not 0:
                     #if there was a real error last time then do some damping
                     turn -= TURN_D *(last_t_error - t_error)
                 turn = min(max(turn,-MAX_TURN_SPEED), MAX_TURN_SPEED)
+                print turn
                 #if we're rate limiting the turn, go slow
                 if abs(turn) == MAX_TURN_SPEED:
                     drive.move (turn, STRAIGHT_SPEED/3)
