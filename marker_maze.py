@@ -16,14 +16,14 @@ env_vars = [
     ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
     ("SDL_MOUSEDRV", "TSLIB"),
 ]
-TURN_P = 2
-TURN_D = 0.2
+TURN_P = 0.6
+TURN_D = 0.3
 
 for var_name, val in env_vars:
     os.environ[var_name] = val
-screen_width = 480
+screen_width = 320
 screen_centre = screen_width / 2
-screen_height = 640
+screen_height = 240
 
 camera = picamera.PiCamera()
 camera.resolution = (screen_width, screen_height)
@@ -41,61 +41,38 @@ print("setup complete, looking")
 last_t_error = 0
 speed = 0
 MIN_SPEED = 0
-STRAIGHT_SPEED = 0.25
+STRAIGHT_SPEED = 0.5
 STEERING_OFFSET = 0.0  #more positive make it turn left
-STRAIGHT_TOLERANCE = 0.2
-FIND_TURN_SPEED = 0.30
-ACC_RATE = 0.1
-CROP_WIDTH = 360
+CROP_WIDTH = 320
 i = 0
 TIMEOUT = 30.0
 START_TIME = time.clock()
 END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
-TURN_WIDTH = 70
-S_TURN = 0.58
-NINTY_TURN = 0.39
-MAX_SPEED = 1
-MOVE_TIME = 0.05
-TURN_TIME = 0.05
-S_CYCLES = 9
-NINTY_CYCLES = 7
+TURN_WIDTH = 30
+NINTY_TURN = 0.8
+MAX_SPEED = 0
+SETTLE_TIME = 0.05
+TURN_TIME = 0.04
+MARKER1 = 3
+MARKER2 = 5
+target_id = MARKER1
+MAX_TURN_SPEED = 0.25
+loop_start_time=0
 
-def ninty_right():
-    count = 0
-    while count < NINTY_CYCLES:
-        drive.move(0, MAX_SPEED)
-        time.sleep(MOVE_TIME)
-        drive.move(NINTY_TURN, 0)
-        time.sleep(TURN_TIME)
-        count += 1
-def ninty_left():
-    count = 0
-    while count < NINTY_CYCLES:
-        drive.move(0, MAX_SPEED)
-        time.sleep(MOVE_TIME)
-        drive.move(-NINTY_TURN, 0)
-        time.sleep(TURN_TIME)
-        count += 1
+def turn_right():
+    drive.move(NINTY_TURN, 0)
+    time.sleep(TURN_TIME)
+    drive.move(0,0)
+    time.sleep(SETTLE_TIME)
+                
+def turn_left():
+    drive.move(-NINTY_TURN, 0)
+    time.sleep(TURN_TIME)
+    drive.move(0,0)
+    time.sleep(SETTLE_TIME)
 
-def s_right():
-    count = 0
-    while count < S_CYCLES:
-        drive.move(0, MAX_SPEED)
-        time.sleep(MOVE_TIME)
-        drive.move(S_TURN, 0)
-        time.sleep(TURN_TIME)
-        count += 1
-
-def s_left():
-    count = 0
-    while count < S_CYCLES:
-        drive.move(0, MAX_SPEED)
-        time.sleep(MOVE_TIME)
-        drive.move(-S_TURN, 0)
-        time.sleep(TURN_TIME)
-        count += 1
 
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
