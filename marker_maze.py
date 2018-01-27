@@ -143,7 +143,7 @@ try:
             else:
                 print ("looking for marker %d" % turn_number)
                 if turn_number <= 2:
-                    if turn_number == 0:
+                    if turn_number == 1:
                         brake()
                     turn_right()
                 else:
@@ -160,7 +160,7 @@ try:
             else:
                 #otherwise, go looking
                 if turn_number <= 2:
-                    if turn_number == 0:
+                    if turn_number == 1:
                         brake()
                     turn_right()
                 else:
