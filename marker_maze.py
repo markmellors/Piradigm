@@ -51,7 +51,7 @@ END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
 TURN_TARGET = 5
-TURN_WIDTH = 35
+TURN_WIDTH = 30
 NINTY_TURN = 0.8
 MAX_SPEED = 0
 SETTLE_TIME = 0.05
@@ -135,9 +135,15 @@ try:
                 #print(camera.exposure_speed)
             else:
                 print ("looking for marker %d" % turn_number)
-                if turn_number < 3:
+                if turn_number <= 2:
+                    if turn_number == 0:
+                        drive.move(0,0)
+                        time.sleep(2*SETTLE_TIME)
                     turn_right()
                 else:
+                    if turn_number == 4:
+                        drive.move(0,0)
+                        time.sleep(2*SETTLE_TIME)
                     turn_left()
                 found = False
                 last_t_error = 0 
@@ -148,9 +154,15 @@ try:
                 drive.move(0,0)
             else:
                 #otherwise, go looking
-                if turn_number < 3:
+                if turn_number <= 2:
+                    if turn_number == 0:
+                        drive.move(0,0)
+                        time.sleep(2*SETTLE_TIME)
                     turn_right()
                 else:
+                    if turn_number == 4:
+                        drive.move(0,0)
+                        time.sleep(2*SETTLE_TIME)
                     turn_left()
             found = False
             last_t_error = 0
