@@ -51,17 +51,17 @@ END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
 TURN_TARGET = 5
-TURN_WIDTH = [25, 35, 35, 30, 35, 35]
+TURN_WIDTH = [30, 35, 35, 30, 35, 35]
 
-NINTY_TURN = 0.6  #0.8 works if going slowly
+NINTY_TURN = 0.8  #0.8 works if going slowly
 MAX_SPEED = 0
 SETTLE_TIME = 0.05
 TURN_TIME = 0.04
 MAX_TURN_SPEED = 0.25
 loop_start_time=0
 marker_to_track=0
-BRAKING_FORCE = 0.10
-BRAKE_TIME = 0.2
+BRAKING_FORCE = 0.1
+BRAKE_TIME = 0.05
 
 def turn_right():
     drive.move(NINTY_TURN, 0)
@@ -142,6 +142,8 @@ try:
                 #print(camera.exposure_speed)
             else:
                 print ("looking for marker %d" % turn_number)
+                if found:
+                    drive.move(0,0)
                 if turn_number <= 2:
                     if turn_number == 1:
                         brake()
@@ -179,7 +181,7 @@ try:
         else:
          img_name = str(i) + "NFimg.jpg"
         #filesave for debugging: 
-        #cv2.imwrite(img_name, gray)
+        cv2.imwrite(img_name, gray)
         i += 1
         for event in pygame.event.get():
             if event.type == KEYDOWN:
