@@ -93,21 +93,23 @@ try:
         if ids != None:
             #print ("found marker %s" % ids)
             if len(ids)>1:
+                print "found %d markers" % len(ids),
                 marker_to_track = 0
                 for marker_number in range(0, len(ids)):
                     if ids[marker_number] == turn_number:
                         marker_to_track = marker_number
-                #print marker_to_track
+                print (", marker I'm looking for, is number %d" % marker_to_track)
             else:
                 marker_to_track = 0
             if ids[marker_to_track][0] == turn_number:
                 m = marker_to_track
                 found = True
+                #print corners
                 #if found, comptue the centre and move the cursor there
                 found_y = sum([arr[0] for arr in corners[m][0]])  / 4
                 found_x = sum([arr[1] for arr in corners[m][0]])  / 4
                 width = abs(corners[m][0][0][0]-corners[m][0][1][0]+corners[m][0][3][0]-corners[m][0][2][0])/2
-                #print ('marker width %s' % width)
+                print ('marker width %s' % width)
                 if width > TURN_WIDTH:
                     turn_number += 1
                     print ('Close to marker making turn %s' % turn_number)
@@ -115,8 +117,8 @@ try:
                         print('finished!')
                         drive.move(0,0)
                         END_TIME = time.clock()
-                pygame.mouse.set_pos(int(found_x), int(found_y))
-                print int(found_y), int(found_x)
+                pygame.mouse.set_pos(int(found_x), int(CROP_WIDTH-found_y))
+                #print int(found_y), int(found_x)
                 t_error = (CROP_WIDTH/2 - found_x) / (CROP_WIDTH / 2)
                 turn = STEERING_OFFSET + TURN_P * t_error
                 if last_t_error is not 0:
