@@ -58,6 +58,7 @@ SETTLE_TIME = 0.05
 TURN_TIME = 0.04
 MAX_TURN_SPEED = 0.25
 loop_start_time=0
+marker_to_track=0
 
 def turn_right():
     drive.move(NINTY_TURN, 0)
@@ -90,13 +91,22 @@ try:
         #lists of ids and the corners beloning to each id
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, small_dict, parameters=parameters)
         if ids != None:
-            if ids[0][0] == turn_number:
+            #print ("found marker %s" % ids)
+            if len(ids)>1:
+                marker_to_track = 0
+                for marker_number in range(0, len(ids)):
+                    if ids[marker_number] == turn_number:
+                        marker_to_track = marker_number
+                #print marker_to_track
+            else:
+                marker_to_track = 0
+            if ids[marker_to_track][0] == turn_number:
+                m = marker_to_track
                 found = True
                 #if found, comptue the centre and move the cursor there
-                #print(corners)
-                found_y = sum([arr[0] for arr in corners[0][0]])  / 4
-                found_x = sum([arr[1] for arr in corners[0][0]])  / 4
-                width = abs(corners[0][0][0][0]-corners[0][0][1][0]+corners[0][0][3][0]-corners[0][0][2][0])/2
+                found_y = sum([arr[0] for arr in corners[m][0]])  / 4
+                found_x = sum([arr[1] for arr in corners[m][0]])  / 4
+                width = abs(corners[m][0][0][0]-corners[m][0][1][0]+corners[m][0][3][0]-corners[m][0][2][0])/2
                 #print ('marker width %s' % width)
                 if width > TURN_WIDTH:
                     turn_number += 1
@@ -105,7 +115,8 @@ try:
                         print('finished!')
                         drive.move(0,0)
                         END_TIME = time.clock()
-                pygame.mouse.set_pos(int(found_y), int(found_x))
+                pygame.mouse.set_pos(int(found_x), int(found_y))
+                print int(found_y), int(found_x)
                 t_error = (CROP_WIDTH/2 - found_x) / (CROP_WIDTH / 2)
                 turn = STEERING_OFFSET + TURN_P * t_error
                 if last_t_error is not 0:
@@ -120,13 +131,15 @@ try:
                 last_t_error = t_error
                 #print(camera.exposure_speed)
             else:
+                print ("looking for marker %d" % turn_number)
                 if turn_number < 3:
                     turn_right()
                 else:
-                    turn_left
+                    turn_left()
                 found = False
                 last_t_error = 0 
         else:
+            print ("looking for marker %d" % turn_number)
             #if marker was found, then probably best to stop and look
             if found:
                 drive.move(0,0)
@@ -135,11 +148,11 @@ try:
                 if turn_number < 3:
                     turn_right()
                 else:
-                    turn_left
-                found = False
-                last_t_error = 0
+                    turn_left()
+            found = False
+            last_t_error = 0
         # Display the resulting frame
-        frame = pygame.surfarray.make_surface(frame)
+        frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
         screen.fill([0,0,0])
         screen.blit(frame, (0,0))
         pygame.display.update()
