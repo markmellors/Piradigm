@@ -51,14 +51,17 @@ END_TIME = START_TIME + TIMEOUT
 found = False
 turn_number = 0
 TURN_TARGET = 5
-TURN_WIDTH = 30
-NINTY_TURN = 0.8
+TURN_WIDTH = [25, 35, 35, 30, 35, 35]
+
+NINTY_TURN = 0.6  #0.8 works if going slowly
 MAX_SPEED = 0
 SETTLE_TIME = 0.05
 TURN_TIME = 0.04
 MAX_TURN_SPEED = 0.25
 loop_start_time=0
 marker_to_track=0
+BRAKING_FORCE = 0.10
+BRAKE_TIME = 0.2
 
 def turn_right():
     drive.move(NINTY_TURN, 0)
@@ -72,7 +75,11 @@ def turn_left():
     drive.move(0,0)
     time.sleep(SETTLE_TIME)
 
-
+def brake():
+    drive.move(0,-BRAKING_FORCE)
+    time.sleep(BRAKE_TIME)
+    drive.move(0,0)
+    
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
         if time.clock() > END_TIME or turn_number > TURN_TARGET:
@@ -110,7 +117,7 @@ try:
                 found_x = sum([arr[1] for arr in corners[m][0]])  / 4
                 width = abs(corners[m][0][0][0]-corners[m][0][1][0]+corners[m][0][3][0]-corners[m][0][2][0])/2
                 print ('marker width %s' % width)
-                if width > TURN_WIDTH:
+                if width > TURN_WIDTH[turn_number]:
                     turn_number += 1
                     print ('Close to marker making turn %s' % turn_number)
                     if turn_number is 5:
@@ -137,13 +144,11 @@ try:
                 print ("looking for marker %d" % turn_number)
                 if turn_number <= 2:
                     if turn_number == 0:
-                        drive.move(0,0)
-                        time.sleep(2*SETTLE_TIME)
+                        brake()
                     turn_right()
                 else:
                     if turn_number == 4:
-                        drive.move(0,0)
-                        time.sleep(2*SETTLE_TIME)
+                        brake()
                     turn_left()
                 found = False
                 last_t_error = 0 
@@ -156,13 +161,11 @@ try:
                 #otherwise, go looking
                 if turn_number <= 2:
                     if turn_number == 0:
-                        drive.move(0,0)
-                        time.sleep(2*SETTLE_TIME)
+                        brake()
                     turn_right()
                 else:
                     if turn_number == 4:
-                        drive.move(0,0)
-                        time.sleep(2*SETTLE_TIME)
+                        brake()
                     turn_left()
             found = False
             last_t_error = 0
