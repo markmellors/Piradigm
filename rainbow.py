@@ -1,39 +1,11 @@
-
-
 #!/usr/bin/env python
 # coding: Latin
-"""rainbow challenge code. start button shows or hides a menu to
-   adjust key parameters for current ball colour. use '4 dot' and
-   '6 dot' buttons to adjust values, up/down/left right on dpad to
-   navigate values
-"""
-# Load library functions we want
-import logging
-import logging.config
-import os
-import time
-import sys
-sys.path.append('/usr/local/lib/python2.7/site-packages')
+
 import json
-import threading
-import pygame
-from pygame.locals import*
-import sgc
-from sgc.locals import *
 from my_button import MyScale
-import picamera
-import picamera.array
-import cv2
-import numpy
-from fractions import Fraction
-from base_challenge import BaseChallenge
-from approxeng.input.selectbinder import ControllerResource
+# Load all standard tools for image processing challenges
+from img_base_class import *
 
-logging.config.fileConfig('logging.ini')
-logger = logging.getLogger('piradigm.' + __name__)
-
-logger.debug('Libraries loaded')
-# camera settings
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -106,7 +78,7 @@ class StreamProcessor(threading.Thread):
             frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
             screen.fill([0, 0, 0])
             font = pygame.font.Font(None, 24)
-            screen.blit(frame, (0, 0))        
+            screen.blit(frame, (0, 0))
         image = cv2.medianBlur(image, 5)
         # Convert the image from 'BGR' to HSV colour space
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
@@ -123,7 +95,7 @@ class StreamProcessor(threading.Thread):
         )
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-            screen.blit(frame, (100, 0)) 
+            screen.blit(frame, (100, 0))
             pygame.display.update()
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(
@@ -240,35 +212,6 @@ class StreamProcessor(threading.Thread):
             logger.info('%s ball lost' % (targetcolour))
 
 
-# Image capture thread
-class ImageCapture(threading.Thread):
-    def __init__(self, camera=None, processor=None):
-        super(ImageCapture, self).__init__()
-        self.terminated = False
-        self.camera = camera
-        self.processor = processor
-        self.start()
-
-    def run(self):
-        logger.debug('Start the stream using the video port')
-        self.camera.capture_sequence(
-            self.trigger_stream(),
-            format='bgr',
-            use_video_port=True
-        )
-        logger.debug('Terminating camera processing...')
-        self.processor.terminated = True
-        self.processor.join()
-        logger.debug('Processing terminated.')
-
-    # Stream delegation loop
-    def trigger_stream(self):
-        while not self.terminated:
-            if self.processor.event.is_set():
-                time.sleep(0.01)
-            else:
-                yield self.processor.stream
-                self.processor.event.set()
 
 class Rainbow(BaseChallenge):
     """Rainbow challenge class"""
@@ -282,7 +225,7 @@ class Rainbow(BaseChallenge):
         self.menu = False
         self.joystick=joystick
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
-                
+
     def setup_controls(self):
         # colours
         #why do these need repeating when theyre in menu.py? aren't they global?
@@ -304,7 +247,7 @@ class Rainbow(BaseChallenge):
             for index, item
             in enumerate(control_config)
         ]
-   
+
 
     def make_controls(self, index, text, xpo, ypo, colour, text_colour):
         """make a slider control at the specified position"""
@@ -340,11 +283,11 @@ class Rainbow(BaseChallenge):
     def run(self):
         # Startup sequence
         logger.info('Setup camera')
-        screen = pygame.display.get_surface()        
+        screen = pygame.display.get_surface()
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
-        
+
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
