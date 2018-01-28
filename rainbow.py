@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: Latin
 
+import json
 # Load all standard tools for image processing challenges
 from img_base_class import *
 
