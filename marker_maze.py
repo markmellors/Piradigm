@@ -1,29 +1,101 @@
-import sys
-import os
-sys.path.append('/usr/local/lib/python2.7/site-packages')
-import cv2
-import cv2.aruco as aruco
-import pygame
-import numpy as np
-from pygame.locals import*
-import picamera
-import picamera.array
-from drivetrain import Drivetrain  
-import time
-   
-env_vars = [
-    ("SDL_FBDEV", "/dev/fb1"),
-    ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
-    ("SDL_MOUSEDRV", "TSLIB"),
-]
-TURN_P = 0.6
-TURN_D = 0.3
+# Image stream processing thread
+class StreamProcessor(threading.Thread):
+    def __init__(self, screen=None, camera=None, drive=None):
+        super(StreamProcessor, self).__init__()
+        self.camera = camera
+        image_width, image_height = self.camera.resolution
+        self.image_centre_x = image_width / 2.0
+        self.image_centre_y = image_height / 2.0
+        self.drive = drive
+        self.screen = screen
+        self.stream = picamera.array.PiRGBArray(camera)
+        self.event = threading.Event()
+        self.terminated = False
+        # Why the one second sleep?
+        time.sleep(1)
+        self.start()
 
-for var_name, val in env_vars:
-    os.environ[var_name] = val
-screen_width = 320
-screen_centre = screen_width / 2
-screen_height = 240
+    def run(self):
+        # This method runs in a separate thread
+        while not self.terminated:
+            # Wait for an image to be written to the stream
+            if self.event.wait(1):
+                try:
+                    # Read the image and do some processing on it
+                    self.stream.seek(0)
+                    self.process_image(self.stream.array, self.screen)
+                finally:
+                    # Reset the stream and event
+                    self.stream.seek(0)
+                    self.stream.truncate()
+                    self.event.clear()
+
+    def process_image(self, image, screen)
+    
+
+
+class Maze(BaseChallenge):
+    """Rainbow challenge class"""
+
+    def __init__(self, timeout=120, screen=None, joystick=None):
+        self.image_width = 320  # Camera image width
+        self.image_height = 240  # Camera image height
+        self.frame_rate = Fraction(20)  # Camera image capture frame rate
+        self.screen = screen
+        time.sleep(0.01)
+        self.menu = False
+        self.joystick=joystick
+        super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
+
+
+def run(self):
+        # Startup sequence
+        logger.info('Setup camera')
+        screen = pygame.display.get_surface()
+        self.camera = picamera.PiCamera()
+        self.camera.resolution = (self.image_width, self.image_height)
+        self.camera.framerate = self.frame_rate
+
+        logger.info('Setup the stream processing thread')
+        # TODO: Remove dependency on drivetrain from StreamProcessor
+        self.processor = StreamProcessor(
+            screen=self.screen,
+            camera=self.camera,
+            drive=self.drive,
+        )
+        # To switch target colour" on the fly, use:
+        # self.processor.colour = "blue"
+        self.controls = self.setup_controls()
+        logger.info('Wait ...')
+        time.sleep(2)
+        logger.info('Setting up image capture thread')
+        self.image_capture_thread = ImageCapture(
+            camera=self.camera,
+            processor=self.processor
+        )
+        pygame.mouse.set_visible(False)
+        try:
+            while not self.should_die:
+                time.sleep(0.1)
+
+        except KeyboardInterrupt:
+            # CTRL+C exit, disable all drives
+            self.logger.info("killed from keyboard")
+        finally:
+            # Tell each thread to stop, and wait for them to end
+            self.logger.info("stopping threads")
+            self.image_capture_thread.terminated = True
+            self.image_capture_thread.join()
+            self.processor.terminated = True
+            self.processor.join()
+            #release camera
+            self.camera.close()
+            self.camera = None
+            self.logger.info("stopping drive")
+            self.drive.stop()
+            pygame.mouse.set_visible(False)
+            self.logger.info("bye")
+            pygame.event.post(pygame.event.Event(USEREVENT+1,message="challenge finished"))
 
 camera = picamera.PiCamera()
 camera.resolution = (screen_width, screen_height)
