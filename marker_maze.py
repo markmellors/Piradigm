@@ -39,6 +39,7 @@ class StreamProcessor(threading.Thread):
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
+        self.finished = False
         logger.info("setup complete, looking")
         time.sleep(1)
         self.start()
@@ -77,9 +78,9 @@ class StreamProcessor(threading.Thread):
     
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
-        if self.turn_number => self.TURN_TARGET:
+        if self.turn_number >= self.TURN_TARGET:
            logger.info("finished!")
-           self.timeout=0
+           self.finished = True
         frame = image[30:190, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -116,7 +117,7 @@ class StreamProcessor(threading.Thread):
                     if self.turn_number == 5:
                         logger.info('finished!')
                         self.drive.move(0,0)
-                        self.timeout = 0
+                        self.finished = True
                 pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
                 self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
                 turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
@@ -218,6 +219,8 @@ class Maze(BaseChallenge):
         try:
             while not self.should_die:
                 time.sleep(0.1)
+                if self.processor.finished:
+                    self.timeout = 0
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
