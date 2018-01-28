@@ -1,4 +1,3 @@
-
 # !/usr/bin/env python
 # coding: Latin-1
 
@@ -16,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Drivetrain():
+class DriveTrain():
     def __init__(self, timeout=120):
         time.sleep(0.01)
         logging.info("initialising drivetrain")
@@ -28,10 +27,10 @@ class Drivetrain():
         self.motor_max = 100
         # battery voltage check constants
         self.BATT_CONSTANTS = {
-            adc_gain: 0.02909,
-            adc_offset: -15.06,
-            adc_pin: 3,
-            min_v: 7.45
+            "adc_gain": 0.02909,
+            "adc_offset": -15.06,
+            "adc_pin": 3,
+            "min_v": 7.45
         }
         self.pz.setInputConfig(self.BATT_CONSTANTS['adc_pin'], 1)
         self.slow_speed = 20
@@ -65,7 +64,7 @@ class Drivetrain():
             self.pz.setMotor(1, motor_right)
             self.pz.setMotor(0, motor_left)
         else:
-            logging.info("stopping, battery too low for motors, at:", self.average_batt_v)
+            logging.info("stopping, battery too low for motors, at: %.2f" % self.average_batt_v)
             self.pz.setMotor(1, 0)
             self.pz.setMotor(0, 0)
 
