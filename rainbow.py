@@ -2,6 +2,7 @@
 # coding: Latin
 
 import json
+from my_button import MyScale
 # Load all standard tools for image processing challenges
 from img_base_class import *
 
