@@ -64,7 +64,7 @@ class DriveTrain():
             self.pz.setMotor(1, motor_right)
             self.pz.setMotor(0, motor_left)
         else:
-            logging.info("stopping, battery too low for motors, at:", self.average_batt_v)
+            logging.info("stopping, battery too low for motors, at: %.2f" % self.average_batt_v)
             self.pz.setMotor(1, 0)
             self.pz.setMotor(0, 0)
 
