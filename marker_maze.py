@@ -1,3 +1,5 @@
+from img_base_class import *
+
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
     def __init__(self, screen=None, camera=None, drive=None):
@@ -14,7 +16,6 @@ class StreamProcessor(threading.Thread):
         # Why the one second sleep?
         #create small cust dictionary
         self.small_dict = aruco.Dictionary_create(6, 3)
-        self.logger.info("setup complete, looking")
         self.last_t_error = 0
         self.STRAIGHT_SPEED = 0.5
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
@@ -27,7 +28,6 @@ class StreamProcessor(threading.Thread):
         self.turn_number = 0
         self.TURN_TARGET = 5
         self.TURN_WIDTH = [30, 35, 35, 30, 35, 35]
-
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.04
@@ -36,6 +36,7 @@ class StreamProcessor(threading.Thread):
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
+        logger.info("setup complete, looking")
         time.sleep(1)
         self.start()
 
@@ -71,10 +72,10 @@ class StreamProcessor(threading.Thread):
         time.sleep(self.BRAKE_TIME)
         drive.move(0,0)
     
-    def process_image(self, image, screen)
+    def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         if self.turn_number > self.TURN_TARGET:
-           self.logger.info("finished!")
+           logger.info("finished!")
            self.timeout=0
         video.truncate(0)
         frame = image[30:190, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + selfCROP_WIDTH/2)]
@@ -91,12 +92,12 @@ class StreamProcessor(threading.Thread):
         if ids != None:
             #print ("found marker %s" % ids)
             if len(ids)>1:
-                self.logger.info( "found %d markers" % len(ids))
+                logger.info( "found %d markers" % len(ids))
                 self.marker_to_track = 0
                 for marker_number in range(0, len(ids)):
                     if ids[marker_number] == self.turn_number:
                         self.marker_to_track = marker_number
-                self.logger.info ("marker I'm looking for, is number %d" % self.marker_to_track)
+                logger.info ("marker I'm looking for, is number %d" % self.marker_to_track)
             else:
                 self.marker_to_track = 0
             if ids[self.marker_to_track][0] == self.turn_number:
@@ -106,12 +107,12 @@ class StreamProcessor(threading.Thread):
                 found_y = sum([arr[0] for arr in corners[m][0]])  / 4
                 found_x = sum([arr[1] for arr in corners[m][0]])  / 4
                 width = abs(corners[m][0][0][0]-corners[m][0][1][0]+corners[m][0][3][0]-corners[m][0][2][0])/2
-                self.logger.info('marker width %s' % width)
+                logger.info('marker width %s' % width)
                 if width > Tself.URN_WIDTH[turn_number]:
                     self.turn_number += 1
-                    self.logger.info('Close to marker making turn %s' % self.turn_number)
+                    logger.info('Close to marker making turn %s' % self.turn_number)
                     if self.turn_number is 5:
-                        self.logger.info('finished!')
+                        logger.info('finished!')
                         drive.move(0,0)
                         self.timeout = 0
                 pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
@@ -129,7 +130,7 @@ class StreamProcessor(threading.Thread):
                 self.last_t_error = self.t_error
                 #print(camera.exposure_speed)
             else:
-                self.logger.info("looking for marker %d" % turn_number)
+                logger.info("looking for marker %d" % turn_number)
                 if self.found:
                     drive.move(0,0)
                 else:
@@ -144,7 +145,7 @@ class StreamProcessor(threading.Thread):
                 self.found = False
                 self.last_t_error = 0 
         else:
-            self.logger.info("looking for marker %d" % turn_number)
+            logger.info("looking for marker %d" % turn_number)
             #if marker was found, then probably best to stop and look
             if self.found:
                 drive.move(0,0)
@@ -176,27 +177,25 @@ class StreamProcessor(threading.Thread):
 
 
 class Maze(BaseChallenge):
-    """Rainbow challenge class"""
+    """Minimal Maze challenge class"""
 
     def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 320  # Camera image width
         self.image_height = 240  # Camera image height
-        self.frame_rate = Fraction(20)  # Camera image capture frame rate
+        self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
-        self.menu = False
         self.joystick=joystick
-        super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
+        super(Maze, self).__init__(name='Maze', timeout=timeout, logger=logger)
 
 
 def run(self):
         # Startup sequence
-        logger.info('Setup camera')
+        logger.info('Setting up camera')
         screen = pygame.display.get_surface()
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
-        self.camera.framerate = 30
         self.camera.iso = 800
         self.camera.shutter_Speed = 12000
         logger.info('Setup the stream processing thread')

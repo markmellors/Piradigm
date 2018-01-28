@@ -24,9 +24,10 @@ from sgc.locals import *
 from my_button import MyButton
 from remote_control import RC
 from rainbow import Rainbow
+from marker_maze import Maze
 from approxeng.input.selectbinder import ControllerResource
 
-VERSION = '0.2SGC'
+VERSION = '0.3Mazing'
 
 arguments = docopt(__doc__, version=VERSION)
 
@@ -131,6 +132,10 @@ class Menu():
         elif event.label is "Rainbow":
             logger.info("launching Rainbow challenge")
             new_challenge = Rainbow(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
+        elif event.label is "Maze":
+            logger.info("launching Maze challenge")
+            new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
