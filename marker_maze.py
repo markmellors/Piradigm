@@ -58,26 +58,26 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    def turn_right():
+    def turn_right(self):
         self.drive.move(self.NINTY_TURN, 0)
         time.sleep(self.TURN_TIME)
         self.drive.move(0,0)
         time.sleep(self.SETTLE_TIME)
                 
-    def turn_left():
+    def turn_left(self):
         self.drive.move(-self.NINTY_TURN, 0)
         time.sleep(self.TURN_TIME)
         self.drive.move(0,0)
         time.sleep(self.SETTLE_TIME)
 
-    def brake():
+    def brake(self):
         self.drive.move(0,-self.BRAKING_FORCE)
         time.sleep(self.BRAKE_TIME)
         self.drive.move(0,0)
     
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
-        if self.turn_number > self.TURN_TARGET:
+        if self.turn_number => self.TURN_TARGET:
            logger.info("finished!")
            self.timeout=0
         frame = image[30:190, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
@@ -113,7 +113,7 @@ class StreamProcessor(threading.Thread):
                 if width > self.TURN_WIDTH[self.turn_number]:
                     self.turn_number += 1
                     logger.info('Close to marker making turn %s' % self.turn_number)
-                    if self.turn_number is 5:
+                    if self.turn_number == 5:
                         logger.info('finished!')
                         self.drive.move(0,0)
                         self.timeout = 0
@@ -132,7 +132,7 @@ class StreamProcessor(threading.Thread):
                 self.last_t_error = self.t_error
                 #print(camera.exposure_speed)
             else:
-                logger.info("looking for marker %d" % turn_number)
+                logger.info("looking for marker %d" % self.turn_number)
                 if self.found:
                     self.drive.move(0,0)
                 else:
@@ -147,7 +147,7 @@ class StreamProcessor(threading.Thread):
                 self.found = False
                 self.last_t_error = 0 
         else:
-            logger.info("looking for marker %d" % turn_number)
+            logger.info("looking for marker %d" % self.turn_number)
             #if marker was found, then probably best to stop and look
             if self.found:
                 self.drive.move(0,0)
