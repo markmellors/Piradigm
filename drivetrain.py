@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Drivetrain():
+class DriveTrain():
     def __init__(self, timeout=120):
         time.sleep(0.01)
         logging.info("initialising drivetrain")
@@ -86,7 +86,7 @@ class Drivetrain():
         return min(max_val, max(min_val, val))
 
     def stop(self):
-        logging.info("RC challenge stopping")
+        logging.info("Drivetrain stopping")
         self.pz.stop()
         self.pz.cleanup()
         self.killed = True
