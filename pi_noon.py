@@ -14,7 +14,10 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MIN_CONTOUR_AREA = 1000
+        self.TURN_TIME = 0.1
+        self.TURN_SPEED = 1
+        self.SETTLE_TIME = 0.05
+        self.MIN_CONTOUR_AREA = 5000
         self.last_t_error = 0
         self.TURN_P = 0.6
         self.TURN_D = 0.3
@@ -72,8 +75,8 @@ class StreamProcessor(threading.Thread):
         return [found_x, found_y]
 
         
-    def turn_right(self):
-        self.drive.move(self.NINTY_TURN, 0)
+    def seek(self):
+        self.drive.move(self.TURN_SPEED, 0)
         time.sleep(self.TURN_TIME)
         self.drive.move(0,0)
         time.sleep(self.SETTLE_TIME)
@@ -125,11 +128,16 @@ class StreamProcessor(threading.Thread):
                 print ("found coordinates %d, %d" % (found_x, found_y))
                 self.found = True
                 pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)
+                t_error = (self.image_centre_x - x) / self.image_centre_x
+                turn = self.TURN_P * t_error
+                self.drive.move(turn, STRAIGHT_SPEED)
             else:
                 print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
+                self.drive.move(0, STRAIGHT_SPEED)
         else:
             print "no opponent, no red spotted"
             self.found = False
+            self.seek()
         if self.found:
          img_name = str(self.i) + "Fimg.jpg"
         else:
