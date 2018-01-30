@@ -45,7 +45,32 @@ class StreamProcessor(threading.Thread):
                     self.stream.seek(0)
                     self.stream.truncate()
                     self.event.clear()
+    def find_opponent(self, image, contour, hull):
+        '''function to find the centre of the convex portion of a contour'''
+        mask = numpy.zeros(image.shape,np.uint8)
+        cv.drawContours(mask,[hull],0,255,-1)
+        cv.drawContours(mask,[contour],0,0,-1)
+        contourimage, subcontours, hierarchy = cv2.findContours(
+            mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
+        )
+        # Go through each contour
+        found_area = -1
+        found_x = -1
+        found_y = -1
+        biggest_contour = None
+        for subcontour in subcontours:
+            x,y, w, h = cv2.boundingRect(subcontour)
+            cx = x + (w / 2)
+            cy = y + (h / 2)
+            area = cv2.contourArea(subcontour)
+            if found_area < area:
+                found_area = area
+                found_x = cx
+                found_y = cy
+                biggest_contour = subcontour
+         return [found_x, found_y]
 
+        
     def turn_right(self):
         self.drive.move(self.NINTY_TURN, 0)
         time.sleep(self.TURN_TIME)
@@ -95,6 +120,8 @@ class StreamProcessor(threading.Thread):
             opponent_size = cv2.contourArea(hull) - found_area
             if not cv2.isContourConvex(smoothed_contour):
                 print "opponent found, area: %d" % opponent_size
+                found_x, found_y = find_opponent(imrange, smoothed_contour, hull)
+                print ("found coordinates %d, %d" % (found_x, found_y)
                 self.found = True
                 pygame.mouse.set_pos(found_y, 320 - found_x)
             else:
@@ -107,7 +134,7 @@ class StreamProcessor(threading.Thread):
         else:
          img_name = str(self.i) + "NFimg.jpg"
         #filesave for debugging: 
-        cv2.imwrite(img_name, image)
+        #cv2.imwrite(img_name, image)
         self.i += 1
 
 
