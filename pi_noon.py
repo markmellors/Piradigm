@@ -45,11 +45,12 @@ class StreamProcessor(threading.Thread):
                     self.stream.seek(0)
                     self.stream.truncate()
                     self.event.clear()
+
     def find_opponent(self, image, contour, hull):
         '''function to find the centre of the convex portion of a contour'''
-        mask = numpy.zeros(image.shape,np.uint8)
-        cv.drawContours(mask,[hull],0,255,-1)
-        cv.drawContours(mask,[contour],0,0,-1)
+        mask = numpy.zeros(image.shape,numpy.uint8)
+        cv2.drawContours(mask,[hull],0,255,-1)
+        cv2.drawContours(mask,[contour],0,0,-1)
         contourimage, subcontours, hierarchy = cv2.findContours(
             mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
         )
@@ -68,7 +69,7 @@ class StreamProcessor(threading.Thread):
                 found_x = cx
                 found_y = cy
                 biggest_contour = subcontour
-         return [found_x, found_y]
+        return [found_x, found_y]
 
         
     def turn_right(self):
@@ -120,10 +121,10 @@ class StreamProcessor(threading.Thread):
             opponent_size = cv2.contourArea(hull) - found_area
             if not cv2.isContourConvex(smoothed_contour):
                 print "opponent found, area: %d" % opponent_size
-                found_x, found_y = find_opponent(imrange, smoothed_contour, hull)
-                print ("found coordinates %d, %d" % (found_x, found_y)
+                found_x, found_y = self.find_opponent(imrange, smoothed_contour, hull)
+                print ("found coordinates %d, %d" % (found_x, found_y))
                 self.found = True
-                pygame.mouse.set_pos(found_y, 320 - found_x)
+                pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)
             else:
                 print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
         else:
@@ -175,7 +176,7 @@ class PiNoon(BaseChallenge):
             camera=self.camera,
             processor=self.processor
         )
-        pygame.mouse.set_visible(False)
+        pygame.mouse.set_visible(True)
         try:
             while not self.should_die:
                 time.sleep(0.1)
