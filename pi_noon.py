@@ -14,6 +14,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
+        self.MIN_CONTOUR_AREA = 1000
         self.last_t_error = 0
         self.TURN_P = 0.6
         self.TURN_D = 0.3
@@ -25,6 +26,7 @@ class StreamProcessor(threading.Thread):
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.found = False
         self.finished = False
+        self.i = 0
         logger.info("setup complete, looking")
         time.sleep(1)
         self.start()
@@ -54,16 +56,14 @@ class StreamProcessor(threading.Thread):
         screen = pygame.display.get_surface()
         frame = image[0:90, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
-        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
-            screen.fill([0, 0, 0])
-            font = pygame.font.Font(None, 24)
-            screen.blit(frame, (0, 0))
+        screenimage = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
+        screen.fill([0, 0, 0])
+        screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         # method will extract the colour we are interested in (between 0 and 180)
-        hsv_lower, hsv_upper = ((110, 100, 80), (140, 255, 230))
+        hsv_lower, hsv_upper = ((100, 90, 40), (140, 255, 200))
         imrange = cv2.inRange(
             image,
             numpy.array(hsv_lower),
@@ -83,28 +83,31 @@ class StreamProcessor(threading.Thread):
         found_y = -1
         biggest_contour = None
         for contour in contours:
-            cnt = cv2.boundingRect(contour)
-            area = cv2.contourArea(cnt)
+            area = cv2.contourArea(contour)
             if found_area < area:
-                found_area = area.
-                biggest_contour = cnt
+                found_area = area
+                biggest_contour = contour
         if found_area > self.MIN_CONTOUR_AREA:
-            if cv2.isContourConvex(biggest_contour):
-                print "opponent found"
-                self.found = true
+            #arc length of a typical contour is ~400
+            smoothed_contour = cv2.approxPolyDP(biggest_contour, 8, True)
+            hull = cv2.convexHull(smoothed_contour)
+            found_area = cv2.contourArea(smoothed_contour)
+            opponent_size = cv2.contourArea(hull) - found_area
+            if not cv2.isContourConvex(smoothed_contour):
+                print "opponent found, area: %d" % opponent_size
+                self.found = True
                 pygame.mouse.set_pos(found_y, 320 - found_x)
-            hull = cv2.convexHull(biggest_contour)
-            opponent_size = cv2.contourArea(hull)-cv2.contourArea(biggest_contour)
-            print opponment_size
+            else:
+                print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
         else:
-            print"no opponent"
-            self.found = false
+            print "no opponent, no red spotted"
+            self.found = False
         if self.found:
          img_name = str(self.i) + "Fimg.jpg"
         else:
          img_name = str(self.i) + "NFimg.jpg"
         #filesave for debugging: 
-        cv2.imwrite(img_name, gray)
+        cv2.imwrite(img_name, image)
         self.i += 1
 
 

@@ -138,7 +138,7 @@ class Menu():
             logger.info("launching Maze challenge")
             new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
-        elif event.label is "Pi Noon":
+        elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")
             new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
