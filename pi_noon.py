@@ -14,19 +14,20 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.DRIVING = True
+        self.DRIVING = False
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
-        self.MIN_CONTOUR_AREA = 2000
+        self.MIN_CONTOUR_AREA = 1000
         self.TURN_AREA = 7000  #6000 turns right at edge, 9000 too high
-        self.BACK_AWAY_START = 3000
-        self.BACK_AWAY_STOP = 1000
+        self.BACK_AWAY_START = 2000
+        self.BACK_AWAY_STOP = 1200
         self.BACK_AWAY = False
         self.last_t_error = 0
         self.TURN_P = 1
         self.TURN_D = 0.3
         self.STRAIGHT_SPEED = 0.4
+        self.SLIGHT_TURN = 0.1
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 160
         self.CROP_HEIGHT = 55
@@ -97,13 +98,15 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        # method will extract the colour we are interested in (between 0 and 180)
-        hsv_lower, hsv_upper = ((115, 110, 40), (140, 255, 200))
+        hsv_lower, hsv_upper = ((105, 120, 100), (130, 255, 200))
         imrange = cv2.inRange(
             image,
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
+        #code for calibrating thresholds, displays average HSV values:
+        #print cv2.mean(image)
+
         frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
         screen.blit(frame, (100, 0))
         pygame.display.update()
@@ -116,12 +119,20 @@ class StreamProcessor(threading.Thread):
         found_area = -1
         found_x = -1
         found_y = -1
+        second_biggest = None
         biggest_contour = None
         for contour in contours:
             area = cv2.contourArea(contour)
             if found_area < area:
                 found_area = area
+                second_biggest = biggest_contour
                 biggest_contour = contour
+        if (found_area < 2000) and (second_biggest is not None):
+            combined_area = found_area + cv2.contourArea(second_biggest)
+            if combined_area > self.MIN_CONTOUR_AREA:
+                print ("red split, combining two biggest contours")
+                found_area = combined_area
+                biggest_contour = numpy.concatenate((biggest_contour,second_biggest), axis=0)        
         if found_area > self.MIN_CONTOUR_AREA:
             #arc length of a typical contour is ~400
             smoothed_contour = cv2.approxPolyDP(biggest_contour, 8, True)
@@ -129,6 +140,7 @@ class StreamProcessor(threading.Thread):
             found_area = cv2.contourArea(smoothed_contour)
             opponent_size = cv2.contourArea(hull) - found_area
             if not cv2.isContourConvex(smoothed_contour):
+                #oponent is disrupting countour shape, making it concave
                 found_x, found_y, opponent_size = self.find_opponent(imrange, smoothed_contour, hull)
                 print ("found, area: %d, coordinates %d, %d" % (opponent_size, found_x, found_y))
                 self.found = True
@@ -145,19 +157,30 @@ class StreamProcessor(threading.Thread):
                     if self.DRIVING:
                         self.drive.move(turn, self.STRAIGHT_SPEED)
             else:
-                print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
+                #contour convex, so no opponent found
+                self.found = False
                 if found_area < self.TURN_AREA:
-                    print "close to edge, turning"
+                    print "close to edge, turning. no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
                     if self.DRIVING:
                         self.seek()
+                else:
+                    print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
                 if self.DRIVING:
-                    self.drive.move(0, self.STRAIGHT_SPEED)
+                    self.drive.move(self.SLIGHT_TURN, self.STRAIGHT_SPEED)
         else:
-            print "no opponent, no red spotted"
-            self.BACK_AWAY = False
-            self.found = False
-            if self.DRIVING:
-                self.seek()
+            if self.found:
+                #if we were trackign and we've ended up here, we're probably super close
+                print "just lost the opponent, trying backing off first"
+                self.BACK_AWAY = True
+                self.found = False
+                if self.DRIVING:
+                    self.drive.move(0, -self.STRAIGHT_SPEED)
+            else:
+                print "no opponent, no red spotted"
+                self.BACK_AWAY = False
+                self.found = False
+                if self.DRIVING:
+                    self.seek()
         if self.found:
          img_name = str(self.i) + "Fimg.jpg"
         else:
@@ -173,7 +196,7 @@ class PiNoon(BaseChallenge):
 
     def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 160  # Camera image width
-        self.image_height = 120  # Camera image height
+        self.image_height = 128  # Camera image height
         self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
