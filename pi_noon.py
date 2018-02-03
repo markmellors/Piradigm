@@ -14,16 +14,22 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.TURN_TIME = 0.1
+        self.DRIVING = False
+        self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
-        self.MIN_CONTOUR_AREA = 5000
+        self.MIN_CONTOUR_AREA = 2000
+        self.TURN_AREA = 7000  #6000 turns right at edge, 9000 too high
+        self.BACK_AWAY_START = 1000
+        self.BACK_AWAY_STOP = 600
+        self.BACK_AWAY = False
         self.last_t_error = 0
-        self.TURN_P = 0.6
+        self.TURN_P = 1
         self.TURN_D = 0.3
-        self.STRAIGHT_SPEED = 0.5
+        self.STRAIGHT_SPEED = 0.4
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 160
+        self.CROP_HEIGHT = 60
         self.TIMEOUT = 30.0
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
@@ -72,7 +78,7 @@ class StreamProcessor(threading.Thread):
                 found_x = cx
                 found_y = cy
                 biggest_contour = subcontour
-        return [found_x, found_y]
+        return [found_x, found_y, found_area]
 
         
     def seek(self):
@@ -83,9 +89,9 @@ class StreamProcessor(threading.Thread):
     
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
-        frame = image[0:90, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+        image = image[0:self.CROP_HEIGHT, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
-        screenimage = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        screenimage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
         screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
@@ -123,21 +129,34 @@ class StreamProcessor(threading.Thread):
             found_area = cv2.contourArea(smoothed_contour)
             opponent_size = cv2.contourArea(hull) - found_area
             if not cv2.isContourConvex(smoothed_contour):
-                print "opponent found, area: %d" % opponent_size
-                found_x, found_y = self.find_opponent(imrange, smoothed_contour, hull)
-                print ("found coordinates %d, %d" % (found_x, found_y))
+                found_x, found_y, opponent_size = self.find_opponent(imrange, smoothed_contour, hull)
+                print ("found, area: %d, coordinates %d, %d" % (opponent_size, found_x, found_y))
                 self.found = True
                 pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)
-                t_error = (self.image_centre_x - x) / self.image_centre_x
+                t_error = (self.image_centre_x - found_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
-                self.drive.move(turn, STRAIGHT_SPEED)
+                if opponent_size > self.BACK_AWAY_START or (opponent_size > self.BACK_AWAY_STOP and self.BACK_AWAY):
+                    #we're probably close, back off
+                    self.BACK_AWAY = True
+                    if self.DRIVING:
+                        self.drive.move(turn, -self.STRAIGHT_SPEED/2)
+                else:
+                    self.BACK_AWAY = False
+                    if self.DRIVING:
+                        self.drive.move(turn, self.STRAIGHT_SPEED)
             else:
                 print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
-                self.drive.move(0, STRAIGHT_SPEED)
+                if found_area < self.TURN_AREA:
+                    print "close to edge, turning"
+                    self.seek()
+                if self.DRIVING:
+                    self.drive.move(0, self.STRAIGHT_SPEED)
         else:
             print "no opponent, no red spotted"
+            self.BACK_AWAY = False
             self.found = False
-            self.seek()
+            if self.DRIVING:
+                self.seek()
         if self.found:
          img_name = str(self.i) + "Fimg.jpg"
         else:
@@ -194,6 +213,7 @@ class PiNoon(BaseChallenge):
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
             self.logger.info("killed from keyboard")
+            self.drive.move(0,0)
         finally:
             # Tell each thread to stop, and wait for them to end
             self.logger.info("stopping threads")
