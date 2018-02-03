@@ -14,14 +14,14 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.DRIVING = False
+        self.DRIVING = True
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
         self.MIN_CONTOUR_AREA = 2000
         self.TURN_AREA = 7000  #6000 turns right at edge, 9000 too high
-        self.BACK_AWAY_START = 1000
-        self.BACK_AWAY_STOP = 600
+        self.BACK_AWAY_START = 3000
+        self.BACK_AWAY_STOP = 1000
         self.BACK_AWAY = False
         self.last_t_error = 0
         self.TURN_P = 1
@@ -29,7 +29,7 @@ class StreamProcessor(threading.Thread):
         self.STRAIGHT_SPEED = 0.4
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 160
-        self.CROP_HEIGHT = 60
+        self.CROP_HEIGHT = 55
         self.TIMEOUT = 30.0
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
@@ -98,7 +98,7 @@ class StreamProcessor(threading.Thread):
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         # method will extract the colour we are interested in (between 0 and 180)
-        hsv_lower, hsv_upper = ((100, 90, 40), (140, 255, 200))
+        hsv_lower, hsv_upper = ((115, 110, 40), (140, 255, 200))
         imrange = cv2.inRange(
             image,
             numpy.array(hsv_lower),
@@ -139,7 +139,7 @@ class StreamProcessor(threading.Thread):
                     #we're probably close, back off
                     self.BACK_AWAY = True
                     if self.DRIVING:
-                        self.drive.move(turn, -self.STRAIGHT_SPEED/2)
+                        self.drive.move(turn/2, -self.STRAIGHT_SPEED/2)
                 else:
                     self.BACK_AWAY = False
                     if self.DRIVING:
@@ -148,7 +148,8 @@ class StreamProcessor(threading.Thread):
                 print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
                 if found_area < self.TURN_AREA:
                     print "close to edge, turning"
-                    self.seek()
+                    if self.DRIVING:
+                        self.seek()
                 if self.DRIVING:
                     self.drive.move(0, self.STRAIGHT_SPEED)
         else:
