@@ -14,15 +14,17 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.DRIVING = False
+        self.DRIVING = True
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
         self.MIN_CONTOUR_AREA = 1000
-        self.TURN_AREA = 7000  #6000 turns right at edge, 9000 too high
+        self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
+        self.TURN_HEIGHT = 60
         self.BACK_AWAY_START = 2000
-        self.BACK_AWAY_STOP = 1200
-        self.BACK_AWAY = False
+        self.BACK_AWAY_STOP = 1500
+        self.back_away = False
+        self.edge = False
         self.last_t_error = 0
         self.TURN_P = 1
         self.TURN_D = 0.3
@@ -114,7 +116,6 @@ class StreamProcessor(threading.Thread):
         contourimage, contours, hierarchy = cv2.findContours(
             imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
         )
-
         # Go through each contour
         found_area = -1
         found_x = -1
@@ -125,9 +126,10 @@ class StreamProcessor(threading.Thread):
             area = cv2.contourArea(contour)
             if found_area < area:
                 found_area = area
+                x,y,w,h = cv2.boundingRect(contour)
                 second_biggest = biggest_contour
                 biggest_contour = contour
-        if (found_area < 2000) and (second_biggest is not None):
+        if (found_area < self.TURN_AREA) and (second_biggest is not None):
             combined_area = found_area + cv2.contourArea(second_biggest)
             if combined_area > self.MIN_CONTOUR_AREA:
                 print ("red split, combining two biggest contours")
@@ -135,7 +137,7 @@ class StreamProcessor(threading.Thread):
                 biggest_contour = numpy.concatenate((biggest_contour,second_biggest), axis=0)        
         if found_area > self.MIN_CONTOUR_AREA:
             #arc length of a typical contour is ~400
-            smoothed_contour = cv2.approxPolyDP(biggest_contour, 8, True)
+            smoothed_contour = cv2.approxPolyDP(biggest_contour, 5, True)
             hull = cv2.convexHull(smoothed_contour)
             found_area = cv2.contourArea(smoothed_contour)
             opponent_size = cv2.contourArea(hull) - found_area
@@ -147,44 +149,51 @@ class StreamProcessor(threading.Thread):
                 pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)
                 t_error = (self.image_centre_x - found_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
-                if opponent_size > self.BACK_AWAY_START or (opponent_size > self.BACK_AWAY_STOP and self.BACK_AWAY):
+                if opponent_size > self.BACK_AWAY_START or (opponent_size > self.BACK_AWAY_STOP and self.back_away):
                     #we're probably close, back off
-                    self.BACK_AWAY = True
+                    self.back_Away = True
                     if self.DRIVING:
                         self.drive.move(turn/2, -self.STRAIGHT_SPEED/2)
                 else:
-                    self.BACK_AWAY = False
+                    self.back_away = False
                     if self.DRIVING:
                         self.drive.move(turn, self.STRAIGHT_SPEED)
             else:
                 #contour convex, so no opponent found
                 self.found = False
-                if found_area < self.TURN_AREA:
-                    print "close to edge, turning. no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
+                if h < self.TURN_HEIGHT:
+                    self.edge = True
+                    print "close to edge, turning. no opponent found, convex red area: %d, height: %d" % (found_area, h)
                     if self.DRIVING:
                         self.seek()
                 else:
+                    self.edge = False
                     print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
                 if self.DRIVING:
                     self.drive.move(self.SLIGHT_TURN, self.STRAIGHT_SPEED)
         else:
+            self.edge = False
             if self.found:
                 #if we were trackign and we've ended up here, we're probably super close
                 print "just lost the opponent, trying backing off first"
-                self.BACK_AWAY = True
+                self.back_away = True
                 self.found = False
                 if self.DRIVING:
                     self.drive.move(0, -self.STRAIGHT_SPEED)
             else:
                 print "no opponent, no red spotted"
-                self.BACK_AWAY = False
+                self.back_away = False
                 self.found = False
                 if self.DRIVING:
                     self.seek()
+        
+        image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
         if self.found:
-         img_name = str(self.i) + "Fimg.jpg"
+            img_name = str(self.i) + "Fimg.jpg"
         else:
-         img_name = str(self.i) + "NFimg.jpg"
+            #if self.edge:
+                #cv2.imwrite(str(self.i) + "imrange.jpg", imrange)
+            img_name = str(self.i) + "NFimg.jpg"
         #filesave for debugging: 
         #cv2.imwrite(img_name, image)
         self.i += 1
