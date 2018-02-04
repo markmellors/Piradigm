@@ -100,14 +100,14 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        hsv_lower, hsv_upper = ((105, 120, 100), (130, 255, 200))
+        hsv_lower, hsv_upper = ((105, 110, 100), (130, 255, 200))
         imrange = cv2.inRange(
             image,
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
         #code for calibrating thresholds, displays average HSV values:
-        #print cv2.mean(image)
+        print cv2.mean(image)
 
         frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
         screen.blit(frame, (100, 0))
@@ -131,7 +131,7 @@ class StreamProcessor(threading.Thread):
                 biggest_contour = contour
         M = cv2.moments(biggest_contour)
         cy = int(M['m01']/M['m00'])
-        print ("height: %d, cy: %d" % (h, cy))
+        #print ("height: %d, cy: %d" % (h, cy))
         if (found_area < self.TURN_AREA) and (second_biggest is not None):
             combined_area = found_area + cv2.contourArea(second_biggest)
             if combined_area > self.MIN_CONTOUR_AREA:
