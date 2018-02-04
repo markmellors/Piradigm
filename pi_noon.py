@@ -100,7 +100,7 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        hsv_lower, hsv_upper = ((105, 110, 100), (130, 255, 200))
+        hsv_lower, hsv_upper = ((110, 110, 100), (130, 255, 230))
         imrange = cv2.inRange(
             image,
             numpy.array(hsv_lower),
