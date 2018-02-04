@@ -14,7 +14,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.DRIVING = True
+        self.DRIVING = False
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
@@ -129,10 +129,13 @@ class StreamProcessor(threading.Thread):
                 x,y,w,h = cv2.boundingRect(contour)
                 second_biggest = biggest_contour
                 biggest_contour = contour
+        M = cv2.moments(biggest_contour)
+        cy = int(M['m01']/M['m00'])
+        print ("height: %d, cy: %d" % (h, cy))
         if (found_area < self.TURN_AREA) and (second_biggest is not None):
             combined_area = found_area + cv2.contourArea(second_biggest)
             if combined_area > self.MIN_CONTOUR_AREA:
-                print ("red split, combining two biggest contours")
+                #print ("red split, combining two biggest contours")
                 found_area = combined_area
                 biggest_contour = numpy.concatenate((biggest_contour,second_biggest), axis=0)        
         if found_area > self.MIN_CONTOUR_AREA:
@@ -144,7 +147,7 @@ class StreamProcessor(threading.Thread):
             if not cv2.isContourConvex(smoothed_contour):
                 #oponent is disrupting countour shape, making it concave
                 found_x, found_y, opponent_size = self.find_opponent(imrange, smoothed_contour, hull)
-                print ("found, area: %d, coordinates %d, %d" % (opponent_size, found_x, found_y))
+                #print ("found, area: %d, coordinates %d, %d" % (opponent_size, found_x, found_y))
                 self.found = True
                 pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)
                 t_error = (self.image_centre_x - found_x) / self.image_centre_x
@@ -163,25 +166,25 @@ class StreamProcessor(threading.Thread):
                 self.found = False
                 if h < self.TURN_HEIGHT:
                     self.edge = True
-                    print "close to edge, turning. no opponent found, convex red area: %d, height: %d" % (found_area, h)
+                    #print "close to edge, turning. no opponent found, convex red area: %d, height: %d" % (found_area, h)
                     if self.DRIVING:
                         self.seek()
                 else:
                     self.edge = False
-                    print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
+                    #print "no opponent found, convex red area: %d, opponent area: %d" % (found_area, opponent_size)
                 if self.DRIVING:
                     self.drive.move(self.SLIGHT_TURN, self.STRAIGHT_SPEED)
         else:
             self.edge = False
             if self.found:
                 #if we were trackign and we've ended up here, we're probably super close
-                print "just lost the opponent, trying backing off first"
+                #print "just lost the opponent, trying backing off first"
                 self.back_away = True
                 self.found = False
                 if self.DRIVING:
                     self.drive.move(0, -self.STRAIGHT_SPEED)
             else:
-                print "no opponent, no red spotted"
+                #print "no opponent, no red spotted"
                 self.back_away = False
                 self.found = False
                 if self.DRIVING:
@@ -221,6 +224,7 @@ class PiNoon(BaseChallenge):
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
         self.camera.iso = 800
+        self.camera.awb_mode = 'incandescent'
         self.camera.shutter_speed = 12000
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
