@@ -3,7 +3,7 @@ import cv2.aruco as aruco
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
-    def __init__(self, screen=None, camera=None, drive=None):
+    def __init__(self, screen=None, camera=None, drive=None, dict=None):
         super(StreamProcessor, self).__init__()
         self.camera = camera
         image_width, image_height = self.camera.resolution
@@ -16,7 +16,7 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         # Why the one second sleep?
         #create small cust dictionary
-        self.small_dict = aruco.Dictionary_create(6, 3)
+        self.small_dict = dict #aruco.Dictionary_create(6, 3)
         self.last_t_error = 0
         self.TURN_P = 0.6
         self.TURN_D = 0.3
@@ -182,13 +182,14 @@ class StreamProcessor(threading.Thread):
 class Maze(BaseChallenge):
     """Minimal Maze challenge class"""
 
-    def __init__(self, timeout=120, screen=None, joystick=None):
+    def __init__(self, timeout=120, screen=None, joystick=None, markers=None):
         self.image_width = 320  # Camera image width
         self.image_height = 240  # Camera image height
         self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
-        self.joystick=joystick
+        self.joystick = joystick
+        self.dict = markers
         super(Maze, self).__init__(name='Maze', timeout=timeout, logger=logger)
 
 
@@ -207,6 +208,7 @@ class Maze(BaseChallenge):
             screen=self.screen,
             camera=self.camera,
             drive=self.drive,
+            dict=self.dict
         )
         logger.info('Wait ...')
         time.sleep(2)
