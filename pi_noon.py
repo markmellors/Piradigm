@@ -18,11 +18,11 @@ class StreamProcessor(threading.Thread):
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
-        self.MIN_CONTOUR_AREA = 1000
+        self.MIN_BALLOON_SIZE = 20
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 26
-        self.BACK_AWAY_START = 2000
-        self.BACK_AWAY_STOP = 1500
+        self.BACK_AWAY_START = 60
+        self.BACK_AWAY_STOP = 40
         self.back_away = False
         self.edge = False
         self.last_t_error = 0
@@ -58,29 +58,18 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    def find_opponent(self, image, contour, hull):
-        '''function to find the centre of the convex portion of a contour'''
-        mask = numpy.zeros(image.shape,numpy.uint8)
-        cv2.drawContours(mask,[hull],0,255,-1)
-        cv2.drawContours(mask,[contour],0,0,-1)
-        contourimage, subcontours, hierarchy = cv2.findContours(
-            mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
-        )
+    def finballoon(self, image):
+        '''function to find the largest circle (balloon) in the image'''
+        circles = cv2.HoughCircles(gray, cv2.cv.CV_HOUGH_GRADIENT, 1, 10,)
         # Go through each contour
-        found_area = -1
-        found_x = -1
-        found_y = -1
-        biggest_contour = None
-        for subcontour in subcontours:
-            x,y, w, h = cv2.boundingRect(subcontour)
-            cx = x + (w / 2)
-            cy = y + (h / 2)
-            area = cv2.contourArea(subcontour)
-            if found_area < area:
-                found_area = area
-                found_x = cx
-                found_y = cy
-                biggest_contour = subcontour
+        found_r = None
+        found_x = None
+        found_y = None
+        for x, y, r in circles:
+            if found_r < r:
+                found_r = r
+                found_x = x
+                found_y = y
         return [found_x, found_y, found_area]
 
         
@@ -92,7 +81,7 @@ class StreamProcessor(threading.Thread):
     
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
-        image = image[0:self.CROP_HEIGHT, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+        image = image[self.CROP_HEIGHT:0, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
         screenimage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
@@ -100,56 +89,22 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        hsv_lower, hsv_upper = ((110, 110, 100), (130, 255, 230))
-        imrange = cv2.inRange(
-            image,
-            numpy.array(hsv_lower),
-            numpy.array(hsv_upper)
-        )
-        #code for calibrating thresholds, displays average HSV values:
-        #print cv2.mean(image)
-
-        frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
+        hue, sat, val = cv2.split(image)
+        frame = pygame.surfarray.make_surface(cv2.flip(hue), 1))
         screen.blit(frame, (100, 0))
         pygame.display.update()
         # Find the contours
-        contourimage, contours, hierarchy = cv2.findContours(
-            imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
-        )
-        # Go through each contour
-        found_area = -1
-        found_x = -1
-        found_y = -1
-        second_biggest = None
-        biggest_contour = None
-        for contour in contours:
-            area = cv2.contourArea(contour)
-            if found_area < area:
-                found_area = area
-                x,y,w,h = cv2.boundingRect(contour)
-                second_biggest = biggest_contour
-                biggest_contour = contour
-        if (found_area < self.TURN_AREA) and (second_biggest is not None):
-            combined_area = found_area + cv2.contourArea(second_biggest)
-            if combined_area > self.MIN_CONTOUR_AREA:
-                #print ("red split, combining two biggest contours")
-                found_area = combined_area
-                biggest_contour = numpy.concatenate((biggest_contour,second_biggest), axis=0)        
-        if found_area > self.MIN_CONTOUR_AREA:
-            #arc length of a typical contour is ~400
-            smoothed_contour = cv2.approxPolyDP(biggest_contour, 5, True)
-            hull = cv2.convexHull(smoothed_contour)
-            found_area = cv2.contourArea(smoothed_contour)
-            opponent_size = cv2.contourArea(hull) - found_area
-            if not cv2.isContourConvex(smoothed_contour):
+        balloon_x, balloon_y, balloon_r = find_balloon(hue)
+        if balloon_r is not None:
+            pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)   
+        if balloon_r > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
                 found_x, found_y, opponent_size = self.find_opponent(imrange, smoothed_contour, hull)
-                print ("found, area: %d, coordinates %d, %d" % (opponent_size, found_x, found_y))
+                print ("found balloon: position %d, %d, radius" %d % (balloon_x, balloon_y, balloon_r))
                 self.found = True
-                pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)
-                t_error = (self.image_centre_x - found_x) / self.image_centre_x
+                t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
-                if opponent_size > self.BACK_AWAY_START or (opponent_size > self.BACK_AWAY_STOP and self.back_away):
+                if balloon_r > self.BACK_AWAY_START or (balloon_r > self.BACK_AWAY_STOP and self.back_away):
                     #we're probably close, back off
                     self.back_Away = True
                     if self.DRIVING:
@@ -158,21 +113,6 @@ class StreamProcessor(threading.Thread):
                     self.back_away = False
                     if self.DRIVING:
                         self.drive.move(turn, self.STRAIGHT_SPEED)
-            else:
-                #contour convex, so no opponent found
-                self.found = False
-                M = cv2.moments(biggest_contour)
-                cy = int(M['m01']/M['m00'])
-                if cy < self.TURN_HEIGHT:
-                    self.edge = True
-                    print "close to edge, turning. no opponent found, convex red area: %d, height: %d" % (found_area, cy)
-                    if self.DRIVING:
-                        self.seek()
-                else:
-                    self.edge = False
-                    print "no opponent found, convex red area: %d" % (found_area)
-                if self.DRIVING:
-                    self.drive.move(self.SLIGHT_TURN, self.STRAIGHT_SPEED)
         else:
             self.edge = False
             if self.found:
