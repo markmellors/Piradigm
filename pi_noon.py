@@ -6,15 +6,15 @@ class StreamProcessor(threading.Thread):
     def __init__(self, screen=None, camera=None, drive=None):
         super(StreamProcessor, self).__init__()
         self.camera = camera
-        image_width, image_height = self.camera.resolution
-        self.image_centre_x = image_width / 2.0
-        self.image_centre_y = image_height / 2.0
+        self.image_width, self.image_height = self.camera.resolution
+        self.image_centre_x = self.image_width / 2.0
+        self.image_centre_y = self.image_height / 2.0
         self.drive = drive
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.DRIVING = True
+        self.DRIVING = False
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
@@ -58,14 +58,14 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    def finballoon(self, image):
+    def find_balloon(self, image):
         '''function to find the largest circle (balloon) in the image'''
-        circles = cv2.HoughCircles(gray, cv2.cv.CV_HOUGH_GRADIENT, 1, 10,)
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 10,)
         # Go through each contour
         found_r = None
         found_x = None
         found_y = None
-        for x, y, r in circles:
+        for (x, y, r) in circles:
             if found_r < r:
                 found_r = r
                 found_x = x
@@ -81,7 +81,7 @@ class StreamProcessor(threading.Thread):
     
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
-        image = image[self.CROP_HEIGHT:0, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+        image = image[self.CROP_HEIGHT:self.image_height, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
         screenimage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
@@ -90,11 +90,11 @@ class StreamProcessor(threading.Thread):
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         hue, sat, val = cv2.split(image)
-        frame = pygame.surfarray.make_surface(cv2.flip(hue), 1))
+        frame = pygame.surfarray.make_surface(cv2.flip(hue, 1))
         screen.blit(frame, (100, 0))
         pygame.display.update()
         # Find the contours
-        balloon_x, balloon_y, balloon_r = find_balloon(hue)
+        balloon_x, balloon_y, balloon_r = self.find_balloon(hue)
         if balloon_r is not None:
             pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)   
         if balloon_r > self.MIN_BALLOON_SIZE:
