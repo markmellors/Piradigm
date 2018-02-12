@@ -60,17 +60,21 @@ class StreamProcessor(threading.Thread):
 
     def find_balloon(self, image):
         '''function to find the largest circle (balloon) in the image'''
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 10,)
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 3)
         # Go through each contour
         found_r = None
         found_x = None
         found_y = None
-        for (x, y, r) in circles:
-            if found_r < r:
-                found_r = r
-                found_x = x
-                found_y = y
-        return [found_x, found_y, found_area]
+        if circles is not None:
+            print "circle found"
+            for (x, y, r) in circles:
+                if found_r < r:
+                    found_r = r
+                    found_x = x
+                    found_y = y
+        else:
+            print "circle not found"
+        return [found_x, found_y, found_r]
 
         
     def seek(self):
@@ -90,7 +94,11 @@ class StreamProcessor(threading.Thread):
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         hue, sat, val = cv2.split(image)
-        frame = pygame.surfarray.make_surface(cv2.flip(hue, 1))
+        sat.fill(255)
+        val.fill(255)
+        screenimage = cv2.merge([hue, sat, val])
+        screenimage = cv2.cvtColor(screenimage, cv2.COLOR_HSV2BGR)
+        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
         screen.blit(frame, (100, 0))
         pygame.display.update()
         # Find the contours
