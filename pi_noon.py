@@ -59,8 +59,8 @@ class StreamProcessor(threading.Thread):
                     self.event.clear()
 
     def find_balloon(self, image):
-        '''function to find the largest circle (balloon) in the image'''
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 20, param1=40,param2=12,minRadius=0,maxRadius=30)
+        '''function to find the largest circle (balloon) in the image, returns x,y,r'''
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 4, 20, param1=50,param2=15,minRadius=4,maxRadius=40)
         #param1=50 = less than half gets ball
         #param1 = 75 = about 1in10
         #param1 = 25 = less than half
