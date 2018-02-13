@@ -18,7 +18,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
-        self.MIN_BALLOON_SIZE = 20
+        self.MIN_BALLOON_SIZE = 3
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 26
         self.BACK_AWAY_START = 60
@@ -60,18 +60,21 @@ class StreamProcessor(threading.Thread):
 
     def find_balloon(self, image):
         '''function to find the largest circle (balloon) in the image'''
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 3)
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 2, param1=50,param2=15,minRadius=0,maxRadius=10)
         # Go through each contour
         found_r = None
         found_x = None
         found_y = None
+        i=0
         if circles is not None:
-            print "circle found"
+            circles = numpy.round(circles[0, :]).astype("int")
             for (x, y, r) in circles:
+                i+=1
                 if found_r < r:
                     found_r = r
                     found_x = x
                     found_y = y
+            print i
         else:
             print "circle not found"
         return [found_x, found_y, found_r]
@@ -102,13 +105,13 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (100, 0))
         pygame.display.update()
         # Find the contours
-        balloon_x, balloon_y, balloon_r = self.find_balloon(hue)
+        screenimage=cv2.cvtColor(screenimage, cv2.COLOR_BGR2GRAY)
+        balloon_x, balloon_y, balloon_r = self.find_balloon(screenimage)
         if balloon_r is not None:
-            pygame.mouse.set_pos(found_y, self.CROP_WIDTH - found_x)   
+            pygame.mouse.set_pos(balloon_y, self.CROP_WIDTH - balloon_x)
         if balloon_r > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
-                found_x, found_y, opponent_size = self.find_opponent(imrange, smoothed_contour, hull)
-                print ("found balloon: position %d, %d, radius" %d % (balloon_x, balloon_y, balloon_r))
+                print ("found balloon: position %d, %d, radius %d" % (balloon_x, balloon_y, balloon_r))
                 self.found = True
                 t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
