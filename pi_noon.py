@@ -61,6 +61,9 @@ class StreamProcessor(threading.Thread):
     def find_balloon(self, image):
         '''function to find the largest circle (balloon) in the image'''
         circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 2, param1=50,param2=15,minRadius=0,maxRadius=10)
+        #param1=50 = less than half gets ball
+        #param1 = 75 = about 1in10
+        #param1 = 25 = less than half
         # Go through each contour
         found_r = None
         found_x = None
@@ -102,10 +105,14 @@ class StreamProcessor(threading.Thread):
         screenimage = cv2.merge([hue, sat, val])
         screenimage = cv2.cvtColor(screenimage, cv2.COLOR_HSV2BGR)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
-        screen.blit(frame, (100, 0))
+        screen.blit(frame, (70, 0))
+
         pygame.display.update()
         # Find the contours
         screenimage=cv2.cvtColor(screenimage, cv2.COLOR_BGR2GRAY)
+        canny = cv2.Canny(screenimage,50,100)
+        frame = pygame.surfarray.make_surface(cv2.flip(canny, 1))
+        screen.blit(frame, (150, 0))
         balloon_x, balloon_y, balloon_r = self.find_balloon(screenimage)
         if balloon_r is not None:
             pygame.mouse.set_pos(balloon_y, self.CROP_WIDTH - balloon_x)
