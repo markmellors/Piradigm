@@ -25,8 +25,8 @@ class StreamProcessor(threading.Thread):
         self.BACK_AWAY_STOP = 40
         self.back_away = False
         self.edge = False
-        self.BLUR = 1
-        self.COLOUR_LIMITS = ((0, 70, 70), (180, 250, 230))
+        self.BLUR = 3
+        self.COLOUR_LIMITS = ((0, 50, 70), (180, 250, 230))
         self.last_t_error = 0
         self.TURN_P = 2
         self.TURN_D = 0.3
@@ -36,7 +36,7 @@ class StreamProcessor(threading.Thread):
         self.CROP_WIDTH = 160
         self.CROP_HEIGHT = 55
         self.TIMEOUT = 30.0
-        self.PARAM = 50
+        self.PARAM = 60
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.found = False
@@ -63,7 +63,11 @@ class StreamProcessor(threading.Thread):
 
     def find_balloon(self, image):
         '''function to find the largest circle (balloon) in the image, returns x,y,r'''
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 8, 20, param1=self.PARAM,param2=300,minRadius=5,maxRadius=100)
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 8, 20, param1=self.PARAM,param2=150,minRadius=5,maxRadius=100)
+        #with thresholding
+        #300 = no circles what so ever
+        #200 5% false, no real
+        #100 good trscking, 100% false positives though
         #param1=50, p2=400  no ball, no false positive
         #param1=75 p2 = 400 no ball, no false positives
         #param1=75, p2= 350 1/4ball, 1/4false positive
