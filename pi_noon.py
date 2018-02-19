@@ -25,6 +25,7 @@ class StreamProcessor(threading.Thread):
         self.BACK_AWAY_STOP = 40
         self.back_away = False
         self.edge = False
+        self.BLUR = 3
         self.last_t_error = 0
         self.TURN_P = 2
         self.TURN_D = 0.3
@@ -34,6 +35,7 @@ class StreamProcessor(threading.Thread):
         self.CROP_WIDTH = 160
         self.CROP_HEIGHT = 55
         self.TIMEOUT = 30.0
+        self.PARAM = 50
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.found = False
@@ -60,24 +62,24 @@ class StreamProcessor(threading.Thread):
 
     def find_balloon(self, image):
         '''function to find the largest circle (balloon) in the image, returns x,y,r'''
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 4, 20, param1=50,param2=15,minRadius=4,maxRadius=40)
-        #param1=50 = less than half gets ball
-        #param1 = 75 = about 1in10
-        #param1 = 25 = less than half
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 8, 20, param1=self.PARAM,param2=300,minRadius=5,maxRadius=100)
+        #param1=50, p2=400  no ball, no false positive
+        #param1=75 p2 = 400 no ball, no false positives
+        #param1=75, p2= 350 1/4ball, 1/4false positive
+        #param1 = 20 p2 =400 some false, no real
+        #param1 = 100 p2 =400 no real, no false
+        #param1 = 100 p2 =350 no real, no false
+        #param1 = 100 p2 =300 no real, half false
+
         # Go through each contour
         found_r = None
         found_x = None
         found_y = None
         i=0
         if circles is not None:
+            #get most confident circle
             circles = numpy.round(circles[0, :]).astype("int")
-            for (x, y, r) in circles:
-                i+=1
-                if i==1:
-                    found_r = r
-                    found_x = x
-                    found_y = y
-            print i
+            (found_x, found_y, found_r) = circles[0]
         else:
             print "circle not found"
         return [found_x, found_y, found_r]
@@ -94,6 +96,7 @@ class StreamProcessor(threading.Thread):
         image = image[self.CROP_HEIGHT:self.image_height, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
         screenimage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        screenimage = cv2.GaussianBlur(screenimage,(self.BLUR,self.BLUR),0)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
         screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
@@ -110,7 +113,7 @@ class StreamProcessor(threading.Thread):
         pygame.display.update()
         # Find the contours
         screenimage=cv2.cvtColor(screenimage, cv2.COLOR_BGR2GRAY)
-        canny = cv2.Canny(screenimage,20,40)
+        canny = cv2.Canny(screenimage,self.PARAM,self.PARAM*2)
         frame = pygame.surfarray.make_surface(cv2.flip(canny, 1))
         screen.blit(frame, (150, 0))
         balloon_x, balloon_y, balloon_r = self.find_balloon(screenimage)
