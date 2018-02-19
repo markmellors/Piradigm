@@ -25,7 +25,8 @@ class StreamProcessor(threading.Thread):
         self.BACK_AWAY_STOP = 40
         self.back_away = False
         self.edge = False
-        self.BLUR = 3
+        self.BLUR = 1
+        self.COLOUR_LIMITS = ((0, 70, 70), (180, 250, 230))
         self.last_t_error = 0
         self.TURN_P = 2
         self.TURN_D = 0.3
@@ -84,6 +85,16 @@ class StreamProcessor(threading.Thread):
             print "circle not found"
         return [found_x, found_y, found_r]
 
+    def threshold_image(self, image, limits):
+        hsv_lower, hsv_upper = limits
+        mask = cv2.inRange(
+            image,
+            numpy.array(hsv_lower),
+            numpy.array(hsv_upper)
+        )
+        mask = mask.astype('bool')
+        return image * numpy.dstack((mask, mask, mask))
+
         
     def seek(self):
         self.drive.move(self.TURN_SPEED, 0)
@@ -101,6 +112,7 @@ class StreamProcessor(threading.Thread):
         screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        image = self.threshold_image(image, self.COLOUR_LIMITS)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         hue, sat, val = cv2.split(image)
         sat.fill(255)
