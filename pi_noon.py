@@ -27,7 +27,7 @@ class StreamProcessor(threading.Thread):
         self.back_away = False
         self.edge = False
         self.BLUR = 3
-        self.COLOUR_LIMITS = ((0, 50, 70), (180, 250, 230))
+        self.colour_limits = ((0, 50, 70), (180, 250, 230))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
@@ -122,6 +122,16 @@ class StreamProcessor(threading.Thread):
         self.drive.move(0,0)
         time.sleep(self.SETTLE_TIME)
     
+    def show_cal_label(self, screen):
+        font = pygame.font.Font(None, 24)
+        label = font.render(str("Calibrating"), 1, (125,125,125))
+        screen.blit(label, (50, 200))
+
+    def show_tracking_label(self, screen):
+        font = pygame.font.Font(None, 24)
+        label = font.render(str("Tracking"), 1, (125,125,125))
+        screen.blit(label, (50, 200))
+    
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         image = image[self.CROP_HEIGHT:self.image_height, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
@@ -132,8 +142,14 @@ class StreamProcessor(threading.Thread):
         screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        limits = self.get_limits(image, 1)
-        image = self.threshold_image(image, limits) #self.COLOUR_LIMITS)
+        if self.calibrating:
+            self.show_cal_label(screen)
+            self.colour_limits = self.get_limits(image, 1)
+            print ("calibrating")
+        if self.tracking:
+            self.show_tracking_label(screen)
+            print "tracking"
+        image = self.threshold_image(image, self.colour_limits)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         hue, sat, val = cv2.split(image)
         sat.fill(255)
@@ -161,11 +177,11 @@ class StreamProcessor(threading.Thread):
                 if balloon_r > self.BACK_AWAY_START or (balloon_r > self.BACK_AWAY_STOP and self.back_away):
                     #we're probably close, back off
                     self.back_Away = True
-                    if self.DRIVING:
+                    if self.DRIVING and self.tracking:
                         self.drive.move(turn/2, -self.STRAIGHT_SPEED/2)
                 else:
                     self.back_away = False
-                    if self.DRIVING:
+                    if self.DRIVING and self.tracking:
                         self.drive.move(turn, self.STRAIGHT_SPEED)
         else:
             self.edge = False
@@ -174,13 +190,13 @@ class StreamProcessor(threading.Thread):
                 #print "just lost the opponent, trying backing off first"
                 self.back_away = True
                 self.found = False
-                if self.DRIVING:
+                if self.DRIVING and self.tracking:
                     self.drive.move(0, -self.STRAIGHT_SPEED)
             else:
                 #print "no opponent, no red spotted"
                 self.back_away = False
                 self.found = False
-                if self.DRIVING:
+                if self.DRIVING and self.tracking:
                     self.seek()
         
         image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
@@ -209,6 +225,8 @@ class PiNoon(BaseChallenge):
         super(PiNoon, self).__init__(name='PiNoon', timeout=timeout, logger=logger)
 
     def joystick_handler(self, button):
+        if button['r1']:
+            self.processor.finished = True
         if button['r2']:
             self.processor.tracking = True
             self.processor.calibrating = False
@@ -218,8 +236,6 @@ class PiNoon(BaseChallenge):
         if button['l2']:
             self.processor.tracking = False
             self.processor.calibrating = True
-        if button['r1']:
-            self.processor.finished = True
 
     def run(self):
         # Startup sequence
@@ -248,7 +264,7 @@ class PiNoon(BaseChallenge):
         pygame.mouse.set_visible(True)
         try:
             while not self.should_die:
-                time.sleep(0.1)
+                time.sleep(0.01)
                 if self.joystick.connected:
                     self.joystick_handler(self.joystick.check_presses())
                 if self.processor.finished:
