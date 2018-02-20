@@ -45,6 +45,7 @@ class StreamProcessor(threading.Thread):
         logger.info("setup complete, looking")
         time.sleep(1)
         self.start()
+        self.endtime=0
 
     def run(self):
         # This method runs in a separate thread
@@ -119,6 +120,7 @@ class StreamProcessor(threading.Thread):
         time.sleep(self.SETTLE_TIME)
     
     def process_image(self, image, screen):
+        starttime = time.clock()
         screen = pygame.display.get_surface()
         image = image[self.CROP_HEIGHT:self.image_height, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
@@ -189,6 +191,8 @@ class StreamProcessor(threading.Thread):
         #filesave for debugging: 
         #cv2.imwrite(img_name, image)
         self.i += 1
+        print ("%s, %s" % (time.clock()-starttime, time.clock() - self.endtime))
+        self.endtime = time.clock()
 
 
 
@@ -198,7 +202,7 @@ class PiNoon(BaseChallenge):
     def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 160  # Camera image width
         self.image_height = 128  # Camera image height
-        self.frame_rate = 30  # Camera image capture frame rate
+        self.frame_rate = 2  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
