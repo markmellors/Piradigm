@@ -1,5 +1,6 @@
 from img_base_class import *
 import cv2.aruco as aruco
+from approxeng.input.selectbinder import ControllerResource
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -27,6 +28,8 @@ class StreamProcessor(threading.Thread):
         self.edge = False
         self.BLUR = 3
         self.COLOUR_LIMITS = ((0, 50, 70), (180, 250, 230))
+        self.calibrating = False
+        self.tracking = False
         self.last_t_error = 0
         self.TURN_P = 2
         self.TURN_D = 0.3
@@ -44,13 +47,13 @@ class StreamProcessor(threading.Thread):
         self.i = 0
         logger.info("setup complete, looking")
         time.sleep(1)
+        self.endtime=time.time()
         self.start()
-        self.endtime=0
 
     def run(self):
         # This method runs in a separate thread
         while not self.terminated:
-            # Wait for an image to be written to the stream
+            # Wait for an image to be written to the stream  
             if self.event.wait(1):
                 try:
                     # Read the image and do some processing on it
@@ -120,7 +123,6 @@ class StreamProcessor(threading.Thread):
         time.sleep(self.SETTLE_TIME)
     
     def process_image(self, image, screen):
-        starttime = time.clock()
         screen = pygame.display.get_surface()
         image = image[self.CROP_HEIGHT:self.image_height, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
@@ -191,8 +193,6 @@ class StreamProcessor(threading.Thread):
         #filesave for debugging: 
         #cv2.imwrite(img_name, image)
         self.i += 1
-        print ("%s, %s" % (time.clock()-starttime, time.clock() - self.endtime))
-        self.endtime = time.clock()
 
 
 
@@ -202,12 +202,24 @@ class PiNoon(BaseChallenge):
     def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 160  # Camera image width
         self.image_height = 128  # Camera image height
-        self.frame_rate = 2  # Camera image capture frame rate
+        self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
         super(PiNoon, self).__init__(name='PiNoon', timeout=timeout, logger=logger)
 
+    def joystick_handler(self, button):
+        if button['r2']:
+            self.processor.tracking = True
+            self.processor.calibrating = False
+        if button['l1']:
+            self.processor.tracking = False
+            self.processor.calibrating = False
+        if button['l2']:
+            self.processor.tracking = False
+            self.processor.calibrating = True
+        if button['r1']:
+            self.processor.finished = True
 
     def run(self):
         # Startup sequence
@@ -237,6 +249,8 @@ class PiNoon(BaseChallenge):
         try:
             while not self.should_die:
                 time.sleep(0.1)
+                if self.joystick.connected:
+                    self.joystick_handler(self.joystick.check_presses())
                 if self.processor.finished:
                     self.timeout = 0
 

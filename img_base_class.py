@@ -40,7 +40,8 @@ class ImageCapture(threading.Thread):
         logger.debug('Start the stream using the video port')
         self.camera.capture_sequence(
             self.trigger_stream(),
-            format='bgr'
+            format='bgr',
+            use_video_port=True
         )
         logger.debug('Terminating camera processing...')
         self.processor.terminated = True
