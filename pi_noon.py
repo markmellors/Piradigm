@@ -19,7 +19,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
-        self.MIN_BALLOON_SIZE = 3
+        self.MIN_BALLOON_SIZE = 100
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 26
         self.BACK_AWAY_START = 60
@@ -65,43 +65,17 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    def find_balloon(self, image):
-        '''function to find the largest circle (balloon) in the image, returns x,y,r'''
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 8, 20, param1=self.PARAM,param2=150,minRadius=5,maxRadius=100)
-        #with thresholding
-        #300 = no circles what so ever
-        #200 5% false, no real
-        #100 good trscking, 100% false positives though
-        #param1=50, p2=400  no ball, no false positive
-        #param1=75 p2 = 400 no ball, no false positives
-        #param1=75, p2= 350 1/4ball, 1/4false positive
-        #param1 = 20 p2 =400 some false, no real
-        #param1 = 100 p2 =400 no real, no false
-        #param1 = 100 p2 =350 no real, no false
-        #param1 = 100 p2 =300 no real, half false
-
-        # Go through each contour
-        found_r = None
-        found_x = None
-        found_y = None
-        i=0
-        if circles is not None:
-            #get most confident circle
-            circles = numpy.round(circles[0, :]).astype("int")
-            (found_x, found_y, found_r) = circles[0]
-        else:
-            print "circle not found"
-        return [found_x, found_y, found_r]
-
     def threshold_image(self, image, limits):
+        '''function to find what parts of an image liue within limits.
+        returns the parts of the original image within the limits, and the mask'''
         hsv_lower, hsv_upper = limits
         mask = cv2.inRange(
             image,
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
-        mask = mask.astype('bool')
-        return image * numpy.dstack((mask, mask, mask))
+        Bmask = mask.astype('bool')
+        return image * numpy.dstack((Bmask, Bmask, Bmask)), mask
 
     def get_limits(self,image, sigmas):
         """function to use the mean and standard deviation of an images
@@ -131,7 +105,30 @@ class StreamProcessor(threading.Thread):
         font = pygame.font.Font(None, 60)
         label = font.render(str("Tracking"), 1, (255,255,255))
         screen.blit(label, (10, 200))
-    
+
+    def find_balloon(self,image):
+        '''takes a binary image and returns coordinates and size of largest contour'''
+        contourimage, contours, hierarchy = cv2.findContours(
+            image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
+        )
+        # Go through each contour
+        found_area = -1
+        found_x = -1
+        found_y = -1
+        biggest_contour = None
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            cx = x + (w / 2)
+            cy = y + (h / 2)
+            area = w * h
+            aspect_ratio = float(h)/w
+            if found_area < area and aspect_ratio < 2 and aspect_ratio > 0.5:
+                found_area = area
+                found_x = cx
+                found_y = cy
+                biggest_contour = contour
+        return found_x, found_y, found_area
+
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         image = image[self.CROP_HEIGHT:self.image_height, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
@@ -145,11 +142,9 @@ class StreamProcessor(threading.Thread):
         if self.calibrating:
             self.show_cal_label(screen)
             self.colour_limits = self.get_limits(image, 1)
-            print ("calibrating")
         if self.tracking:
             self.show_tracking_label(screen)
-            print "tracking"
-        image = self.threshold_image(image, self.colour_limits)
+        image, imrange = self.threshold_image(image, self.colour_limits)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         hue, sat, val = cv2.split(image)
         sat.fill(255)
@@ -165,16 +160,16 @@ class StreamProcessor(threading.Thread):
         canny = cv2.Canny(screenimage,self.PARAM,self.PARAM*2)
         frame = pygame.surfarray.make_surface(cv2.flip(canny, 1))
         screen.blit(frame, (150, 0))
-        balloon_x, balloon_y, balloon_r = self.find_balloon(screenimage)
-        if balloon_r is not None:
+        balloon_x, balloon_y, balloon_a = self.find_balloon(imrange)
+        if balloon_a is not None:
             pygame.mouse.set_pos(balloon_y, self.CROP_WIDTH - balloon_x)
-        if balloon_r > self.MIN_BALLOON_SIZE:
+        if balloon_a > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
-                print ("found balloon: position %d, %d, radius %d" % (balloon_x, balloon_y, balloon_r))
+                print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
                 self.found = True
                 t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
-                if balloon_r > self.BACK_AWAY_START or (balloon_r > self.BACK_AWAY_STOP and self.back_away):
+                if balloon_a > self.BACK_AWAY_START or (balloon_a > self.BACK_AWAY_STOP and self.back_away):
                     #we're probably close, back off
                     self.back_Away = True
                     if self.DRIVING and self.tracking:
@@ -230,12 +225,15 @@ class PiNoon(BaseChallenge):
         if button['r2']:
             self.processor.tracking = True
             self.processor.calibrating = False
+            print "Tracking"
         if button['l1']:
             self.processor.tracking = False
             self.processor.calibrating = False
+            print "finished calibrating"
         if button['l2']:
             self.processor.tracking = False
             self.processor.calibrating = True
+            print "calibrating"
 
     def run(self):
         # Startup sequence
