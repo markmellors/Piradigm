@@ -99,7 +99,16 @@ class StreamProcessor(threading.Thread):
         mask = mask.astype('bool')
         return image * numpy.dstack((mask, mask, mask))
 
-        
+    def get_limits(self,image, sigmas):
+        """function to use the mean and standard deviation of an images channels
+        to create suggested threshold limits based on number of 'sigmas'
+        (usually less than three). returns a tuple of tuples
+        ((low1, low2, low3),(upp1, upp2, upp3))"""
+        mean, stddev = cv2.meanStdDev(image)
+        lower = mean - sigmas * stddev
+        upper = mean + sigmas * stddev
+        return (lower, upper)
+
     def seek(self):
         self.drive.move(self.TURN_SPEED, 0)
         time.sleep(self.TURN_TIME)
@@ -116,6 +125,8 @@ class StreamProcessor(threading.Thread):
         screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        limits = self.get_limits(image, 1)
+        print (limits)
         image = self.threshold_image(image, self.COLOUR_LIMITS)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         hue, sat, val = cv2.split(image)
