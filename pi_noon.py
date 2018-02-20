@@ -100,14 +100,17 @@ class StreamProcessor(threading.Thread):
         return image * numpy.dstack((mask, mask, mask))
 
     def get_limits(self,image, sigmas):
-        """function to use the mean and standard deviation of an images channels
-        to create suggested threshold limits based on number of 'sigmas'
-        (usually less than three). returns a tuple of tuples
-        ((low1, low2, low3),(upp1, upp2, upp3))"""
-        mean, stddev = cv2.meanStdDev(image)
+        """function to use the mean and standard deviation of an images
+        channels in the centre of the image to create suggested threshold
+        limits based on number of 'sigmas' (usually less than three).
+        returns a tuple of tuples ((low1, low2, low3),(upp1, upp2, upp3))"""
+        h, w = image.shape[:2]
+        refsize = 0.7* min(w, h)
+        ref_image = image[(h/2-refsize/2):(h/2+refsize/2), (w/2-refsize/2):(w/2+refsize/2)]
+        mean, stddev = cv2.meanStdDev(ref_image)
         lower = mean - sigmas * stddev
         upper = mean + sigmas * stddev
-        return (lower, upper)
+        return ((lower[0][0], lower[1][0], lower[2][0]), (upper[0][0], upper[1][0], upper[2][0]))
 
     def seek(self):
         self.drive.move(self.TURN_SPEED, 0)
@@ -126,8 +129,7 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         limits = self.get_limits(image, 1)
-        print (limits)
-        image = self.threshold_image(image, self.COLOUR_LIMITS)
+        image = self.threshold_image(image, limits) #self.COLOUR_LIMITS)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         hue, sat, val = cv2.split(image)
         sat.fill(255)
