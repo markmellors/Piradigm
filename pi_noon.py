@@ -123,14 +123,14 @@ class StreamProcessor(threading.Thread):
         time.sleep(self.SETTLE_TIME)
     
     def show_cal_label(self, screen):
-        font = pygame.font.Font(None, 24)
-        label = font.render(str("Calibrating"), 1, (125,125,125))
-        screen.blit(label, (50, 200))
+        font = pygame.font.Font(None, 60)
+        label = font.render(str("Calibrating"), 1, (255,255,255))
+        screen.blit(label, (10, 200))
 
     def show_tracking_label(self, screen):
-        font = pygame.font.Font(None, 24)
-        label = font.render(str("Tracking"), 1, (125,125,125))
-        screen.blit(label, (50, 200))
+        font = pygame.font.Font(None, 60)
+        label = font.render(str("Tracking"), 1, (255,255,255))
+        screen.blit(label, (10, 200))
     
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
