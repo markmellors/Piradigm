@@ -21,14 +21,14 @@ class StreamProcessor(threading.Thread):
         self.SETTLE_TIME = 0.05
         self.MIN_BALLOON_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
-        self.TURN_HEIGHT = 26
+        self.TURN_HEIGHT = 23
         self.BACK_AWAY_START = 60
         self.BACK_AWAY_STOP = 40
         self.back_away = False
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.FLOOR_LIMITS  = ((110, 110, 100), (130, 255, 230))
+        self.FLOOR_LIMITS  = ((100, 150, 80), (130, 255, 220))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
@@ -135,15 +135,15 @@ class StreamProcessor(threading.Thread):
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         ball_image = image[self.BALL_CROP_HEIGHT:self.image_height, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
         floor_image = image[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
         image=image[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
         # Our operations on the frame come here
-        screenimage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
         screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         if self.calibrating:
             self.show_cal_label(screen)
             self.colour_limits = self.get_limits(ball_image, 1)
@@ -153,9 +153,9 @@ class StreamProcessor(threading.Thread):
         floor_range =  self.threshold_image(floor_image, self.FLOOR_LIMITS)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         frame = pygame.surfarray.make_surface(cv2.flip(floor_range, 1))
-        screen.blit(frame, (128-self.FLOOR_CROP_START, 0))
+        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START, 0))
         frame = pygame.surfarray.make_surface(cv2.flip(ball_range, 1))
-        screen.blit(frame, (128-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
+        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
         pygame.display.update()
         # Find the contours
         balloon_x, balloon_y, balloon_a = self.find_largest_contour(ball_range)
@@ -163,7 +163,7 @@ class StreamProcessor(threading.Thread):
             pygame.mouse.set_pos(balloon_y+self.FLOOR_CROP_HEIGHT-self.FLOOR_CROP_START, self.BALL_CROP_WIDTH - balloon_x)
         if balloon_a > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
-                print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
+                #print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
                 self.found = True
                 t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
@@ -189,7 +189,8 @@ class StreamProcessor(threading.Thread):
                 #print "no opponent, no red spotted"
                 self.back_away = False
                 self.found = False
-                floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)      
+                floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
+                print floor_y
                 if floor_y < self.TURN_HEIGHT:
                     self.edge = True
                     print "no opponent found and close to edge, turning"
