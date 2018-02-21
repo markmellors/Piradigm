@@ -19,7 +19,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
-        self.MIN_BALLOON_SIZE = 100
+        self.MIN_BALLOON_SIZE = 80
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 26
         self.BACK_AWAY_START = 60
@@ -69,6 +69,7 @@ class StreamProcessor(threading.Thread):
         '''function to find what parts of an image liue within limits.
         returns the parts of the original image within the limits, and the mask'''
         hsv_lower, hsv_upper = limits
+       
         mask = cv2.inRange(
             image,
             numpy.array(hsv_lower),
@@ -83,9 +84,10 @@ class StreamProcessor(threading.Thread):
         limits based on number of 'sigmas' (usually less than three).
         returns a tuple of tuples ((low1, low2, low3),(upp1, upp2, upp3))"""
         h, w = image.shape[:2]
-        refsize = 0.7* min(w, h)
-        ref_image = image[(h/2-refsize/2):(h/2+refsize/2), (w/2-refsize/2):(w/2+refsize/2)]
-        mean, stddev = cv2.meanStdDev(ref_image)
+        mask_radius = min(h, w)/2
+        mask = numpy.zeros(image.shape[:2], numpy.uint8)
+        cv2.circle(mask, (w/2, h/2), mask_radius, 255, -1)
+        mean, stddev = cv2.meanStdDev(image, mask=mask)
         lower = mean - sigmas * stddev
         upper = mean + sigmas * stddev
         return ((lower[0][0], lower[1][0], lower[2][0]), (upper[0][0], upper[1][0], upper[2][0]))
@@ -141,7 +143,7 @@ class StreamProcessor(threading.Thread):
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         if self.calibrating:
             self.show_cal_label(screen)
-            self.colour_limits = self.get_limits(image, 1)
+            self.colour_limits = self.get_limits(image, 1.5)
         if self.tracking:
             self.show_tracking_label(screen)
         image, imrange = self.threshold_image(image, self.colour_limits)
