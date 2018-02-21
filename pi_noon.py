@@ -148,19 +148,10 @@ class StreamProcessor(threading.Thread):
             self.show_tracking_label(screen)
         image, imrange = self.threshold_image(image, self.colour_limits)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        hue, sat, val = cv2.split(image)
-        sat.fill(255)
-        val.fill(255)
-        screenimage = cv2.merge([hue, sat, val])
-        screenimage = cv2.cvtColor(screenimage, cv2.COLOR_HSV2BGR)
         frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
         screen.blit(frame, (70, 0))
         pygame.display.update()
         # Find the contours
-        screenimage=cv2.cvtColor(screenimage, cv2.COLOR_BGR2GRAY)
-        canny = cv2.Canny(screenimage,self.PARAM,self.PARAM*2)
-        frame = pygame.surfarray.make_surface(cv2.flip(canny, 1))
-        screen.blit(frame, (150, 0))
         balloon_x, balloon_y, balloon_a = self.find_balloon(imrange)
         if balloon_a is not None:
             pygame.mouse.set_pos(balloon_y, self.CROP_WIDTH - balloon_x)
@@ -205,8 +196,8 @@ class StreamProcessor(threading.Thread):
         #filesave for debugging: 
         #cv2.imwrite(img_name, image)
         self.i += 1
-        #print 1/(time.time()-self.endtime)
-        #self.endtime=time.time()
+        print 1/(time.time()-self.endtime)
+        self.endtime=time.time()
 
 
 
