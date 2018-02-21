@@ -22,19 +22,19 @@ class StreamProcessor(threading.Thread):
         self.MIN_BALLOON_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 23
-        self.BACK_AWAY_START = 20000
-        self.BACK_AWAY_STOP = 15000
+        self.BACK_AWAY_START = 2000
+        self.BACK_AWAY_STOP = 1500
         self.back_away = False
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.FLOOR_LIMITS  = ((85, 230, 80), (115, 255, 220)) #<yellow, red tablecloth> ((100, 150, 80), (130, 255, 220))
+        self.FLOOR_LIMITS  = ((85, 190, 80), (115, 255, 220)) #<yellow, red tablecloth> ((100, 150, 80), (130, 255, 220))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
-        self.TURN_P = 2
-        self.TURN_D = 0.3
-        self.STRAIGHT_SPEED = 0.3
+        self.STRAIGHT_SPEED = 0.4
+        self.TURN_P = 2 * self.STRAIGHT_SPEED
+        self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.BALL_CROP_WIDTH = 160
@@ -139,7 +139,7 @@ class StreamProcessor(threading.Thread):
         ball_image = image[self.BALL_CROP_HEIGHT:self.image_height, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
         floor_image = image[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
         image=image[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
-        #for floor calibration: print cv2.meanStdDev(floor_image)
+        #for floor calibration:       print cv2.meanStdDev(floor_image)
         # Our operations on the frame come here
         screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
@@ -147,7 +147,7 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (0, 0))
         if self.calibrating:
             self.show_cal_label(screen)
-            self.colour_limits = self.get_limits(ball_image, 1)
+            self.colour_limits = self.get_limits(ball_image, 1.5)
         if self.tracking:
             self.show_tracking_label(screen)
         ball_range = self.threshold_image(ball_image, self.colour_limits)
@@ -164,7 +164,7 @@ class StreamProcessor(threading.Thread):
             pygame.mouse.set_pos(balloon_y+self.FLOOR_CROP_HEIGHT-self.FLOOR_CROP_START, self.BALL_CROP_WIDTH - balloon_x)
         if balloon_a > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
-                #print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
+                print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
                 self.found = True
                 t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
@@ -180,15 +180,15 @@ class StreamProcessor(threading.Thread):
                         self.drive.move(turn, self.STRAIGHT_SPEED)
         else:
             self.edge = False
-            if self.found:
-                #if we were trackign and we've ended up here, we're probably super close
-                print "just lost the opponent, trying backing off first"
-                self.back_away = True
-                self.found = False
-                if self.DRIVING and self.tracking:
-                    self.drive.move(0, -self.STRAIGHT_SPEED)
-            else:
-                #print "no opponent, no red spotted"
+            #if self.found:
+            #    #if we were trackign and we've ended up here, we're probably super close
+            #    print "just lost the opponent, trying backing off first"
+            #    self.back_away = True
+            #    self.found = False
+            #    if self.DRIVING and self.tracking:
+            #        self.drive.move(0, -self.STRAIGHT_SPEED)
+            #else:
+            if True:
                 self.back_away = False
                 self.found = False
                 floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
@@ -204,16 +204,17 @@ class StreamProcessor(threading.Thread):
                     turn = self.TURN_P * t_error
                     if self.DRIVING and self.tracking:
                         self.drive.move(turn, self.STRAIGHT_SPEED)
-        #image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-        if self.found:
-            img_name = str(self.i) + "Fimg.jpg"
-        else:
+        if self.tracking:
+            image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
+            if self.found:
+                img_name = str(self.i) + "Fimg.jpg"
+            else:
             #if self.edge:
                 #cv2.imwrite(str(self.i) + "imrange.jpg", imrange)
-            img_name = str(self.i) + "NFimg.jpg"
-        #filesave for debugging: 
-        #cv2.imwrite(img_name, image)
-        self.i += 1
+                img_name = str(self.i) + "NFimg.jpg"
+            #filesave for debugging: 
+            #cv2.imwrite(img_name, image)
+            self.i += 1
         #print 1/(time.time()-self.endtime)
         #self.endtime=time.time()
 
