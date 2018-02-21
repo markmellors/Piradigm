@@ -15,7 +15,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.DRIVING = False
+        self.DRIVING = True
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
@@ -125,7 +125,7 @@ class StreamProcessor(threading.Thread):
             x, y, w, h = cv2.boundingRect(contour)
             area = cv2.contourArea(contour)
             aspect_ratio = float(h)/w
-            if found_area < area and aspect_ratio < 2 and aspect_ratio > 0.5:
+            if found_area < area:
                 found_area = area
                 M = cv2.moments(contour)
                 found_x = int(M['m10']/M['m00'])
@@ -240,7 +240,7 @@ class PiNoon(BaseChallenge):
         if button['l1']:
             self.processor.tracking = False
             self.processor.calibrating = False
-            print "finished calibrating"
+            print "finished calibrating or stopping tracking"
         if button['l2']:
             self.processor.tracking = False
             self.processor.calibrating = True
