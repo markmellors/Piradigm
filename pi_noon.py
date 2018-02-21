@@ -22,19 +22,19 @@ class StreamProcessor(threading.Thread):
         self.MIN_BALLOON_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 23
-        self.BACK_AWAY_START = 60
-        self.BACK_AWAY_STOP = 40
+        self.BACK_AWAY_START = 20000
+        self.BACK_AWAY_STOP = 15000
         self.back_away = False
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.FLOOR_LIMITS  = ((100, 150, 80), (130, 255, 220))
+        self.FLOOR_LIMITS  = ((85, 230, 80), (115, 255, 220)) #<yellow, red tablecloth> ((100, 150, 80), (130, 255, 220))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
         self.TURN_P = 2
         self.TURN_D = 0.3
-        self.STRAIGHT_SPEED = 1
+        self.STRAIGHT_SPEED = 0.3
         self.SLIGHT_TURN = 0.1
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.BALL_CROP_WIDTH = 160
@@ -139,6 +139,7 @@ class StreamProcessor(threading.Thread):
         ball_image = image[self.BALL_CROP_HEIGHT:self.image_height, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
         floor_image = image[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
         image=image[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
+        #for floor calibration: print cv2.meanStdDev(floor_image)
         # Our operations on the frame come here
         screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
@@ -169,6 +170,7 @@ class StreamProcessor(threading.Thread):
                 turn = self.TURN_P * t_error
                 if balloon_a > self.BACK_AWAY_START or (balloon_a > self.BACK_AWAY_STOP and self.back_away):
                     #we're probably close, back off
+                    print "backing off"
                     self.back_away = True
                     if self.DRIVING and self.tracking:
                         self.drive.move(turn/2, -self.STRAIGHT_SPEED/2)
@@ -190,11 +192,10 @@ class StreamProcessor(threading.Thread):
                 self.back_away = False
                 self.found = False
                 floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
-                print floor_y
                 if floor_y < self.TURN_HEIGHT:
                     self.edge = True
                     print "no opponent found and close to edge, turning"
-                    if self.DRIVING:
+                    if self.DRIVING and self.tracking:
                         self.seek()
                 else:
                     self.edge = False
