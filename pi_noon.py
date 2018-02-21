@@ -28,6 +28,7 @@ class StreamProcessor(threading.Thread):
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
+        self.FLOOR_LIMITS  = ((110, 110, 100), (130, 255, 230))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
@@ -36,8 +37,11 @@ class StreamProcessor(threading.Thread):
         self.STRAIGHT_SPEED = 1
         self.SLIGHT_TURN = 0.1
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
-        self.CROP_WIDTH = 160
-        self.CROP_HEIGHT = 55
+        self.BALL_CROP_WIDTH = 160
+        self.BALL_CROP_HEIGHT = 55
+        self.FLOOR_CROP_WIDTH = 160
+        self.FLOOR_CROP_START = 10
+        self.FLOOR_CROP_HEIGHT = 55
         self.TIMEOUT = 30.0
         self.PARAM = 60
         self.START_TIME = time.clock()
@@ -75,8 +79,7 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
-        Bmask = mask.astype('bool')
-        return image * numpy.dstack((Bmask, Bmask, Bmask)), mask
+        return mask
 
     def get_limits(self,image, sigmas):
         """function to use the mean and standard deviation of an images
@@ -133,31 +136,35 @@ class StreamProcessor(threading.Thread):
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
-        image = image[self.CROP_HEIGHT:self.image_height, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+        ball_image = image[self.BALL_CROP_HEIGHT:self.image_height, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
+        floor_image = image[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
+        image=image[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
         # Our operations on the frame come here
         screenimage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        screenimage = cv2.GaussianBlur(screenimage,(self.BLUR,self.BLUR),0)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
         screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         if self.calibrating:
             self.show_cal_label(screen)
-            self.colour_limits = self.get_limits(image, 1.5)
+            self.colour_limits = self.get_limits(ball_image, 1.5)
         if self.tracking:
             self.show_tracking_label(screen)
-        image, imrange = self.threshold_image(image, self.colour_limits)
+        ball_range = self.threshold_image(ball_image, self.colour_limits)
+        floor_range =  self.threshold_image(floor_image, self.FLOOR_LIMITS)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-        screen.blit(frame, (70, 0))
+        frame = pygame.surfarray.make_surface(cv2.flip(floor_range, 1))
+        screen.blit(frame, (128-self.FLOOR_CROP_START, 0))
+        frame = pygame.surfarray.make_surface(cv2.flip(ball_range, 1))
+        screen.blit(frame, (128-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
         pygame.display.update()
         # Find the contours
-        balloon_x, balloon_y, balloon_a = self.find_balloon(imrange)
+        balloon_x, balloon_y, balloon_a = self.find_balloon(ball_range)
         if balloon_a is not None:
-            pygame.mouse.set_pos(balloon_y, self.CROP_WIDTH - balloon_x)
+            pygame.mouse.set_pos(balloon_y, self.BALL_CROP_WIDTH - balloon_x)
         if balloon_a > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
-                print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
+                #print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
                 self.found = True
                 t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
