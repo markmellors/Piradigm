@@ -19,7 +19,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_TIME = 0.05
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
-        self.MIN_BALLOON_SIZE = 80
+        self.MIN_BALLOON_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 26
         self.BACK_AWAY_START = 60
@@ -153,9 +153,8 @@ class StreamProcessor(threading.Thread):
         val.fill(255)
         screenimage = cv2.merge([hue, sat, val])
         screenimage = cv2.cvtColor(screenimage, cv2.COLOR_HSV2BGR)
-        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
+        frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
         screen.blit(frame, (70, 0))
-
         pygame.display.update()
         # Find the contours
         screenimage=cv2.cvtColor(screenimage, cv2.COLOR_BGR2GRAY)
@@ -184,7 +183,7 @@ class StreamProcessor(threading.Thread):
             self.edge = False
             if self.found:
                 #if we were trackign and we've ended up here, we're probably super close
-                #print "just lost the opponent, trying backing off first"
+                print "just lost the opponent, trying backing off first"
                 self.back_away = True
                 self.found = False
                 if self.DRIVING and self.tracking:
@@ -206,6 +205,8 @@ class StreamProcessor(threading.Thread):
         #filesave for debugging: 
         #cv2.imwrite(img_name, image)
         self.i += 1
+        #print 1/(time.time()-self.endtime)
+        #self.endtime=time.time()
 
 
 
@@ -215,7 +216,7 @@ class PiNoon(BaseChallenge):
     def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 160  # Camera image width
         self.image_height = 128  # Camera image height
-        self.frame_rate = 30  # Camera image capture frame rate
+        self.frame_rate = 40  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
