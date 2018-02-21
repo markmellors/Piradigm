@@ -169,7 +169,7 @@ class StreamProcessor(threading.Thread):
                 turn = self.TURN_P * t_error
                 if balloon_a > self.BACK_AWAY_START or (balloon_a > self.BACK_AWAY_STOP and self.back_away):
                     #we're probably close, back off
-                    self.back_Away = True
+                    self.back_away = True
                     if self.DRIVING and self.tracking:
                         self.drive.move(turn/2, -self.STRAIGHT_SPEED/2)
                 else:
@@ -189,10 +189,20 @@ class StreamProcessor(threading.Thread):
                 #print "no opponent, no red spotted"
                 self.back_away = False
                 self.found = False
-                if self.DRIVING and self.tracking:
-                    self.seek()
-        
-        image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
+                floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)      
+                if floor_y < self.TURN_HEIGHT:
+                    self.edge = True
+                    print "no opponent found and close to edge, turning"
+                    if self.DRIVING:
+                        self.seek()
+                else:
+                    self.edge = False
+                    print "no opponent found, ambling"
+                    t_error = (self.image_centre_x - floor_x) / self.image_centre_x
+                    turn = self.TURN_P * t_error
+                    if self.DRIVING and self.tracking:
+                        self.drive.move(turn, self.STRAIGHT_SPEED)
+        #image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
         if self.found:
             img_name = str(self.i) + "Fimg.jpg"
         else:
