@@ -81,7 +81,7 @@ class StreamProcessor(threading.Thread):
         )
         return mask
 
-    def get_limits(self,image, sigmas):
+    def get_limits(self, image, sigmas):
         """function to use the mean and standard deviation of an images
         channels in the centre of the image to create suggested threshold
         limits based on number of 'sigmas' (usually less than three).
@@ -111,26 +111,25 @@ class StreamProcessor(threading.Thread):
         label = font.render(str("Tracking"), 1, (255,255,255))
         screen.blit(label, (10, 200))
 
-    def find_balloon(self,image):
+    def find_largest_contour(self,image):
         '''takes a binary image and returns coordinates and size of largest contour'''
         contourimage, contours, hierarchy = cv2.findContours(
             image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
         )
         # Go through each contour
-        found_area = -1
+        found_area = 1
         found_x = -1
         found_y = -1
         biggest_contour = None
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
-            cx = x + (w / 2)
-            cy = y + (h / 2)
-            area = w * h
+            area = cv2.contourArea(contour)
             aspect_ratio = float(h)/w
             if found_area < area and aspect_ratio < 2 and aspect_ratio > 0.5:
                 found_area = area
-                found_x = cx
-                found_y = cy
+                M = cv2.moments(contour)
+                found_x = int(M['m10']/M['m00'])
+                found_y = int(M['m01']/M['m00'])
                 biggest_contour = contour
         return found_x, found_y, found_area
 
@@ -147,7 +146,7 @@ class StreamProcessor(threading.Thread):
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         if self.calibrating:
             self.show_cal_label(screen)
-            self.colour_limits = self.get_limits(ball_image, 1.5)
+            self.colour_limits = self.get_limits(ball_image, 1)
         if self.tracking:
             self.show_tracking_label(screen)
         ball_range = self.threshold_image(ball_image, self.colour_limits)
@@ -159,12 +158,12 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (128-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
         pygame.display.update()
         # Find the contours
-        balloon_x, balloon_y, balloon_a = self.find_balloon(ball_range)
+        balloon_x, balloon_y, balloon_a = self.find_largest_contour(ball_range)
         if balloon_a is not None:
-            pygame.mouse.set_pos(balloon_y, self.BALL_CROP_WIDTH - balloon_x)
+            pygame.mouse.set_pos(balloon_y+self.FLOOR_CROP_HEIGHT-self.FLOOR_CROP_START, self.BALL_CROP_WIDTH - balloon_x)
         if balloon_a > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
-                #print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
+                print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
                 self.found = True
                 t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
@@ -203,8 +202,8 @@ class StreamProcessor(threading.Thread):
         #filesave for debugging: 
         #cv2.imwrite(img_name, image)
         self.i += 1
-        print 1/(time.time()-self.endtime)
-        self.endtime=time.time()
+        #print 1/(time.time()-self.endtime)
+        #self.endtime=time.time()
 
 
 
