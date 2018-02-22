@@ -27,10 +27,10 @@ class DriveTrain():
         self.motor_max = 100
         # battery voltage check constants
         self.BATT_CONSTANTS = {
-            adc_gain: 0.02909,
-            adc_offset: -15.06,
-            adc_pin: 3,
-            min_v: 7.45
+            'adc_gain': 0.02909,
+            'adc_offset': -15.06,
+            'adc_pin': 3,
+            'min_v': 7.45
         }
         self.pz.setInputConfig(self.BATT_CONSTANTS['adc_pin'], 1)
         self.slow_speed = 20
