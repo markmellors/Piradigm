@@ -85,15 +85,9 @@ class StreamProcessor(threading.Thread):
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
-        #print(parameters)
-        '''    detectMarkers(...)
-            detectMarkers(image, dictionary[, corners[, ids[, parameters[, rejectedI
-            mgPoints]]]]) -> corners, ids, rejectedImgPoints
-        '''
         #lists of ids and the corners beloning to each id
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
         if ids != None:
-            #print ("found marker %s" % ids)
             if len(ids)>1:
                 logger.info( "found %d markers" % len(ids))
                 self.marker_to_track = 0
@@ -131,7 +125,6 @@ class StreamProcessor(threading.Thread):
                 else:
                     self.drive.move (turn, self.STRAIGHT_SPEED)
                 self.last_t_error = self.t_error
-                #print(camera.exposure_speed)
             else:
                 logger.info("looking for marker %d" % self.turn_number)
                 if self.found:
@@ -169,10 +162,8 @@ class StreamProcessor(threading.Thread):
         screen.fill([0,0,0])
         screen.blit(frame, (0,0))
         pygame.display.update()
-        if self.found:
-         img_name = str(self.i) + "Fimg.jpg"
-        else:
-         img_name = str(self.i) + "NFimg.jpg"
+        found_identifier = "F" if self.found else "NF"
+        img_name = "%d%simg.jpg" % (self.i, found_identifier)
         # filesave for debugging: 
         # cv2.imwrite(img_name, gray)
         self.i += 1
