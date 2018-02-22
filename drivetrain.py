@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Drivetrain():
+class DriveTrain():
     def __init__(self, timeout=120):
         time.sleep(0.01)
         logging.info("initialising drivetrain")
