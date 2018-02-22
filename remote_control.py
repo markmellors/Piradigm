@@ -6,7 +6,7 @@ from approxeng.input.selectbinder import ControllerResource
 import math
 import time
 import logging
-from drivetrain import Drivetrain
+from drivetrain import DriveTrain
 
 logging.basicConfig(
     filename='piradigm.log',
@@ -26,7 +26,7 @@ class RC():
         self.exponential = 2
         self.name = "RC"
         self.killed = False
-        self.drive = Drivetrain(timeout=self.timeout)
+        self.drive = DriveTrain(timeout=self.timeout)
 
     def run(self):
         logging.info("running RC challenge")
