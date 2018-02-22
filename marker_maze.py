@@ -173,8 +173,8 @@ class StreamProcessor(threading.Thread):
          img_name = str(self.i) + "Fimg.jpg"
         else:
          img_name = str(self.i) + "NFimg.jpg"
-        #filesave for debugging: 
-        cv2.imwrite(img_name, gray)
+        # filesave for debugging: 
+        # cv2.imwrite(img_name, gray)
         self.i += 1
 
 
