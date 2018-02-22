@@ -6,70 +6,53 @@ from approxeng.input.selectbinder import ControllerResource
 import math
 import time
 import logging
-from drivetrain import DriveTrain
+from base_challenge import BaseChallenge
 
-logging.basicConfig(
-    filename='piradigm.log',
-    level=logging.DEBUG,
-    format='%(asctime)s %(message)s'
-)
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('piradigm.' + __name__)
 
 
-class RC():
-    def __init__(self, timeout=120):
+
+class RC(BaseChallenge):
+    def __init__(self, timeout=120, screen=None, joystick=None):
         time.sleep(0.01)
-        logging.info("initialising RC")
-        self.timeout = timeout
-        self.start_time = time.clock()
         self.exponential = 2
-        self.name = "RC"
-        self.killed = False
-        self.drive = DriveTrain(timeout=self.timeout)
+        super(RC, self).__init__(name='RC', timeout=timeout, logger=logger)
+        if not joystick:
+            logger.info("No joystick available for RC, stopping")
+            self.timeout = 0
+        else:    
+            self.joystick = joystick
 
     def run(self):
-        logging.info("running RC challenge")
+        self.logger.info("running %s challenge" % self.name)
         try:
             try:
-                with ControllerResource() as joystick:
-                    logging.info('Found a joystick and connected')
-                    while joystick.connected and not self.should_die:
-                        rx, ry = joystick['rx', 'ry']
-                        logging.debug("joystick L/R: %s, %s" % (rx, ry))
-                        rx = self.exp(rx, self.exponential)
-                        ry = self.exp(ry, self.exponential)
-                        self.drive.move(rx, ry)
-                        time.sleep(0.05)
+                while self.joystick.connected and not self.should_die:
+                    rx, ry = self.joystick['rx', 'ry']
+                    logger.debug("joystick L/R: %s, %s" % (rx, ry))
+                    rx = self.exp(rx, self.exponential)
+                    ry = self.exp(ry, self.exponential)
+                    self.drive.move(rx, ry)
+                    time.sleep(0.05)
+
 
                 # Joystick disconnected...
-                logging.info('Connection to joystick lost')
+                self.logger.info('Connection to joystick lost')
             except IOError:
                 # No joystick found, wait for a bit before trying again
-                logging.info('Unable to find any joysticks')
+                self.logger.info('Unable to find any joysticks')
                 time.sleep(1.0)
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
-            logging.info("killed from keyboard")
+            self.logger.info("killed from keyboard")
         finally:
-            logging.info("stopping")
+            self.logger.info("stopping")
             self.drive.stop()
-            logging.info("bye")
-
-    @property
-    def should_die(self):
-        # TODO this should be monitored by the calling thread using a
-        # combination of Timer threads and is_alive()
-        timed_out = time.clock() >= (self.start_time + self.timeout)
-        return timed_out or self.killed
+            self.logger.info("bye")
 
     def constrain(self, val, min_val, max_val):
         return min(max_val, max(min_val, val))
-
-    def stop(self):
-        logging.info("RC challenge stopping")
-        self.killed = True
 
     def exp(self, demand, exp):
         # function takes a demand speed from -1 to 1 and converts it to a response value
