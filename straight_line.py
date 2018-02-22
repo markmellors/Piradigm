@@ -8,7 +8,7 @@ import numpy as np
 from pygame.locals import*
 import picamera
 import picamera.array
-from drivetrain import Drivetrain  
+from drivetrain import DriveTrain  
 import time
    
 env_vars = [
@@ -33,7 +33,7 @@ camera.shutter_speed = 12000
 pygame.init()
 screen = pygame.display.set_mode([240, 320])
 video = picamera.array.PiRGBArray(camera)
-drive = Drivetrain(timeout=120)
+drive = DriveTrain(timeout=120)
 
 #create small cust dictionary
 small_dict = aruco.Dictionary_create(6, 3)
