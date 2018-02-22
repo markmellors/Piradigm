@@ -30,7 +30,7 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [30, 35, 35, 30, 35, 35]
+        self.TURN_WIDTH = [20, 18, 18, 20, 20, 18]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.04
