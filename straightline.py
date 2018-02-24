@@ -19,6 +19,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_P = 0.4
         self.TURN_D = 1
         self.STRAIGHT_SPEED = 0 #0.5
+        self.MAX_TURN_SPEED = 0.25
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 320
         self.i = 0
