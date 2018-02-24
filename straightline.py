@@ -93,7 +93,7 @@ class StreamProcessor(threading.Thread):
                     #if there was a real error last time then do some damping
                     turn_amount -= self.TURN_D *(self.last_t_error - self.t_error)
 
-                turn_amount = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+                turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
 
                 #if we're rate limiting the turn_amount, go slow
                 # TODO Rate limit the speed change
