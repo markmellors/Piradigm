@@ -2,6 +2,7 @@
 *.pyc
 *.sublime-project
 *.sublime-workspace
+*.code-workspace
 Pipfile.lock
 Pipfile
 *img.jpg
