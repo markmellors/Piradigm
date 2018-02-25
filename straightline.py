@@ -16,19 +16,19 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.small_dict = dict 
         self.last_t_error = 0
-        self.TURN_P = 0.4
+        self.TURN_P = 2
         self.TURN_D = 1
-        self.STRAIGHT_SPEED = 0 #0.5
+        self.STRAIGHT_SPEED = 1
         self.MAX_TURN_SPEED = 0.25
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
-        self.CROP_WIDTH = 320
+        self.CROP_WIDTH = 200
         self.i = 0
-        self.TIMEOUT = 30.0
+        self.TIMEOUT = 8 #was 30
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.found = False
         self.TURN_TARGET = 5
-        self.MARKER_STOP_WIDTH = 20
+        self.MARKER_STOP_WIDTH = 120
         self.loop_start_time=0
         self.target_aruco_marker_id = 3
         self.marker_to_track=0 
@@ -57,7 +57,7 @@ class StreamProcessor(threading.Thread):
         if self.target_aruco_marker_id >= self.TURN_TARGET:
            logger.info("finished!")
            self.finished = True
-        frame = image[30:190, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+        frame = image[170:300, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
@@ -74,7 +74,6 @@ class StreamProcessor(threading.Thread):
                 logger.info ("marker I'm looking for, is number %d" % self.marker_to_track)
             else:
                 self.marker_to_track = 0
-
             if ids[self.marker_to_track][0] == self.target_aruco_marker_id:
                 m = self.marker_to_track
                 self.found = True
@@ -99,7 +98,7 @@ class StreamProcessor(threading.Thread):
                 #if we're rate limiting the turn_amount, go slow
                 # TODO Rate limit the speed change
                 if abs(turn_amount) == self.MAX_TURN_SPEED:
-                    self.drive.move (turn_amount, self.STRAIGHT_SPEED / 3)
+                    self.drive.move (turn_amount, self.STRAIGHT_SPEED)
                 else:
                     self.drive.move (turn_amount, self.STRAIGHT_SPEED)
                 self.last_t_error = self.t_error
@@ -121,7 +120,7 @@ class StreamProcessor(threading.Thread):
 
     def stop_and_wait(self):
         logger.info("looking for marker %d" % self.target_aruco_marker_id)
-        self.drive.move(0,0)
+        self.drive.move(0, self.STRAIGHT_SPEED)
         self.found = False
         self.last_t_error = 0
 
@@ -130,8 +129,8 @@ class StraightLineSpeed(BaseChallenge):
     """Minimal StraightLineSpeed challenge class"""
 
     def __init__(self, timeout=120, screen=None, joystick=None, markers=None):
-        self.image_width = 320  # Camera image width
-        self.image_height = 240  # Camera image height
+        self.image_width = 640  # Camera image width
+        self.image_height = 480  # Camera image height
         self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
