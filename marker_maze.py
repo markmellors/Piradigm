@@ -18,8 +18,8 @@ class StreamProcessor(threading.Thread):
         #create small cust dictionary
         self.small_dict = dict #aruco.Dictionary_create(6, 3)
         self.last_t_error = 0
-        self.TURN_P = 0.6
-        self.TURN_D = 0.3
+        self.TURN_P = 0.9
+        self.TURN_D = 0.5
         self.STRAIGHT_SPEED = 0.6 #was 0.5
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 480
@@ -30,11 +30,11 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [27, 24, 24, 27, 27, 24]
+        self.TURN_WIDTH = [32, 27, 34, 33, 27, 24]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.04
-        self.MAX_TURN_SPEED = 0.25
+        self.MAX_TURN_SPEED = 0.5 #was 0.25
         self.loop_start_time=0
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
@@ -107,6 +107,7 @@ class StreamProcessor(threading.Thread):
                 logger.info('marker width %s' % width)
                 if width > self.TURN_WIDTH[self.turn_number]:
                     self.turn_number += 1
+                    self.found = False
                     logger.info('Close to marker making turn %s' % self.turn_number)
                     if self.turn_number == 5:
                         logger.info('finished!')
@@ -144,7 +145,7 @@ class StreamProcessor(threading.Thread):
             logger.info("looking for marker %d" % self.turn_number)
             #if marker was found, then probably best to stop and look
             if self.found:
-                self.drive.move(0,0)
+                self.drive.move(0, self.STRAIGHT_SPEED/2)
             else:
                 #otherwise, go looking
                 if self.turn_number <= 2:
@@ -192,7 +193,7 @@ class Maze(BaseChallenge):
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
         self.camera.iso = 800
-        self.camera.shutter_speed = 12000
+        self.camera.shutter_speed = 2000
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(

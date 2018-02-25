@@ -29,17 +29,17 @@ class StreamProcessor(threading.Thread):
         self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
-        self.AREA_P = 0.0001
-        self.AREA_D = 0.0002
-        self.TURN_P = 0.5
-        self.TURN_D = 0.2
+        self.AREA_P = 0.00015
+        self.AREA_D = 0.0003
+        self.TURN_P = 0.7
+        self.TURN_D = 0.3
         self.colour_bounds = json.load(open('rainbow.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.BACK_OFF_AREA = 1000
         self.BACK_OFF_SPEED = -0.25
-        self.FAST_SEARCH_TURN = 0.6
-        self.DRIVING = False
+        self.FAST_SEARCH_TURN = 0.7 #was 0.6
+        self.DRIVING = True
         # Why the one second sleep?
         time.sleep(1)
         self.start()
