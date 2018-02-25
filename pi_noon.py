@@ -21,7 +21,7 @@ class StreamProcessor(threading.Thread):
         self.SETTLE_TIME = 0.05
         self.MIN_BALLOON_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
-        self.TURN_HEIGHT = 15
+        self.TURN_HEIGHT = 16
         self.BACK_AWAY_START = 2000
         self.BACK_AWAY_STOP = 1500
         self.BACK_AWAY_HEIGHT = 5
@@ -33,7 +33,7 @@ class StreamProcessor(threading.Thread):
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
-        self.STRAIGHT_SPEED = 0.4
+        self.STRAIGHT_SPEED = 0.5
         self.TURN_P = 2 * self.STRAIGHT_SPEED
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
@@ -190,7 +190,7 @@ class StreamProcessor(threading.Thread):
                 if floor_y < self.BACK_AWAY_HEIGHT:
                     print "very close to edge, probably crowding an opponent, backing off"
                     if self.DRIVING and self.tracking:
-                        self.drive.move(0, -self.STRAIGHT_SPEED/2)
+                        self.drive.move(0, -self.STRAIGHT_SPEED)
                 else:
                     self.edge = True
                     print "no opponent found and close to edge, turning"
