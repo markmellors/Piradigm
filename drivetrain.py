@@ -33,6 +33,8 @@ class DriveTrain():
             'min_v': 7.45
         }
         self.pz.setInputConfig(self.BATT_CONSTANTS['adc_pin'], 1)
+        #/\ seams to need a delay to take hold
+        time.sleep(0.01)
         self.slow_speed = 20
         self.deadband = 1
         self.boost_cycles = 1
@@ -45,8 +47,6 @@ class DriveTrain():
         self.left_counter = 0
         self.right_counter = 0
         # Initialise self.average_batt_v with current_batt_v
-        self.average_batt_v = self.current_batt_v
-        #seams to need checking twice?? firt gives zero
         self.average_batt_v = self.current_batt_v
 
     def move(self, forward, turn):
