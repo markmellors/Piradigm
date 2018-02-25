@@ -16,19 +16,20 @@ class StreamProcessor(threading.Thread):
         self.event = threading.Event()
         self.terminated = False
         self.DRIVING = True
-        self.TURN_TIME = 0.05
-        self.TURN_SPEED = 1
+        self.TURN_TIME = 0.025
+        self.TURN_SPEED = 0.8
         self.SETTLE_TIME = 0.05
         self.MIN_BALLOON_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
-        self.TURN_HEIGHT = 23
+        self.TURN_HEIGHT = 15
         self.BACK_AWAY_START = 2000
         self.BACK_AWAY_STOP = 1500
+        self.BACK_AWAY_HEIGHT = 5
         self.back_away = False
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.FLOOR_LIMITS  = ((85, 190, 80), (115, 255, 220)) #<yellow, red tablecloth> ((100, 150, 80), (130, 255, 220))
+        self.FLOOR_LIMITS  = ((110, 100, 80), (130, 200, 255)) #<redpaint, red tablecloth> ((100, 150, 80), (130, 255, 220)) yellow: ((85, 190, 80), (115, 255, 220))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
@@ -105,6 +106,7 @@ class StreamProcessor(threading.Thread):
         font = pygame.font.Font(None, 60)
         label = font.render(str("Calibrating"), 1, (255,255,255))
         screen.blit(label, (10, 200))
+        self.drive.move(0,0)
 
     def show_tracking_label(self, screen):
         font = pygame.font.Font(None, 60)
@@ -139,13 +141,14 @@ class StreamProcessor(threading.Thread):
         ball_image = image[self.BALL_CROP_HEIGHT:self.image_height, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
         floor_image = image[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
         image=image[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
-        #for floor calibration:       print cv2.meanStdDev(floor_image)
+        #for floor calibration:        print cv2.meanStdDev(floor_image)
         # Our operations on the frame come here
         screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
         screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
         if self.calibrating:
+            print "calibrating"
             self.show_cal_label(screen)
             self.colour_limits = self.get_limits(ball_image, 1.5)
         if self.tracking:
@@ -180,30 +183,26 @@ class StreamProcessor(threading.Thread):
                         self.drive.move(turn, self.STRAIGHT_SPEED)
         else:
             self.edge = False
-            #if self.found:
-            #    #if we were trackign and we've ended up here, we're probably super close
-            #    print "just lost the opponent, trying backing off first"
-            #    self.back_away = True
-            #    self.found = False
-            #    if self.DRIVING and self.tracking:
-            #        self.drive.move(0, -self.STRAIGHT_SPEED)
-            #else:
-            if True:
-                self.back_away = False
-                self.found = False
-                floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
-                if floor_y < self.TURN_HEIGHT:
+            self.back_away = False
+            self.found = False
+            floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
+            if floor_y < self.TURN_HEIGHT:
+                if floor_y < self.BACK_AWAY_HEIGHT:
+                    print "very close to edge, probably crowding an opponent, backing off"
+                    if self.DRIVING and self.tracking:
+                        self.drive.move(0, -self.STRAIGHT_SPEED/2)
+                else:
                     self.edge = True
                     print "no opponent found and close to edge, turning"
                     if self.DRIVING and self.tracking:
                         self.seek()
-                else:
-                    self.edge = False
-                    print "no opponent found, ambling"
-                    t_error = (self.image_centre_x - floor_x) / self.image_centre_x
-                    turn = self.TURN_P * t_error
-                    if self.DRIVING and self.tracking:
-                        self.drive.move(turn, self.STRAIGHT_SPEED)
+            else:
+                self.edge = False
+                print "no opponent found, ambling"
+                t_error = (self.image_centre_x - floor_x) / self.image_centre_x
+                turn = self.TURN_P * t_error
+                if self.DRIVING and self.tracking:
+                    self.drive.move(turn, self.STRAIGHT_SPEED)
         if self.tracking:
             image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
             if self.found:
@@ -242,6 +241,7 @@ class PiNoon(BaseChallenge):
         if button['l1']:
             self.processor.tracking = False
             self.processor.calibrating = False
+            self.drive.move(0,0)
             print "finished calibrating or stopping tracking"
         if button['l2']:
             self.processor.tracking = False
