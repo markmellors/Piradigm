@@ -20,9 +20,9 @@ class StreamProcessor(threading.Thread):
         self.last_t_error = 0
         self.TURN_P = 0.6
         self.TURN_D = 0.3
-        self.STRAIGHT_SPEED = 0.5
+        self.STRAIGHT_SPEED = 0.6 #was 0.5
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
-        self.CROP_WIDTH = 320
+        self.CROP_WIDTH = 480
         self.i = 0
         self.TIMEOUT = 30.0
         self.START_TIME = time.clock()
@@ -30,7 +30,7 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [20, 18, 18, 20, 20, 18]
+        self.TURN_WIDTH = [27, 24, 24, 27, 27, 24]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.04
@@ -81,7 +81,7 @@ class StreamProcessor(threading.Thread):
         if self.turn_number >= self.TURN_TARGET:
            logger.info("finished!")
            self.finished = True
-        frame = image[30:190, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+        frame = image[75:255, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
@@ -121,7 +121,7 @@ class StreamProcessor(threading.Thread):
                 turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
                 #if we're rate limiting the turn, go slow
                 if abs(turn) == self.MAX_TURN_SPEED:
-                    self.drive.move (turn, self.STRAIGHT_SPEED/3)
+                    self.drive.move (turn, self.STRAIGHT_SPEED)
                 else:
                     self.drive.move (turn, self.STRAIGHT_SPEED)
                 self.last_t_error = self.t_error
@@ -165,7 +165,7 @@ class StreamProcessor(threading.Thread):
         found_identifier = "F" if self.found else "NF"
         img_name = "%d%simg.jpg" % (self.i, found_identifier)
         # filesave for debugging: 
-        # cv2.imwrite(img_name, gray)
+        cv2.imwrite(img_name, gray)
         self.i += 1
 
 
@@ -174,8 +174,8 @@ class Maze(BaseChallenge):
     """Minimal Maze challenge class"""
 
     def __init__(self, timeout=120, screen=None, joystick=None, markers=None):
-        self.image_width = 320  # Camera image width
-        self.image_height = 240  # Camera image height
+        self.image_width = 480  # Camera image width
+        self.image_height = 360  # Camera image height
         self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
