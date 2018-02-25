@@ -28,7 +28,7 @@ class StreamProcessor(threading.Thread):
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.found = False
         self.TURN_TARGET = 5
-        self.MARKER_STOP_WIDTH = 120
+        self.MARKER_STOP_WIDTH = 70
         self.loop_start_time=0
         self.target_aruco_marker_id = 3
         self.marker_to_track=0 

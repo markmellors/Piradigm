@@ -46,6 +46,8 @@ class DriveTrain():
         self.right_counter = 0
         # Initialise self.average_batt_v with current_batt_v
         self.average_batt_v = self.current_batt_v
+        #seams to need checking twice?? firt gives zero
+        self.average_batt_v = self.current_batt_v
 
     def move(self, forward, turn):
         steering_left, steering_right = self.steering(forward, turn)
