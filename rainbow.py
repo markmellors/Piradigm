@@ -281,24 +281,28 @@ class Rainbow(BaseChallenge):
                 with open('rainbow.json', 'w') as f:
                     json.dump(data, f)
         if button['r1']:
-            self.processor.finished = True
+            self.timeout = 0
         if button['r2']:
             self.processor.tracking = True
             print "Starting"
+        if button['l1']:
+            self.processor.tracking = False
+            self.drive.move(0,0)
+            print "Stopping"
         if button['l2']:
-            self.progress_colour
-            print "manually moved on to %s" self.processor.colour
+            self.progress_colour()
+            print ("manually moved on to %s" % self.processor.colour)
 
     def progress_colour(self):
-        if self.processor.retreated and self.processor.colour is not "green":
+        if self.processor.colour is not "green":
             if self.processor.colour is "yellow": self.processor.colour = "green"
             if self.processor.colour is "blue": self.processor.colour = "yellow"
             if self.processor.colour is "red": self.processor.colour = "blue"
             self.processor.found = False
             self.processor.retreated = False
-        elif self.processor.retreated and self.processor.colour is "green":
+        else:
             print "finished"
-            self.timeout = 0
+            self.timeout=0
 
     def run(self):
         # Startup sequence
@@ -348,8 +352,9 @@ class Rainbow(BaseChallenge):
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
                             ctrl['ctrl'].remove(fade=False)
+                if self.processor.retreated:
+                    self.progress_colour()
                 sgc.update(time)
-                self.progress_colour
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
