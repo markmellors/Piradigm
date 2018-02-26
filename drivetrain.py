@@ -33,6 +33,7 @@ class DriveTrain():
             'min_v': 7.45
         }
         self.pz.setInputConfig(self.BATT_CONSTANTS['adc_pin'], 1)
+        time.sleep(0.01)
         self.slow_speed = 20
         self.deadband = 1
         self.boost_cycles = 1
