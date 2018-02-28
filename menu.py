@@ -29,7 +29,7 @@ from pi_noon import PiNoon
 from golf import Golf
 from approxeng.input.selectbinder import ControllerResource
 
-VERSION = '0.3Mazing'
+VERSION = '0.4Golf'
 
 arguments = docopt(__doc__, version=VERSION)
 
