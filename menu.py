@@ -26,6 +26,7 @@ from remote_control import RC
 from rainbow import Rainbow
 from marker_maze import Maze
 from pi_noon import PiNoon
+from golf import Golf
 from approxeng.input.selectbinder import ControllerResource
 
 VERSION = '0.3Mazing'
@@ -141,6 +142,10 @@ class Menu():
         elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")
             new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
+        elif event.label == "Golf":
+            logger.info("launching Golf challenge")
+            new_challenge = Golf(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
