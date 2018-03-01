@@ -9,7 +9,7 @@ from pygame.locals import*
 import picamera
 import picamera.array
 import math
-
+import json
 #create board of markers
 dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 board = cv2.aruco.CharucoBoard_create(3,3,.025,.0125,dictionary)
@@ -26,13 +26,14 @@ env_vars = [
 ]
 for var_name, val in env_vars:
     os.environ[var_name] = val
-screen_width = 240
-screen_height = 320
+screen_width = 320
+screen_height = 240
 
 camera = picamera.PiCamera()
 camera.resolution = (screen_width, screen_height)
+camera.framerate = 39
 pygame.init()
-screen = pygame.display.set_mode([screen_width, screen_height])
+screen = pygame.display.set_mode([screen_height, screen_width])
 video = picamera.array.PiRGBArray(camera)
 
 allCorners = []
@@ -42,7 +43,7 @@ print("setup complete, looking")
 
 try:
     for frameBuf in camera.capture_continuous(video, format ="rgb", use_video_port=True):
-        frame = np.rot90(frameBuf.array)        
+        frame = frameBuf.array #np.rot90(frameBuf.array)        
         video.truncate(0)
         
         # Our operations on the frame come here
@@ -56,22 +57,17 @@ try:
         '''
         #lists of ids and the corners beloning to each id
         res  = aruco.detectMarkers(gray, dictionary, parameters=parameters)
-         if len(res[0])>0:
-                res2 = cv2.aruco.interpolateCornersCharuco(res[0],res[1],gray,board)
-                if res2[1] is not None and res2[2] is not None and len(res2[1])>3 and decimator%3==0:
-                    allCorners.append(res2[1])
-                    allIds.append(res2[2])
+        if len(res[0])>0:
+            res2 = cv2.aruco.interpolateCornersCharuco(res[0],res[1],gray,board)
+            if res2[1] is not None and res2[2] is not None and len(res2[1])>3 and decimator%3==0:
+                allCorners.append(res2[1])
+                allIds.append(res2[2])
 
-                cv2.aruco.drawDetectedMarkers(gray,res[0],res[1])
-
-            cv2.imshow('frame',gray)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-            decimator+=1
-            print decimator
-
-
-
+            cv2.aruco.drawDetectedMarkers(gray,res[0],res[1])
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        decimator+=1
+        print decimator
         # Display the resulting frame
         frame = pygame.surfarray.make_surface(frame)
         screen.fill([0,0,0])
@@ -83,7 +79,16 @@ try:
                 raise KeyboardInterrupt
 except KeyboardInterrupt,SystemExit:
     imsize = gray.shape
-    cal = cv2.aruco.calibrateCameraCharuco(allCorners,allIds,board,imsize,None,None)
-    print cal
+    print "starting calibration calculations"
+    err, cameraMatrix, distCoeffs, rvecs, tvecs = cv2.aruco.calibrateCameraCharuco(allCorners,allIds,board,imsize,None,None)
+    data = ({
+      'cameraMatrix': cameraMatrix.tolist(),
+      'distCoeffs': distCoeffs.tolist(),
+      'err': err
+    })
+    with open('calibration.json', 'w') as f:
+        json.dump(data, f)
+    print('...done!')
+    print(err)
     pygame.quit()
     cv2.destroyAllWindows()
