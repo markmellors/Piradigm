@@ -9,28 +9,18 @@ from pygame.locals import*
 import picamera
 import picamera.array
 import math
+CAMERA_MATRIX = np.array([[196.00378048362913, 0.0, 158.09985439215194], [0.0, 196.41940209255708, 123.28529641686711], [0.0, 0.0, 1.0]])
+DIST_COEFFS = np.array([[-0.11909172334947736, -0.21275527201365405, -0.007049376606519501, -0.006678295495295815, 0.15384307954113818]])
+MARKER_LENGTH = 0.08 #metres
+
 
 def marker_angle(corners):
     ''' takes just the x &y cordinates fo the corners of the marker and returns the angle in degrees'''
-    
-    #shortened variable name for conciseness
-    c = corners
-    rect = cv2.minAreaRect(corners)
-    #work out vector elements for each side
-    dx1 = (c[1][0] - c[0][0])
-    dy1 = (c[1][1] - c[0][1])
-    dx2 = (c[2][0] - c[1][0])
-    dy2 = (c[2][1] - c[1][1])
-    dx3 = (c[3][0] - c[2][0])
-    dy3 = (c[3][1] - c[2][1])
-    dx4 = (c[1][0] - c[3][0])
-    dy4 = (c[0][1] - c[3][1])
-    #combine vectors for each side (rotating every other side by 90degrees) to make a single vector
-    dx = dx1 - dx3 + dx1/abs(dx1)*abs(dy2 + dy4)
-    dy = dy1 - dy3 + dy1/abs(dy1)*abs(dx2 + dx4)
-    angle_radians = math.atan(dy/dx)
-    angle_degrees = math.degrees(angle_radians)
-    return rect[2]
+    rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, MARKER_LENGTH, CAMERA_MATRIX, DIST_COEFFS)
+    a1 = math.degrees(rvecs[0][0][0])
+    a2 = math.degrees(rvecs[0][0][1])
+    a3 = math.degrees(rvecs[0][0][2])
+    return math.degrees(rvecs[0][0][1])
 
 env_vars = [
     ("SDL_FBDEV", "/dev/fb1"),
@@ -70,8 +60,8 @@ try:
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, small_dict, parameters=parameters)
         if ids != None:
             #if found, comptue the centre and move the cursor there
-            print(ids[0][0])
-            print marker_angle(corners[0][0])
+            #print(ids[0][0])
+            print marker_angle(corners)
             found_x = sum([arr[0] for arr in corners[0][0]])  / 4
             found_y = sum([arr[1] for arr in corners[0][0]])  / 4
             pygame.mouse.set_pos(int(found_y), int(found_x))
