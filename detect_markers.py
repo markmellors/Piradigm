@@ -8,9 +8,22 @@ import numpy as np
 from pygame.locals import*
 import picamera
 import picamera.array
-  
+import math
 
-   
+def marker_angle(corners):
+    ''' takes just the x &y cordinates fo the corners of the marker and returns the angle in degrees'''
+
+    #shortened variable name for conciseness
+    c = corners
+    #0.01 added to avoid divide by zero errors. corner coordinates assuemd to be integers
+    side_one_angle = math.atan((c[1][0] - c[0][0]) / (c[1][1] - c[0][1])+0.01)
+    side_two_angle = math.atan((c[2][0] - c[1][0]) / (c[2][1] - c[1][1])+0.01)
+    side_three_angle = math.atan((c[3][0] - c[2][0]) / (c[3][1] - c[2][1])+0.01)
+    side_four_angle = math.atan((c[1][0] - c[3][0]) / (c[0][1] - c[3][1])+0.01)
+    angle_radians = (side_one_angle + side_two_angle + side_three_angle + side_four_angle + 3.14) / 4
+    angle_degrees = math.degrees(angle_radians)
+    return angle_degrees
+
 env_vars = [
     ("SDL_FBDEV", "/dev/fb1"),
     ("SDL_MOUSEDEV", "/dev/input/touchscreen"),
@@ -50,7 +63,7 @@ try:
         if ids != None:
             #if found, comptue the centre and move the cursor there
             print(ids[0][0])
-            #print(corners)
+            print(marker_angle(corners[0][0]))
             found_x = sum([arr[0] for arr in corners[0][0]])  / 4
             found_y = sum([arr[1] for arr in corners[0][0]])  / 4
             pygame.mouse.set_pos(int(found_y), int(found_x))
