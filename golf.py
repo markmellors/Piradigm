@@ -28,7 +28,7 @@ class StreamProcessor(threading.Thread):
         self.back_away = False
         self.edge = False
         self.BLUR = 3
-        self.colour_limits = ((90, 0, 30), (110, 100, 255))
+        self.colour_limits = ((0, 0, 50), (180, 150, 255))
         self.FLOOR_LIMITS  = ((82, 200, 50), (90, 255, 130))
         self.calibrating = False
         self.tracking = False
