@@ -28,7 +28,7 @@ class StreamProcessor(threading.Thread):
         self.back_away = False
         self.edge = False
         self.BLUR = 3
-        self.colour_limits = ((90, 20, 50), (95, 200, 255))
+        self.colour_limits = ((90, 0, 30), (110, 100, 255))
         self.FLOOR_LIMITS  = ((82, 200, 50), (90, 255, 130))
         self.calibrating = False
         self.tracking = False
@@ -143,34 +143,31 @@ class StreamProcessor(threading.Thread):
                 biggest_contour = contour
         return found_x, found_y, found_area
 
-    def aquire_ball(self, ball_range):
-            balloon_x, balloon_y, balloon_a = self.find_largest_contour(ball_range)
-            if balloon_a is not None:
-                pygame.mouse.set_pos(balloon_y, 0.5 * self.BALL_CROP_WIDTH + 0.5 * self.FLOOR_CROP_WIDTH - balloon_x)
-            if balloon_a > self.MIN_BALLOON_SIZE:
-                #opponent is disrupting countour shape, making it concave
-                self.found = True
-                t_error = self.TARGET_BALL_POS_X - balloon_x
-                turn = self.BALL_T_P * t_error
-                s_error = balloon_y - self.TARGET_BALL_POS_Y
-                print s_error
-                speed = self.BALL_S_P * s_error
-                #constrain speeds
-                speed = max(-self.STRAIGHT_SPEED, min(self.STRAIGHT_SPEED, speed))
-                turn = max(-self.STRAIGHT_SPEED, min(self.STRAIGHT_SPEED, turn))
-                if max(abs(s_error),abs(t_error)) < self.BALL_POS_TOL:
-                    print "stopping, ball found and within tolerance"
-                    self.drive.move(0,0)
-                else:
-                    print ("found ball: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
-                    if self.DRIVING and self.tracking:
-                        self.drive.move(turn, speed)
-            else:
+    def acquire_ball(self, ball_range):
+        balloon_x, balloon_y, balloon_a = self.find_largest_contour(ball_range)
+        if balloon_a is not None:
+            pygame.mouse.set_pos(balloon_y, 0.5 * self.BALL_CROP_WIDTH + 0.5 * self.FLOOR_CROP_WIDTH - balloon_x)
+        if balloon_a > self.MIN_BALLOON_SIZE:
+            #opponent is disrupting countour shape, making it concave
+            self.found = True
+            t_error = self.TARGET_BALL_POS_X - balloon_x
+            turn = self.BALL_T_P * t_error
+            s_error = balloon_y - self.TARGET_BALL_POS_Y
+            print s_error
+            speed = self.BALL_S_P * s_error
+            #constrain speeds
+            speed = max(-self.STRAIGHT_SPEED, min(self.STRAIGHT_SPEED, speed))
+            turn = max(-self.STRAIGHT_SPEED, min(self.STRAIGHT_SPEED, turn))
+            if max(abs(s_error),abs(t_error)) < self.BALL_POS_TOL:
+                print "stopping, ball found and within tolerance"
                 self.drive.move(0,0)
-                print "nothing large enough to be a ball found"
+            else:
+                print ("found ball: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
+                if self.DRIVING and self.tracking:
+                    self.drive.move(turn, speed)
         else:
             self.drive.move(0,0)
-            print "No Ball found"
+            print "nothing large enough to be a ball found"     
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
@@ -200,7 +197,7 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (self.image_height-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
         pygame.display.update()
         #todo: move all ball only related stuff into acquire ball
-        self.acquire_ball(ball_range) if self.acquiring_ball else pass
+        if self.acquiring_ball: self.acquire_ball(ball_range)
         #rodo: add other move functions
         if self.tracking:
             image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
