@@ -40,6 +40,8 @@ class StreamProcessor(threading.Thread):
         self.BALL_POS_TOL = 2
         self.TARGET_BALL_POS_X = 50
         self.TARGET_BALL_POS_Y = 10
+        self.recent_ball_error = None
+        self.MAX_CAPTURED_BALL_ERROR = 5
         self.TURN_P = 2 * self.STRAIGHT_SPEED
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
@@ -165,9 +167,23 @@ class StreamProcessor(threading.Thread):
                 print ("found ball: position %d, %d, area %d" % (ball_x, ball_y, ball_a))
                 if self.DRIVING and self.tracking:
                     self.drive.move(turn, speed)
+            #update log of how close we've been to the ball recently
+            if self.recent_ball_error==None:
+                self.recent_ball_error=s_error
+            else:
+                self.recent_ball_error = 0.9 * self.recent_ball_error + 0.1 * s_error
+            if self.recent_ball_error < self.MAX_CAPTURED_BALL_ERROR:
+                #we've probably capture the ball, stop and move to next segment
+                print "ball captured"
+                self.drive.move(0,0)
+                self.acquiring_ball = False
+                self.putting = True
         else:
             self.drive.move(0,0)
             print "nothing large enough to be a ball found"     
+
+    def putt(self,image):
+        pass
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
@@ -198,6 +214,7 @@ class StreamProcessor(threading.Thread):
         pygame.display.update()
         #todo: move all ball only related stuff into acquire ball
         if self.acquiring_ball: self.acquire_ball(ball_range)
+        if self.putting: self.putt(image)
         #rodo: add other move functions
         if self.tracking:
             image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
