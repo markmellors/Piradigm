@@ -28,6 +28,7 @@ from marker_maze import Maze
 from pi_noon import PiNoon
 from golf import Golf
 from approxeng.input.selectbinder import ControllerResource
+import cv2.aruco as aruco
 
 VERSION = '0.4Golf'
 
@@ -63,6 +64,7 @@ class Menu():
         for var_name, val in env_vars:
             os.environ[var_name] = val
         self.timeout = kwargs.pop('timeout', 120)
+        self.markers = aruco.Dictionary_create(6, 3)
 
     def launch_challenge(self, new_challenge):
         """launch requested challenge thread"""
@@ -145,7 +147,7 @@ class Menu():
             return new_challenge
         elif event.label == "Golf":
             logger.info("launching Golf challenge")
-            new_challenge = Golf(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = Golf(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers=self.markers)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
