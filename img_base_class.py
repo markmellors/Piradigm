@@ -21,6 +21,8 @@ import cv2
 import numpy
 from fractions import Fraction
 from base_challenge import BaseChallenge
+CAMERA_MATRIX = np.array([[196.00378048362913, 0.0, 158.09985439215194], [0.0, 196.41940209255708, 123.28529641686711], [0.0, 0.0, 1.0]])
+DIST_COEFFS = np.array([[-0.11909172334947736, -0.21275527201365405, -0.007049376606519501, -0.006678295495295815, 0.15384307954113818]])
 
 logging.config.fileConfig('logging.ini')
 logger = logging.getLogger('piradigm.' + __name__)
@@ -56,3 +58,9 @@ class ImageCapture(threading.Thread):
             else:
                 yield self.processor.stream
                 self.processor.event.set()
+
+
+def marker_angle(corners, marker_length):
+    ''' takes just the x&y coordinates of the corners of the marker, the marker size and returns the roll angle in radians'''
+    rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, marker_length, CAMERA_MATRIX, DIST_COEFFS)
+    return rvecs[0][0][1]
