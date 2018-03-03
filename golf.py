@@ -51,9 +51,10 @@ class StreamProcessor(threading.Thread):
         self.FLOOR_CROP_START = 0
         self.FLOOR_CROP_HEIGHT = 70
         self.acquiring_ball = True
-        self.dropping_ring = False
-        self.moving_to_corner= False
-        self.moving_to_end = False
+        self.moving_to_corner_one= False
+        self.moving_to_corner_two= False
+        self.moving_to_windmill = False
+        self.putting = False
         self.TIMEOUT = 30.0
         self.PARAM = 60
         self.START_TIME = time.clock()
@@ -142,35 +143,7 @@ class StreamProcessor(threading.Thread):
                 biggest_contour = contour
         return found_x, found_y, found_area
 
-    def process_image(self, image, screen):
-        screen = pygame.display.get_surface()
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        ball_image = image[self.BALL_CROP_START:self.BALL_CROP_HEIGHT, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
-        floor_image = image[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
-        image=image[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
-        #for floor calibration:        print cv2.meanStdDev(floor_image)
-        # Our operations on the frame come here
-        screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
-        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
-        screen.fill([0, 0, 0])
-        screen.blit(frame, (0, 0))
-        if self.calibrating:
-            print "calibrating"
-            self.show_cal_label(screen)
-            self.colour_limits = self.get_limits(ball_image, 1.5)
-            print self.colour_limits
-        if self.tracking:
-            self.show_tracking_label(screen)
-        ball_range = self.threshold_image(ball_image, self.colour_limits)
-        floor_range =  self.threshold_image(floor_image, self.FLOOR_LIMITS)
-        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        frame = pygame.surfarray.make_surface(cv2.flip(floor_range, 1))
-        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START, 0))
-        frame = pygame.surfarray.make_surface(cv2.flip(ball_range, 1))
-        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
-        pygame.display.update()
-        # Find the contours
-        if self.acquiring_ball:
+    def aquire_ball(self, ball_range):
             balloon_x, balloon_y, balloon_a = self.find_largest_contour(ball_range)
             if balloon_a is not None:
                 pygame.mouse.set_pos(balloon_y, 0.5 * self.BALL_CROP_WIDTH + 0.5 * self.FLOOR_CROP_WIDTH - balloon_x)
@@ -198,6 +171,37 @@ class StreamProcessor(threading.Thread):
         else:
             self.drive.move(0,0)
             print "No Ball found"
+
+    def process_image(self, image, screen):
+        screen = pygame.display.get_surface()
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        ball_image = image[self.BALL_CROP_START:self.BALL_CROP_HEIGHT, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
+        floor_image = image[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
+        image=image[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
+        #for floor calibration:        print cv2.meanStdDev(floor_image)
+        # Our operations on the frame come here
+        screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
+        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
+        screen.fill([0, 0, 0])
+        screen.blit(frame, (0, 0))
+        if self.calibrating:
+            print "calibrating"
+            self.show_cal_label(screen)
+            self.colour_limits = self.get_limits(ball_image, 1.5)
+            print self.colour_limits
+        if self.tracking:
+            self.show_tracking_label(screen)
+        ball_range = self.threshold_image(ball_image, self.colour_limits)
+        floor_range =  self.threshold_image(floor_image, self.FLOOR_LIMITS)
+        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
+        frame = pygame.surfarray.make_surface(cv2.flip(floor_range, 1))
+        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START, 0))
+        frame = pygame.surfarray.make_surface(cv2.flip(ball_range, 1))
+        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
+        pygame.display.update()
+        #todo: move all ball only related stuff into acquire ball
+        self.acquire_ball(ball_range) if self.acquiring_ball else pass
+        #rodo: add other move functions
         if self.tracking:
             image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
             if self.found:
