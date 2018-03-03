@@ -19,7 +19,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_TIME = 0.025
         self.TURN_SPEED = 0.8
         self.SETTLE_TIME = 0.05
-        self.MIN_BALLOON_SIZE = 50
+        self.MIN_BALL_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 16
         self.BACK_AWAY_START = 2000
@@ -144,15 +144,15 @@ class StreamProcessor(threading.Thread):
         return found_x, found_y, found_area
 
     def acquire_ball(self, ball_range):
-        balloon_x, balloon_y, balloon_a = self.find_largest_contour(ball_range)
-        if balloon_a is not None:
-            pygame.mouse.set_pos(balloon_y, 0.5 * self.BALL_CROP_WIDTH + 0.5 * self.FLOOR_CROP_WIDTH - balloon_x)
-        if balloon_a > self.MIN_BALLOON_SIZE:
+        ball_x, ball_y, ball_a = self.find_largest_contour(ball_range)
+        if ball_a is not None:
+            pygame.mouse.set_pos(ball_y, 0.5 * self.BALL_CROP_WIDTH + 0.5 * self.FLOOR_CROP_WIDTH - ball_x)
+        if ball_a > self.MIN_BALL_SIZE:
             #opponent is disrupting countour shape, making it concave
             self.found = True
-            t_error = self.TARGET_BALL_POS_X - balloon_x
+            t_error = self.TARGET_BALL_POS_X - ball_x
             turn = self.BALL_T_P * t_error
-            s_error = balloon_y - self.TARGET_BALL_POS_Y
+            s_error = ball_y - self.TARGET_BALL_POS_Y
             print s_error
             speed = self.BALL_S_P * s_error
             #constrain speeds
@@ -162,7 +162,7 @@ class StreamProcessor(threading.Thread):
                 print "stopping, ball found and within tolerance"
                 self.drive.move(0,0)
             else:
-                print ("found ball: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
+                print ("found ball: position %d, %d, area %d" % (ball_x, ball_y, ball_a))
                 if self.DRIVING and self.tracking:
                     self.drive.move(turn, speed)
         else:
