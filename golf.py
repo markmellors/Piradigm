@@ -43,7 +43,7 @@ class StreamProcessor(threading.Thread):
         self.TARGET_BALL_POS_X = 50
         self.TARGET_BALL_POS_Y = 10
         self.recent_ball_error = None
-        self.MAX_CAPTURED_BALL_ERROR = 5
+        self.MAX_CAPTURED_BALL_ERROR = 3
         self.TURN_P = 2 * self.STRAIGHT_SPEED
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
@@ -168,8 +168,8 @@ class StreamProcessor(threading.Thread):
             speed = max(-self.STRAIGHT_SPEED, min(self.STRAIGHT_SPEED, speed))
             turn = max(-self.STRAIGHT_SPEED, min(self.STRAIGHT_SPEED, turn))
             if max(abs(s_error),abs(t_error)) < self.BALL_POS_TOL:
-                print "stopping, ball found and within tolerance"
-                self.drive.move(0,0)
+                print "stopping, ball found and within tolerance, making ring drop"
+                self.drive.move(0,-self.STRAIGHT_SPEED/2)
             else:
                 print ("found ball: position %d, %d, area %d" % (ball_x, ball_y, ball_a))
                 if self.DRIVING and self.tracking:
@@ -178,7 +178,7 @@ class StreamProcessor(threading.Thread):
             if self.recent_ball_error==None:
                 self.recent_ball_error=s_error
             else:
-                self.recent_ball_error = 0.9 * self.recent_ball_error + 0.1 * s_error
+                self.recent_ball_error = 0.9 * self.recent_ball_error + 0.1 * abs(s_error)
             if self.recent_ball_error < self.MAX_CAPTURED_BALL_ERROR:
                 #we've probably capture the ball, stop and move to next segment
                 print "ball captured"
