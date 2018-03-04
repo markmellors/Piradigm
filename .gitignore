@@ -6,3 +6,4 @@
 Pipfile.lock
 Pipfile
 *img.jpg
+*.save
