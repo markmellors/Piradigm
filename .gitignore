@@ -1,0 +1,7 @@
+*.log
+*.pyc
+*.sublime-project
+*.sublime-workspace
+Pipfile.lock
+Pipfile
+*img.jpg
