@@ -65,3 +65,13 @@ def marker_angle(corners, marker_length, marker=0):
     ''' takes just the x&y coordinates of the corners of the marker, the marker size and returns the roll angle in radians'''
     rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, marker_length, CAMERA_MATRIX, DIST_COEFFS)
     return rvecs[marker][0][1]
+
+def marker_vector(corners):
+    x_mid_bottom = (corners[0][0]+corners[1][0])/2
+    y_mid_bottom = (corners[0][1]+corners[1][1])/2
+    x_mid_top = (corners[2][0]+corners[3][0])/2
+    y_mid_top = (corners[2][1]+corners[3][1])/2
+    x_diff = x_mid_top - x_mid_bottom
+    y_diff = y_mid_top - y_mid_bottom
+    return x_diff, y_diff
+    
