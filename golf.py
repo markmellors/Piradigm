@@ -35,7 +35,8 @@ class StreamProcessor(threading.Thread):
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
-        self.STRAIGHT_SPEED = 0.2
+        self.ACQUIRE_SPEED = 0.2
+        self.STRAIGHT_SPEED = 0.4
         self.BALL_S_P = 0.1 * self.STRAIGHT_SPEED
         self.BALL_T_P = 0.02 * self.STRAIGHT_SPEED
         self.BALL_D = 0.002 * self.STRAIGHT_SPEED
@@ -49,11 +50,13 @@ class StreamProcessor(threading.Thread):
         self.SLIGHT_TURN = 0.1
         self.MAX_TURN_SPEED = 0.25
         self.WINDMILL_CENTRE_ID = 3
-        self.CENTRE_STOP_WIDTH = 18
+        self.CENTRE_STOP_WIDTH = 15
         self.WINDMILL_BLADE_ID = 4
         self.WINDMILL_GAP_ID = 5
         self.BLADE_AND_GAP_WIDTH = 0.042
-        self.GAP_STOP_WIDTH = 20
+        self.GAP_STOP_WIDTH = 17
+        self.GO_FOR_IT_POSITION = 110
+        self.DONT_GO_POSITION = 35
         self.MARKER_RATIO = 3.2 #ratio of radius of periemter markers on disk to marker size
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.BALL_CROP_START = 0
@@ -62,11 +65,11 @@ class StreamProcessor(threading.Thread):
         self.FLOOR_CROP_WIDTH = 160
         self.FLOOR_CROP_START = 0
         self.FLOOR_CROP_HEIGHT = 70
-        self.acquiring_ball = False
+        self.acquiring_ball = True
         self.moving_to_corner_one= False
         self.moving_to_corner_two= False
         self.moving_to_windmill = False
-        self.moving_to_entrance = True
+        self.moving_to_entrance = False
         self.putting = False
         self.TIMEOUT = 30.0
         self.PARAM = 60
@@ -169,11 +172,11 @@ class StreamProcessor(threading.Thread):
             print s_error
             speed = self.BALL_S_P * s_error
             #constrain speeds
-            speed = max(-self.STRAIGHT_SPEED, min(self.STRAIGHT_SPEED, speed))
-            turn = max(-self.STRAIGHT_SPEED, min(self.STRAIGHT_SPEED, turn))
+            speed = max(-self.ACQUIRE_SPEED, min(self.ACQUIRE_SPEED, speed))
+            turn = max(-self.ACQUIRE_SPEED, min(self.ACQUIRE_SPEED, turn))
             if max(abs(s_error),abs(t_error)) < self.BALL_POS_TOL:
                 print "stopping, ball found and within tolerance, making ring drop"
-                self.drive.move(0,-self.STRAIGHT_SPEED/2)
+                self.drive.move(0,-self.ACQUIRE_SPEED/2)
             else:
                 print ("found ball: position %d, %d, area %d" % (ball_x, ball_y, ball_a))
                 if self.DRIVING and self.tracking:
@@ -221,16 +224,12 @@ class StreamProcessor(threading.Thread):
                     print 'at windmill!'
                     self.drive.move(0,0)
                     self.moving_to_windmill = False
-                    self.putting = True
+                    self.moving_to_entrance = True
                 else:
                     self.t_error = (self.image_width/2 - found_y) / (self.image_width / 2)
                     turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
-                    if self.last_t_error is not 0:
-                        #if there was a real error last time then do some damping
-                        turn_amount -= self.TURN_D *(self.last_t_error - self.t_error)
                     turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
                     if self.tracking: self.drive.move (turn_amount, self.STRAIGHT_SPEED)
-                    last_t_error = t_error
             else:
                 self.drive.move(0,0)
                 last_t_error = 0
@@ -261,15 +260,21 @@ class StreamProcessor(threading.Thread):
                 turn =  - self.TURN_P * t_error
                 print ("approaching entrance %d" % width)
                 if width > self.GAP_STOP_WIDTH:
-                    print 'at entrance!'
-                    self.drive.move(0,0)
-                    self.moving_to_windmill = False
-                    self.putting = True
+                    if t_error < 0.1:
+                        print 'at entrance!'
+                        self.drive.move(0,0)
+                        self.moving_to_entrance = False
+                        self.putting = True
+                    else:
+                        self.t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
+                        turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
+                        turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+                        if self.tracking: self.drive.move (-turn_amount/2, -0.8*self.STRAIGHT_SPEED)
                 else:
                     self.t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
                     turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
                     turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
-                    if self.tracking: self.drive.move (turn_amount, self.STRAIGHT_SPEED)
+                    if self.tracking: self.drive.move (turn_amount, 0.8*self.STRAIGHT_SPEED)
             else:
                 self.drive.move(0,0)
         else:
@@ -280,10 +285,22 @@ class StreamProcessor(threading.Thread):
         parameters =  aruco.DetectorParameters_create()
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
         if ids != None:
+            gap_x = 0
             for marker_number in range(0, len(ids)):
                 if ids[marker_number] == self.WINDMILL_GAP_ID:
-                    found_x = sum([arr[0] for arr in corners[marker_number][0]])  / 4
-                    print found_x
+                    gap_x = sum([arr[0] for arr in corners[marker_number][0]])  / 4
+            print("waiting to lunge, position currently: %s" % gap_x)
+            if gap_x < self.GO_FOR_IT_POSITION and gap_x > self.DONT_GO_POSITION and self.tracking:
+                #if we're in the right postion, lunge forward, then back, then go back to lining up with the gap
+                self.drive.move(0, self.STRAIGHT_SPEED)
+                time.sleep(1.2)
+                self.drive.move(0,-self.STRAIGHT_SPEED)
+                time.sleep(1.3)
+                self.drive.move(0,0)
+                self.moving_to_entrance = True
+                self.putting = False
+  
+            
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
