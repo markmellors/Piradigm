@@ -16,11 +16,11 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.small_dict = dict 
         self.last_t_error = 0
-        self.TURN_P = 2
+        self.TURN_P = 4
         self.TURN_D = 1
         self.STRAIGHT_SPEED = 1
-        self.MAX_TURN_SPEED = 0.25
-        self.STEERING_OFFSET = 0.0  #more positive make it turn left
+        self.MAX_TURN_SPEED = 0.5
+        self.STEERING_OFFSET = -0.2  #more positive make it turn left
         self.CROP_WIDTH = 200
         self.i = 0
         self.TIMEOUT = 8 #was 30
@@ -28,7 +28,7 @@ class StreamProcessor(threading.Thread):
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.found = False
         self.TURN_TARGET = 5
-        self.MARKER_STOP_WIDTH = 120
+        self.MARKER_STOP_WIDTH = 70
         self.loop_start_time=0
         self.target_aruco_marker_id = 3
         self.marker_to_track=0 
