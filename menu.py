@@ -26,6 +26,7 @@ from my_button import MyButton
 from remote_control import RC
 from rainbow import Rainbow
 from marker_maze import Maze
+from pi_noon import PiNoon
 from approxeng.input.selectbinder import ControllerResource
 import cv2.aruco as aruco
 
@@ -139,6 +140,10 @@ class Menu():
         elif event.label is "Maze":
             logger.info("launching Maze challenge")
             new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
+            return new_challenge
+        elif event.label == "Pi Noon":
+            logger.info("launching Pi Noon challenge")
+            new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
