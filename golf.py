@@ -61,11 +61,11 @@ class StreamProcessor(threading.Thread):
         self.FLOOR_CROP_WIDTH = 160
         self.FLOOR_CROP_START = 0
         self.FLOOR_CROP_HEIGHT = 70
-        self.acquiring_ball = True
+        self.acquiring_ball = False
         self.moving_to_corner_one= False
         self.moving_to_corner_two= False
         self.moving_to_windmill = False
-        self.moving_to_entrance = False
+        self.moving_to_entrance = True
         self.putting = False
         self.TIMEOUT = 30.0
         self.PARAM = 60
@@ -242,13 +242,13 @@ class StreamProcessor(threading.Thread):
         parameters =  aruco.DetectorParameters_create()
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
         if ids != None:
-            marker_angles = numpy.zeros(shape=(len(ids),4))
+            marker_angles = numpy.zeros(shape=(len(ids),5))
             for marker_number in range(0, len(ids)):
                 # test the found aruco object is equivalent to the id of the one we're looking for
                 marker_angles[marker_number][0] = ids[marker_number]
-                marker_angles[marker_number][1] = marker_angle(corners, self.BLADE_AND_GAP_WIDTH, marker_number)
-                marker_angles[marker_number][2] = sum([arr[1] for arr in corners[marker_number][0]]) / 4
-                marker_angles[marker_number][3] = sum([arr[0] for arr in corners[marker_number][0]]) / 4
+                marker_angles[marker_number][1], marker_angles[marker_number][2] = marker_vector(corners[marker_number][0])#marker_angle(corners, self.BLADE_AND_GAP_WIDTH, marker_number)
+                marker_angles[marker_number][3] = sum([arr[1] for arr in corners[marker_number][0]]) / 4
+                marker_angles[marker_number][4] = sum([arr[0] for arr in corners[marker_number][0]]) / 4
 
             print marker_angles
             #if found, comptue the centre and move the cursor there
@@ -317,6 +317,7 @@ class StreamProcessor(threading.Thread):
         #todo: move all ball only related stuff into acquire ball
         if self.acquiring_ball: self.acquire_ball(ball_range)
         if self.moving_to_windmill: self.drive_to_windmill(image)
+        if self.moving_to_entrance: self.move_to_entrance(image)
         if self.putting: self.putt(image)
         #rodo: add other move functions
         if self.tracking:
