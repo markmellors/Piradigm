@@ -14,6 +14,7 @@ import os
 import sys
 import time
 import threading
+sys.path.append('/usr/local/lib/python2.7/site-packages')
 
 from docopt import docopt
 import random
@@ -139,7 +140,7 @@ class Menu():
             return new_challenge
         elif event.label is "Maze":
             logger.info("launching Maze challenge")
-            new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
             return new_challenge
         elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")
