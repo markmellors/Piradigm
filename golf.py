@@ -53,7 +53,7 @@ class StreamProcessor(threading.Thread):
         self.WINDMILL_BLADE_ID = 4
         self.WINDMILL_GAP_ID = 5
         self.BLADE_AND_GAP_WIDTH = 0.042
-        self.GAP_STOP_WIDTH
+        self.GAP_STOP_WIDTH = 18
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.BALL_CROP_START = 0
         self.BALL_CROP_WIDTH = 100
@@ -61,11 +61,11 @@ class StreamProcessor(threading.Thread):
         self.FLOOR_CROP_WIDTH = 160
         self.FLOOR_CROP_START = 0
         self.FLOOR_CROP_HEIGHT = 70
-        self.acquiring_ball = False
+        self.acquiring_ball = True
         self.moving_to_corner_one= False
         self.moving_to_corner_two= False
         self.moving_to_windmill = False
-        self.moving_to_entrance = True
+        self.moving_to_entrance = False
         self.putting = False
         self.TIMEOUT = 30.0
         self.PARAM = 60
