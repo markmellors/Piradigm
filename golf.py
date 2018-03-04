@@ -21,7 +21,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_TIME = 0.025
         self.TURN_SPEED = 0.8
         self.SETTLE_TIME = 0.05
-        self.MIN_BALL_SIZE = 50
+        self.MIN_BALL_SIZE = 200
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 16
         self.BACK_AWAY_START = 2000
@@ -35,36 +35,37 @@ class StreamProcessor(threading.Thread):
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
-        self.ACQUIRE_SPEED = 0.2
+        self.ACQUIRE_SPEED = 0.35
         self.STRAIGHT_SPEED = 0.4
+        self.STEADY_SPEED =0.4
         self.BALL_S_P = 0.1 * self.STRAIGHT_SPEED
         self.BALL_T_P = 0.02 * self.STRAIGHT_SPEED
         self.BALL_D = 0.002 * self.STRAIGHT_SPEED
-        self.BALL_POS_TOL = 2
-        self.TARGET_BALL_POS_X = 50
-        self.TARGET_BALL_POS_Y = 10
+        self.BALL_POS_TOL = 5
+        self.TARGET_BALL_POS_X = 100
+        self.TARGET_BALL_POS_Y = 20
         self.recent_ball_error = None
-        self.MAX_CAPTURED_BALL_ERROR = 3
+        self.MAX_CAPTURED_BALL_ERROR = 6
         self.TURN_P = 2 * self.STRAIGHT_SPEED
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
         self.MAX_TURN_SPEED = 0.25
         self.WINDMILL_CENTRE_ID = 3
-        self.CENTRE_STOP_WIDTH = 15
+        self.CENTRE_STOP_WIDTH = 30
         self.WINDMILL_BLADE_ID = 4
         self.WINDMILL_GAP_ID = 5
         self.BLADE_AND_GAP_WIDTH = 0.042
-        self.GAP_STOP_WIDTH = 17
-        self.GO_FOR_IT_POSITION = 110
-        self.DONT_GO_POSITION = 35
+        self.GAP_STOP_WIDTH = 34
+        self.GO_FOR_IT_POSITION = 70
+        self.DONT_GO_POSITION = 180
         self.MARKER_RATIO = 3.2 #ratio of radius of periemter markers on disk to marker size
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.BALL_CROP_START = 0
-        self.BALL_CROP_WIDTH = 100
-        self.BALL_CROP_HEIGHT = 45
-        self.FLOOR_CROP_WIDTH = 160
+        self.BALL_CROP_WIDTH = 200
+        self.BALL_CROP_HEIGHT = 90
+        self.FLOOR_CROP_WIDTH = 320
         self.FLOOR_CROP_START = 0
-        self.FLOOR_CROP_HEIGHT = 70
+        self.FLOOR_CROP_HEIGHT = 140
         self.acquiring_ball = True
         self.moving_to_corner_one= False
         self.moving_to_corner_two= False
@@ -254,31 +255,28 @@ class StreamProcessor(threading.Thread):
                     #print ("%i, %i, %i, %i, %i, %i" % (ids[marker_number], dx, dy, sum([arr[1] for arr in corners[marker_number][0]])  / 4,sum([arr[0] for arr in corners[marker_number][0]])  / 4,x))
             found_x = found_x_sum / len(ids)
             #if found, compute the centre and move the cursor there
-            if True:
-                width = math.sqrt(math.pow(corners[0][0][0][0]-corners[0][0][1][0],2)+math.pow(corners[0][0][0][1]-corners[0][0][1][1],2))
-                t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
-                turn =  - self.TURN_P * t_error
-                print ("approaching entrance %d" % width)
-                if width > self.GAP_STOP_WIDTH:
-                    if t_error < 0.1:
-                        print 'at entrance!'
-                        self.drive.move(0,0)
-                        self.moving_to_entrance = False
-                        self.putting = True
-                    else:
-                        self.t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
-                        turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
-                        turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
-                        if self.tracking: self.drive.move (-turn_amount/2, -0.8*self.STRAIGHT_SPEED)
+            width = math.sqrt(math.pow(corners[0][0][0][0]-corners[0][0][1][0],2)+math.pow(corners[0][0][0][1]-corners[0][0][1][1],2))
+            t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
+            turn =  - self.TURN_P * t_error
+            print ("approaching entrance %d" % width)
+            if width > self.GAP_STOP_WIDTH:
+                if t_error < 0.15:
+                    print 'at entrance!'
+                    self.drive.move(0,0)
+                    self.moving_to_entrance = False
+                    self.putting = True
                 else:
                     self.t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
                     turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
                     turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
-                    if self.tracking: self.drive.move (turn_amount, 0.8*self.STRAIGHT_SPEED)
+                    if self.tracking: self.drive.move (0, -self.STEADY_SPEED)
             else:
-                self.drive.move(0,0)
+                self.t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
+                turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
+                turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+                if self.tracking: self.drive.move (turn_amount, self.STEADY_SPEED)
         else:
-            self.drive.move(0,0)
+            self.drive.move(0,-self.STRAIGHT_SPEED)
 
     def putt(self,image):
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -290,15 +288,17 @@ class StreamProcessor(threading.Thread):
                 if ids[marker_number] == self.WINDMILL_GAP_ID:
                     gap_x = sum([arr[0] for arr in corners[marker_number][0]])  / 4
             print("waiting to lunge, position currently: %s" % gap_x)
-            if gap_x < self.GO_FOR_IT_POSITION and gap_x > self.DONT_GO_POSITION and self.tracking:
+            if gap_x > self.GO_FOR_IT_POSITION and gap_x < self.DONT_GO_POSITION and self.tracking:
                 #if we're in the right postion, lunge forward, then back, then go back to lining up with the gap
                 self.drive.move(0, self.STRAIGHT_SPEED)
-                time.sleep(1.2)
-                self.drive.move(0,-self.STRAIGHT_SPEED)
-                time.sleep(1.3)
+                time.sleep(2) #was 1.2
+              #  self.drive.move(0,-self.STRAIGHT_SPEED)
+              #  time.sleep(1.3)
                 self.drive.move(0,0)
-                self.moving_to_entrance = True
-                self.putting = False
+              #  self.moving_to_entrance = True
+              #  self.putting = False
+        else:
+            self.drive.move(0,-self.STEADY_SPEED)
   
             
 
@@ -353,8 +353,8 @@ class Golf(BaseChallenge):
     """Golf challenge class"""
 
     def __init__(self, timeout=120, screen=None, joystick=None, markers=None):
-        self.image_width = 160  # Camera image width
-        self.image_height = 128  # Camera image height
+        self.image_width = 320  # Camera image width
+        self.image_height = 256  # Camera image height
         self.frame_rate = 40  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
