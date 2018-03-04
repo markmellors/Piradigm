@@ -14,6 +14,7 @@ import os
 import sys
 import time
 import threading
+sys.path.append('/usr/local/lib/python2.7/site-packages')
 
 from docopt import docopt
 import random
@@ -27,6 +28,7 @@ from rainbow import Rainbow
 from marker_maze import Maze
 from pi_noon import PiNoon
 from approxeng.input.selectbinder import ControllerResource
+import cv2.aruco as aruco
 
 VERSION = '0.3Mazing'
 
@@ -62,6 +64,7 @@ class Menu():
         for var_name, val in env_vars:
             os.environ[var_name] = val
         self.timeout = kwargs.pop('timeout', 120)
+        self.markers = aruco.Dictionary_create(6, 3)
 
     def launch_challenge(self, new_challenge):
         """launch requested challenge thread"""
@@ -136,7 +139,7 @@ class Menu():
             return new_challenge
         elif event.label is "Maze":
             logger.info("launching Maze challenge")
-            new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
             return new_challenge
         elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")

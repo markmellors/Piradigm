@@ -3,7 +3,7 @@ import cv2.aruco as aruco
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
-    def __init__(self, screen=None, camera=None, drive=None):
+    def __init__(self, screen=None, camera=None, drive=None, dict=None):
         super(StreamProcessor, self).__init__()
         self.camera = camera
         image_width, image_height = self.camera.resolution
@@ -16,7 +16,7 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         # Why the one second sleep?
         #create small cust dictionary
-        self.small_dict = aruco.Dictionary_create(6, 3)
+        self.small_dict = dict #aruco.Dictionary_create(6, 3)
         self.last_t_error = 0
         self.TURN_P = 0.6
         self.TURN_D = 0.3
@@ -30,7 +30,7 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [30, 35, 35, 30, 35, 35]
+        self.TURN_WIDTH = [20, 18, 18, 20, 20, 18]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.04
@@ -85,15 +85,9 @@ class StreamProcessor(threading.Thread):
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
-        #print(parameters)
-        '''    detectMarkers(...)
-            detectMarkers(image, dictionary[, corners[, ids[, parameters[, rejectedI
-            mgPoints]]]]) -> corners, ids, rejectedImgPoints
-        '''
         #lists of ids and the corners beloning to each id
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
         if ids != None:
-            #print ("found marker %s" % ids)
             if len(ids)>1:
                 logger.info( "found %d markers" % len(ids))
                 self.marker_to_track = 0
@@ -131,7 +125,6 @@ class StreamProcessor(threading.Thread):
                 else:
                     self.drive.move (turn, self.STRAIGHT_SPEED)
                 self.last_t_error = self.t_error
-                #print(camera.exposure_speed)
             else:
                 logger.info("looking for marker %d" % self.turn_number)
                 if self.found:
@@ -169,12 +162,10 @@ class StreamProcessor(threading.Thread):
         screen.fill([0,0,0])
         screen.blit(frame, (0,0))
         pygame.display.update()
-        if self.found:
-         img_name = str(self.i) + "Fimg.jpg"
-        else:
-         img_name = str(self.i) + "NFimg.jpg"
-        #filesave for debugging: 
-        cv2.imwrite(img_name, gray)
+        found_identifier = "F" if self.found else "NF"
+        img_name = "%d%simg.jpg" % (self.i, found_identifier)
+        # filesave for debugging: 
+        # cv2.imwrite(img_name, gray)
         self.i += 1
 
 
@@ -182,13 +173,14 @@ class StreamProcessor(threading.Thread):
 class Maze(BaseChallenge):
     """Minimal Maze challenge class"""
 
-    def __init__(self, timeout=120, screen=None, joystick=None):
+    def __init__(self, timeout=120, screen=None, joystick=None, markers=None):
         self.image_width = 320  # Camera image width
         self.image_height = 240  # Camera image height
         self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
-        self.joystick=joystick
+        self.joystick = joystick
+        self.dict = markers
         super(Maze, self).__init__(name='Maze', timeout=timeout, logger=logger)
 
 
@@ -207,6 +199,7 @@ class Maze(BaseChallenge):
             screen=self.screen,
             camera=self.camera,
             drive=self.drive,
+            dict=self.dict
         )
         logger.info('Wait ...')
         time.sleep(2)
