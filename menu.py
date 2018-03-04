@@ -145,6 +145,7 @@ class Menu():
         elif event.label is "Speed":
             logger.info("launching Speed challenge")
             new_challenge = StraightLineSpeed(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
+            return new_challenge
         elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")
             new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
