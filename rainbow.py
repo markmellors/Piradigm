@@ -29,17 +29,18 @@ class StreamProcessor(threading.Thread):
         self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
-        self.AREA_P = 0.0001
-        self.AREA_D = 0.0002
-        self.TURN_P = 0.5
-        self.TURN_D = 0.2
+        self.AREA_P = 0.00015
+        self.AREA_D = 0.0003
+        self.TURN_P = 0.7
+        self.TURN_D = 0.3
         self.colour_bounds = json.load(open('rainbow.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.BACK_OFF_AREA = 1000
         self.BACK_OFF_SPEED = -0.25
-        self.FAST_SEARCH_TURN = 0.6
-        self.DRIVING = False
+        self.FAST_SEARCH_TURN = 0.7
+        self.DRIVING = True
+        self.tracking = False
         # Why the one second sleep?
         time.sleep(1)
         self.start()
@@ -168,7 +169,7 @@ class StreamProcessor(threading.Thread):
                     #if there was a real error last time then do some damping
                     turn -= self.TURN_D *(self.last_t_error - t_error)
                     forward -= self.AREA_D * (self.last_a_error - a_error)
-                if self.DRIVING:
+                if self.DRIVING and self.tracking:
                     self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 self.last_a_error = a_error
@@ -176,7 +177,7 @@ class StreamProcessor(threading.Thread):
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 5:
-                if self.DRIVING:
+                if self.DRIVING and self.tracking:
                     self.drive.move(self.FAST_SEARCH_TURN, 0)
                 self.cycle = 0
             else:
@@ -202,7 +203,7 @@ class StreamProcessor(threading.Thread):
                 turn = self.TURN_P * t_error
                 if self.last_t_error is not None:
                     turn -= self.TURN_D *(self.last_t_error - t_error)
-                if self.DRIVING:
+                if self.DRIVING and self.tracking:
                     self.drive.move(turn, forward)
                 self.last_t_error = t_error
         else:
@@ -279,6 +280,29 @@ class Rainbow(BaseChallenge):
                 data = self.processor.colour_bounds
                 with open('rainbow.json', 'w') as f:
                     json.dump(data, f)
+        if button['r1']:
+            self.timeout = 0
+        if button['r2']:
+            self.processor.tracking = True
+            print "Starting"
+        if button['l1']:
+            self.processor.tracking = False
+            self.drive.move(0,0)
+            print "Stopping"
+        if button['l2']:
+            self.progress_colour()
+            print ("manually moved on to %s" % self.processor.colour)
+
+    def progress_colour(self):
+        if self.processor.colour is not "green":
+            if self.processor.colour is "yellow": self.processor.colour = "green"
+            if self.processor.colour is "blue": self.processor.colour = "yellow"
+            if self.processor.colour is "red": self.processor.colour = "blue"
+            self.processor.found = False
+            self.processor.retreated = False
+        else:
+            print "finished"
+            self.timeout=0
 
     def run(self):
         # Startup sequence
@@ -328,16 +352,9 @@ class Rainbow(BaseChallenge):
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
                             ctrl['ctrl'].remove(fade=False)
+                if self.processor.retreated:
+                    self.progress_colour()
                 sgc.update(time)
-                if self.processor.retreated and self.processor.colour is not "green":
-                    if self.processor.colour is "yellow": self.processor.colour = "green"
-                    if self.processor.colour is "blue": self.processor.colour = "yellow"
-                    if self.processor.colour is "red": self.processor.colour = "blue"
-                    self.processor.found = False
-                    self.processor.retreated = False
-                elif self.processor.retreated and self.processor.colour is "green":
-                    print "finished"
-                    self.timeout = 0
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
