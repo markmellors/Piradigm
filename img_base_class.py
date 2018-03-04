@@ -18,6 +18,7 @@ from sgc.locals import *
 import picamera
 import picamera.array
 import cv2
+import cv2.aruco as aruco
 import numpy
 from fractions import Fraction
 from base_challenge import BaseChallenge
@@ -60,7 +61,7 @@ class ImageCapture(threading.Thread):
                 self.processor.event.set()
 
 
-def marker_angle(corners, marker_length):
+def marker_angle(corners, marker_length, marker=0):
     ''' takes just the x&y coordinates of the corners of the marker, the marker size and returns the roll angle in radians'''
     rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, marker_length, CAMERA_MATRIX, DIST_COEFFS)
-    return rvecs[0][0][1]
+    return rvecs[marker][0][1]

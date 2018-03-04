@@ -52,6 +52,8 @@ class StreamProcessor(threading.Thread):
         self.CENTRE_STOP_WIDTH = 18
         self.WINDMILL_BLADE_ID = 4
         self.WINDMILL_GAP_ID = 5
+        self.BLADE_AND_GAP_WIDTH = 0.042
+        self.GAP_STOP_WIDTH
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.BALL_CROP_START = 0
         self.BALL_CROP_WIDTH = 100
@@ -59,10 +61,11 @@ class StreamProcessor(threading.Thread):
         self.FLOOR_CROP_WIDTH = 160
         self.FLOOR_CROP_START = 0
         self.FLOOR_CROP_HEIGHT = 70
-        self.acquiring_ball = True
+        self.acquiring_ball = False
         self.moving_to_corner_one= False
         self.moving_to_corner_two= False
         self.moving_to_windmill = False
+        self.moving_to_entrance = True
         self.putting = False
         self.TIMEOUT = 30.0
         self.PARAM = 60
@@ -233,6 +236,53 @@ class StreamProcessor(threading.Thread):
         else:
             self.drive.move(0,0)
             last_t_error = 0 
+
+    def move_to_entrance(self,image):
+        gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        parameters =  aruco.DetectorParameters_create()
+        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
+        if ids != None:
+            marker_angles = numpy.zeros(shape=(len(ids),4))
+            for marker_number in range(0, len(ids)):
+                # test the found aruco object is equivalent to the id of the one we're looking for
+                marker_angles[marker_number][0] = ids[marker_number]
+                marker_angles[marker_number][1] = marker_angle(corners, self.BLADE_AND_GAP_WIDTH, marker_number)
+                marker_angles[marker_number][2] = sum([arr[1] for arr in corners[marker_number][0]]) / 4
+                marker_angles[marker_number][3] = sum([arr[0] for arr in corners[marker_number][0]]) / 4
+
+            print marker_angles
+            #if found, comptue the centre and move the cursor there
+            
+            if False: #ids[marker_index] == self.WINDMILL_CENTRE_ID:
+                m = marker_index
+                found_y = sum([arr[0] for arr in corners[m][0]])  / 4
+                found_x = sum([arr[1] for arr in corners[m][0]])  / 4
+                width = math.sqrt(math.pow(corners[m][0][0][0]-corners[m][0][1][0],2)+math.pow(corners[m][0][0][1]-corners[m][0][1][1],2))
+                pygame.mouse.set_pos(int(found_x), int(found_y))
+                t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
+                turn =  - self.TURN_P * t_error
+                print ("approaching entrance %d" % width)
+                pygame.mouse.set_pos(int(found_x), int(self.image_width-found_y))
+                if width > self.GAP_STOP_WIDTH:
+                    print 'at entrance!'
+                    self.drive.move(0,0)
+                    self.moving_to_windmill = False
+                    self.putting = True
+                else:
+                    self.t_error = (self.image_width/2 - found_y) / (self.image_width / 2)
+                    turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
+                    if self.last_t_error is not 0:
+                        #if there was a real error last time then do some damping
+                        turn_amount -= self.TURN_D *(self.last_t_error - self.t_error)
+                    turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+                    if self.tracking: self.drive.move (turn_amount, self.STRAIGHT_SPEED)
+                    last_t_error = t_error
+            else:
+                self.drive.move(0,0)
+                last_t_error = 0
+        else:
+            self.drive.move(0,0)
+            last_t_error = 0
 
     def putt(self,image):
         pass
