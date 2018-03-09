@@ -25,7 +25,7 @@ class DriveTrain():
         time.sleep(0.5)
         self.motor_max = 100
         self.FULL_WHITE = (255, 255, 255)
-        self.OFF  =(255, 255, 255)
+        self.OFF = (0, 0, 0)
         # battery voltage check constants
         self.BATT_CONSTANTS = {
             "adc_gain": 0.02909,
@@ -127,9 +127,9 @@ class DriveTrain():
 
     def lights(self, on):
         if on:
-            self.pz.setAllPixels(self.FULL_WHITE)
+            self.pz.setAllPixels(*self.FULL_WHITE)
         else:
-            self.pz.setAllPixel(self.OFF)
+            self.pz.setAllPixels(*self.OFF)
 
     def dither(self, counter, speed):
         # function takes a speed and occassionally adds a boost, helpful at very

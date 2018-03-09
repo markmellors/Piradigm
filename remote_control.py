@@ -34,8 +34,8 @@ class RC(BaseChallenge):
             self.drive.lights(on=False)
             print "Turned headlights off"
         if button['l2']:
-            self.drive.lights(on=False)
-            print ("Turned headlights on"))
+            self.drive.lights(on=True)
+            print "Turned headlights on"
 
     def run(self):
         self.logger.info("running %s challenge" % self.name)
