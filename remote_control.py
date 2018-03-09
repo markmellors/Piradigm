@@ -30,6 +30,12 @@ class RC(BaseChallenge):
             self.drive.move(0,0)
             self.timeout = 0
             print "stopping"
+        if button['l1']:
+            self.drive.lights(on=False)
+            print "Turned headlights off"
+        if button['l2']:
+            self.drive.lights(on=False)
+            print ("Turned headlights on"))
 
     def run(self):
         self.logger.info("running %s challenge" % self.name)
