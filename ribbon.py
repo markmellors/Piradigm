@@ -24,22 +24,20 @@ class StreamProcessor(threading.Thread):
         self.MIN_CONTOUR_AREA = 3
         self.RIBBON_COLOUR = 'yellow'
         self.MARKER_COLOUR = 'red'
+        self.MARKERS_ON_THE_LEFT = False 
         self.found = False
         self.retreated = False
         self.cycle = 0
         self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
-        self.AREA_P = 0.00015
-        self.AREA_D = 0.0003
         self.MAX_SPEED = 0.35
-        self.TURN_P = 6 * self.MAX_SPEED
+        self.TURN_AROUND_SPEED = 1
+        self.TURN_P = 5 * self.MAX_SPEED
         self.TURN_D = 3 * self.MAX_SPEED
         self.colour_bounds = json.load(open('ribbon.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
-        self.BACK_OFF_SPEED = -0.25
-        self.FAST_SEARCH_TURN = 0.7
         self.DRIVING = True
         self.tracking = False
         # Why the one second sleep?
@@ -61,22 +59,10 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    # Image processing function
-    def process_image(self, image, screen):
+    def direction(self, image):
+        '''function to check which side of the ribbon the tape marks are, indicating direction'''
         screen = pygame.display.get_surface()
-        # crop image to speed up processing and avoid false positives
-        image = image[30:60, 0:320]
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
-            screen.fill([0, 0, 0])
-            font = pygame.font.Font(None, 24)
-            screen.blit(frame, (0, 0))
-        image = cv2.medianBlur(image, 5)
-        # Convert the image from 'BGR' to HSV colour space
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        # method will extract the colour we are interested in (between 0 and 180)
+        image = image[0:30, 0:320]
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         limits = self.colour_bounds.get(
             self.MARKER_COLOUR, default_colour_bounds
@@ -84,24 +70,70 @@ class StreamProcessor(threading.Thread):
         imrange = threshold_image(image, limits)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-            screen.blit(frame, (60, 0))
-        found_x, found_y, found_area = find_largest_contour(imrange)
+            screen.blit(frame, (30, 0))
+        marker_x, marker_y, marker_area = find_largest_contour(imrange)
         limits = self.colour_bounds.get(
             self.RIBBON_COLOUR, default_colour_bounds
         )
         imrange = threshold_image(image, limits)
+        ribbon_x, ribbon_y, ribbon_area = find_largest_contour(imrange)
+        if marker_x <> -1 and ribbon_x <> -1:
+             if (marker_x > ribbon_x) == self.MARKERS_ON_THE_LEFT:
+                 #if the markers are the same side as they're meant to be, we're going the right way
+                 direction = True
+             else:
+                 direction = False
+        else:
+            #if either marker or ribbon can't be seen, assume we're ok
+            direction = True
+        return direction
+
+    def turn_around(self):
+        print "marker wrong side of ribbon, turning around"
+        self.drive.move(self.TURN_AROUND_SPEED, 0)
+        time.sleep(0.4)
+        self.drive.move(0, 0)
+
+    # Image processing function
+    def process_image(self, image, screen):
+        screen = pygame.display.get_surface()
+        # crop image to speed up processing and avoid false positives
+        display_image = image[20:50, 0:320]
+        img = cv2.cvtColor(display_image, cv2.COLOR_BGR2RGB)
+        if not self.menu:
+            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+            screen.fill([0, 0, 0])
+            font = pygame.font.Font(None, 24)
+            screen.blit(frame, (0, 0))
+        image = image[0:50,0:320]
+        image = cv2.medianBlur(image, 5)
+        # Convert the image from 'BGR' to HSV colour space
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        ribbon_image = image[20:50, 0:320]
+        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
+        # method will extract the colour we are interested in (between 0 and 180)
+        default_colour_bounds = ((40, 0, 0), (180, 255, 255))
+        limits = self.colour_bounds.get(
+            self.RIBBON_COLOUR, default_colour_bounds
+        )
+        imrange = threshold_image(ribbon_image, limits)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-            screen.blit(frame, (30, 0))
+            screen.blit(frame, (60, 0))
             pygame.display.update()
         ribbon_x, ribbon_y, ribbon_area = find_largest_contour(imrange)
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area]
         else:
             ribbon = None
-        pygame.mouse.set_pos(found_y, 320 - found_x)
+        pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
         # Set drives or report ball status
-        self.follow_ribbon(ribbon)
+        marker_image = image[0:30, 0:320]
+        if self.tracking:
+            if self.direction(marker_image):
+                self.follow_ribbon(ribbon)
+            else:
+                self.turn_around()
 
 
 
@@ -120,13 +152,10 @@ class StreamProcessor(threading.Thread):
                 #if there was a real error last time then do some damping
                 turn -= self.TURN_D *(self.last_t_error - t_error)
             forward = self.MAX_SPEED
-            if self.DRIVING and self.tracking:
-               self.drive.move(turn, forward)
+            self.drive.move(turn, forward)
             self.last_t_error = t_error
         else:
-            if self.DRIVING and self.tracking:
-               self.drive.move(0, -self.MAX_SPEED/2)
-
+            self.drive.move(0, -self.MAX_SPEED/2)
             logger.info('No ribbon')
             # reset PID errors
             self.last_t_error = None
