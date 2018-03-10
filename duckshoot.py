@@ -22,12 +22,13 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.MAX_AREA = 2000  # Largest target to shoot at
         self.MIN_CONTOUR_AREA = 400
+        self.MAX_TARGET_SIZE = 2000
         self.MAX_TARGET_WIDTH = 80
         self.AIM_OFFSET = 45
         self._colour = colour
         self.found = False
         self.cycle = 0
-        self.target = 0
+        self.target_number = 0
         self.menu = False
         self.last_t_error = 0
         self.TURN_P = 0.4
@@ -105,7 +106,7 @@ class StreamProcessor(threading.Thread):
 
         # Go through each contour
         found_area = -1
-        found_x = -1
+        found_x = self.CROP_WIDTH+1
         found_y = -1
         biggest_contour = None
         for contour in contours:
@@ -151,16 +152,16 @@ class StreamProcessor(threading.Thread):
         self.drive.trigger('cock')
         time.sleep(0.5)
         self.found = False
-        self.target += 1
-        print('target %s fired at', self.target)
-        if self.target > 5:
+        self.target_number += 1
+        print('target %s fired at', self.target_number)
+        if self.target_number > 5:
             self.running = False
             print('last target found')
 
     def turn_toward_target(self, target):
         turn = 0.0
-        if self.target:
-            x = self.target[0]
+        if target:
+            x = target[0]
             t_error = (self.image_centre_x - self.AIM_OFFSET - x) / self.image_centre_x
             if abs(self.last_t_error) < 0.015 and abs(t_error) < 0.015:
                 self.drive.move(0, 0)
@@ -187,8 +188,8 @@ class Duckshoot(BaseChallenge):
     """Duck Shoot challenge class"""
 
     def __init__(self, timeout=120, screen=None, joystick=None):
-        self.image_width = 320  # Camera image width
-        self.image_height = 240  # Camera image height
+        self.image_width = 640  # Camera image width
+        self.image_height = 480  # Camera image height
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
