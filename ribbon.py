@@ -87,39 +87,15 @@ class StreamProcessor(threading.Thread):
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
         # method will extract the colour we are interested in (between 0 and 180)
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
-        hsv_lower, hsv_upper = self.colour_bounds.get(
+        limits = self.colour_bounds.get(
             self.RIBBON_COLOUR, default_colour_bounds
         )
-        imrange = cv2.inRange(
-            image,
-            numpy.array(hsv_lower),
-            numpy.array(hsv_upper)
-        )
+        imrange = threshold_image(image, limits)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
             screen.blit(frame, (100, 0))
             pygame.display.update()
-        # Find the contours
-        contourimage, contours, hierarchy = cv2.findContours(
-            imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
-        )
-
-        # Go through each contour
-        found_area = -1
-        found_x = -1
-        found_y = -1
-        biggest_contour = None
-        for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            cx = x + (w / 2)
-            cy = y + (h / 2)
-            area = w * h
-            aspect_ratio = float(h)/w
-            if found_area < area:
-                found_area = area
-                found_x = cx
-                found_y = cy
-                biggest_contour = contour
+        found_x, found_y, found_area = find_largest_contour(imrange)
         if found_area > self.MIN_CONTOUR_AREA:
             ribbon = [found_x, found_y, found_area]
         else:

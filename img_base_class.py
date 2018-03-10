@@ -76,7 +76,8 @@ def find_largest_contour(image):
         )
         # Go through each contour
         found_area = 1
-        found_x = -1 , found_y = -1
+        found_x = -1
+        found_y = -1
         biggest_contour = None
         for contour in contours:
             area = cv2.contourArea(contour)
