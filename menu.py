@@ -28,6 +28,7 @@ from rainbow import Rainbow
 from marker_maze import Maze
 from straightline import StraightLineSpeed
 from pi_noon import PiNoon
+from ribbon import Ribbon
 from approxeng.input.selectbinder import ControllerResource
 import cv2.aruco as aruco
 
@@ -137,6 +138,10 @@ class Menu():
         elif event.label is "Rainbow":
             logger.info("launching Rainbow challenge")
             new_challenge = Rainbow(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
+        elif event.label is "Obstacle":
+            logger.info("launching Ribbon following")
+            new_challenge = Ribbon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Maze":
             logger.info("launching Maze challenge")
