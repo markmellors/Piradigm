@@ -22,7 +22,8 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
-        self._colour = colour
+        self.RIBBON_COLOUR = 'yellow'
+        self.MARKER_COLOUR = 'red'
         self.found = False
         self.retreated = False
         self.cycle = 0
@@ -31,12 +32,12 @@ class StreamProcessor(threading.Thread):
         self.last_t_error = 0
         self.AREA_P = 0.00015
         self.AREA_D = 0.0003
-        self.TURN_P = 0.7
-        self.TURN_D = 0.3
+        self.MAX_SPEED = 0.35
+        self.TURN_P = 6 * self.MAX_SPEED
+        self.TURN_D = 3 * self.MAX_SPEED
         self.colour_bounds = json.load(open('ribbon.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
-        self.MAX_SPEED = 0.4
         self.BACK_OFF_SPEED = -0.25
         self.FAST_SEARCH_TURN = 0.7
         self.DRIVING = True
@@ -73,7 +74,7 @@ class StreamProcessor(threading.Thread):
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         # crop image to speed up processing and avoid false positives
-        image = image[10:80, 0:320]
+        image = image[30:60, 0:320]
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
@@ -87,7 +88,7 @@ class StreamProcessor(threading.Thread):
         # method will extract the colour we are interested in (between 0 and 180)
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         hsv_lower, hsv_upper = self.colour_bounds.get(
-            self.colour, default_colour_bounds
+            self.RIBBON_COLOUR, default_colour_bounds
         )
         imrange = cv2.inRange(
             image,
@@ -120,24 +121,10 @@ class StreamProcessor(threading.Thread):
                 found_y = cy
                 biggest_contour = contour
         if found_area > self.MIN_CONTOUR_AREA:
-            mask = numpy.zeros(image.shape[:2], dtype="uint8")
-            cv2.drawContours(mask, [biggest_contour], -1, 255, -1)
-            mask = cv2.erode(mask, None, iterations=2)
-            mean = cv2.mean(image, mask=mask)[:3]
-            print mean
             ribbon = [found_x, found_y, found_area]
         else:
             ribbon = None
         pygame.mouse.set_pos(found_y, 320 - found_x)
-        if biggest_contour is not None:
-            contour_area = cv2.contourArea(biggest_contour)
-            if self.screen and contour_area > self.MIN_CONTOUR_AREA:
-                font = pygame.font.Font(None, 24)
-                label = font.render(str(contour_area), 1, (250, 250, 250))
-                self.screen.blit(label, (10, 30))
-                # skate wheel at 100mm has area = 7000,
-                # from centre of course is 180, far corner is 5
-                pygame.display.update()
         # Set drives or report ball status
         self.follow_ribbon(ribbon)
 
@@ -162,7 +149,9 @@ class StreamProcessor(threading.Thread):
                self.drive.move(turn, forward)
             self.last_t_error = t_error
         else:
-            self.drive.move(0, 0)
+            if self.DRIVING and self.tracking:
+               self.drive.move(0, -self.MAX_SPEED/2)
+
             logger.info('No ribbon')
             # reset PID errors
             self.last_t_error = None
