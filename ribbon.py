@@ -46,15 +46,6 @@ class StreamProcessor(threading.Thread):
         time.sleep(1)
         self.start()
 
-    @property
-    def colour(self):
-        """Set the target colour property"""
-        return self._colour
-
-    @colour.setter
-    def colour(self, colour):
-        self._colour = colour
-
     def run(self):
         # This method runs in a separate thread
         while not self.terminated:
@@ -88,16 +79,24 @@ class StreamProcessor(threading.Thread):
         # method will extract the colour we are interested in (between 0 and 180)
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         limits = self.colour_bounds.get(
+            self.MARKER_COLOUR, default_colour_bounds
+        )
+        imrange = threshold_image(image, limits)
+        if not self.menu:
+            frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
+            screen.blit(frame, (60, 0))
+        found_x, found_y, found_area = find_largest_contour(imrange)
+        limits = self.colour_bounds.get(
             self.RIBBON_COLOUR, default_colour_bounds
         )
         imrange = threshold_image(image, limits)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-            screen.blit(frame, (100, 0))
+            screen.blit(frame, (30, 0))
             pygame.display.update()
-        found_x, found_y, found_area = find_largest_contour(imrange)
-        if found_area > self.MIN_CONTOUR_AREA:
-            ribbon = [found_x, found_y, found_area]
+        ribbon_x, ribbon_y, ribbon_area = find_largest_contour(imrange)
+        if ribbon_area > self.MIN_CONTOUR_AREA:
+            ribbon = [ribbon_x, ribbon_y, ribbon_area]
         else:
             ribbon = None
         pygame.mouse.set_pos(found_y, 320 - found_x)
