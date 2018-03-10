@@ -73,7 +73,7 @@ class StreamProcessor(threading.Thread):
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         # crop image to speed up processing and avoid false positives
-        image = image[CROP_V_OFFSET:(CROP_V_OFFSET+CROP_HEIGHT), CROP_H_OFFSET:(CROP_H_OFFSET+CROP_WIDTH)]
+        image = image[self.CROP_V_OFFSET:(self.CROP_V_OFFSET+self.CROP_HEIGHT), self.CROP_H_OFFSET:(self.CROP_H_OFFSET+self.CROP_WIDTH)]
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
@@ -136,7 +136,7 @@ class StreamProcessor(threading.Thread):
         # Set drives or report ball status
         if not self.found:
             self.turn_toward_target(target)
-        elif:
+        else:
             self.fire()
 
 
@@ -144,7 +144,7 @@ class StreamProcessor(threading.Thread):
     # as it is challenge logic, not stream processor logic
     # (the clue is that the streamprocessor needs a drivetrain)
 
- def fire(self):
+    def fire(self):
         print('firing')
         self.drive.trigger('fire')
         time.sleep(0.4)
@@ -308,8 +308,6 @@ class Duckshoot(BaseChallenge):
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
                             ctrl['ctrl'].remove(fade=False)
-                if self.processor.retreated:
-                    self.progress_colour()
                 sgc.update(time)
 
         except KeyboardInterrupt:
