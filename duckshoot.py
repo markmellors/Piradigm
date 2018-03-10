@@ -33,7 +33,7 @@ class StreamProcessor(threading.Thread):
         self.AREA_D = 0.0003
         self.TURN_P = 0.7
         self.TURN_D = 0.3
-        self.colour_bounds = json.load(open('dhuckshoot.json'))
+        self.colour_bounds = json.load(open('duckshoot.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.BACK_OFF_AREA = 1000
@@ -225,7 +225,7 @@ class Duckshoot(BaseChallenge):
         time.sleep(0.01)
         self.menu = False
         self.joystick=joystick
-        super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
+        super(Duckshoot, self).__init__(name='Duckshoot', timeout=timeout, logger=logger)
 
     def setup_controls(self):
         # colours
