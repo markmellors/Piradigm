@@ -33,8 +33,14 @@ class StreamProcessor(threading.Thread):
         self.last_t_error = 0
         self.MAX_SPEED = 0.35
         self.TURN_AROUND_SPEED = 1
+        self.ESCAPE_SPEED = 1
+        self.ESCAPE_TIME = 0.2
+        self.REVERSE_SPEED = 0.25
+        self.REVERSE_TURN = 0.1
         self.TURN_P = 5 * self.MAX_SPEED
         self.TURN_D = 3 * self.MAX_SPEED
+        self.MARKER_TIMEOUT = 4
+        self.last_marker_time = time.time()
         self.colour_bounds = json.load(open('ribbon.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
@@ -78,6 +84,7 @@ class StreamProcessor(threading.Thread):
         imrange = threshold_image(image, limits)
         ribbon_x, ribbon_y, ribbon_area = find_largest_contour(imrange)
         if marker_x <> -1 and ribbon_x <> -1:
+             self.last_marker_time = time.time()
              if (marker_x > ribbon_x) == self.MARKERS_ON_THE_LEFT:
                  #if the markers are the same side as they're meant to be, we're going the right way
                  direction = True
@@ -87,6 +94,23 @@ class StreamProcessor(threading.Thread):
             #if either marker or ribbon can't be seen, assume we're ok
             direction = True
         return direction
+
+    def stuck(self):
+        #if its been more than the timeout since we last saw a marker, we're probably stuck
+        if (self.last_marker_time + self.MARKER_TIMEOUT) < time.time():
+            stuck = True
+        else:
+            stuck = False
+        return stuck
+
+    def escape(self):
+        print "escaping"
+        # todo: make escape method varied
+        self.drive.move(0, self.ESCAPE_SPEED)
+        time.sleep(self.ESCAPE_TIME)
+        self.drive.move(0, 0)
+        #reset tiemout
+        self.last_marker_time = time.time()
 
     def turn_around(self):
         print "marker wrong side of ribbon, turning around"
@@ -131,9 +155,15 @@ class StreamProcessor(threading.Thread):
         marker_image = image[0:30, 0:320]
         if self.tracking:
             if self.direction(marker_image):
-                self.follow_ribbon(ribbon)
+                if not self.stuck():
+                    self.follow_ribbon(ribbon)
+                else:
+                    self.escape()
             else:
-                self.turn_around()
+                if not self.stuck():
+                    self.turn_around()
+                else:
+                    self.escape()
 
 
 
@@ -155,7 +185,7 @@ class StreamProcessor(threading.Thread):
             self.drive.move(turn, forward)
             self.last_t_error = t_error
         else:
-            self.drive.move(0, -self.MAX_SPEED/2)
+            self.drive.move(self.REVERSE_TURN, -self.REVERSE_SPEED)
             logger.info('No ribbon')
             # reset PID errors
             self.last_t_error = None
@@ -231,6 +261,8 @@ class Ribbon(BaseChallenge):
         if button['r1']:
             self.timeout = 0
         if button['r2']:
+            #reset marker watch time, then go
+            self.processor.last_marker_time = time.time()
             self.processor.tracking = True
             print "Starting"
         if button['l1']:
