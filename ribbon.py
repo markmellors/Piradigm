@@ -5,7 +5,7 @@ import json
 from my_button import MyScale
 # Load all standard tools for image processing challenges
 from img_base_class import *
-
+import random
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -106,10 +106,17 @@ class StreamProcessor(threading.Thread):
     def escape(self):
         print "escaping"
         # todo: make escape method varied
-        self.drive.move(0, self.ESCAPE_SPEED)
-        time.sleep(self.ESCAPE_TIME)
+        if random.choice([True, False]):
+            self.drive.move(0, self.ESCAPE_SPEED)
+            time.sleep(self.ESCAPE_TIME)
+        else:
+            if random.choice([True, False]):
+                self.drive.move(self.ESCAPE_SPEED, 0)
+            else:
+                self.drive.move(-self.ESCAPE_SPEED, 0)
+            time.sleep(self.ESCAPE_TIME)
         self.drive.move(0, 0)
-        #reset tiemout
+        #reset timeout
         self.last_marker_time = time.time()
 
     def turn_around(self):
