@@ -25,6 +25,7 @@ from sgc.locals import *
 from my_button import MyButton
 from remote_control import RC
 from rainbow import Rainbow
+from duckshoot import Duckshoot
 from marker_maze import Maze
 from straightline import StraightLineSpeed
 from pi_noon import PiNoon
@@ -137,6 +138,9 @@ class Menu():
         elif event.label is "Rainbow":
             logger.info("launching Rainbow challenge")
             new_challenge = Rainbow(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+        elif event.label is "Shooting":
+            logger.info("launching Duck Shoot challenge")
+            new_challenge = Duckshoot(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Maze":
             logger.info("launching Maze challenge")
