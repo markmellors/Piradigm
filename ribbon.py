@@ -41,7 +41,8 @@ class StreamProcessor(threading.Thread):
         self.TURN_D = 3 * self.MAX_SPEED
         self.MARKER_TIMEOUT = 4
         self.last_marker_time = time.time()
-        self.colour_bounds = json.load(open('ribbon.json'))
+        with open('ribbon.json') as json_file:
+            self.colour_bounds = json.load(json_file)
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.DRIVING = True
