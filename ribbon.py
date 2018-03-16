@@ -36,7 +36,7 @@ class StreamProcessor(threading.Thread):
         self.isstuck = False
         self.TURN_AROUND_SPEED = 1
         self.ESCAPE_SPEED = 1
-        self.ESCAPE_TIME = 0.1
+        self.ESCAPE_TIME = 0.2
         self.REVERSE_SPEED = 0.6
         self.REVERSE_TURN = 0.1
         self.TURN_P = 4 * self.MAX_SPEED
