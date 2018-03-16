@@ -31,10 +31,12 @@ class StreamProcessor(threading.Thread):
         self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
+        self.last_before_that_t_error = 0
         self.MAX_SPEED = 0.35
+        self.isstuck = False
         self.TURN_AROUND_SPEED = 1
         self.ESCAPE_SPEED = 1
-        self.ESCAPE_TIME = 0.2
+        self.ESCAPE_TIME = 0.05
         self.REVERSE_SPEED = 0.25
         self.REVERSE_TURN = 0.1
         self.TURN_P = 5 * self.MAX_SPEED
@@ -97,11 +99,12 @@ class StreamProcessor(threading.Thread):
 
     def stuck(self):
         #if its been more than the timeout since we last saw a marker, we're probably stuck
-        if (self.last_marker_time + self.MARKER_TIMEOUT) < time.time():
-            stuck = True
+        if (self.last_marker_time + self.MARKER_TIMEOUT) < time.time() or ((self.last_t_error == self.last_before_that_t_error) and self.last_t_error is not None and self.last_t_error <> 0 and not self.isstuck):
+            print self.last_t_error, self.last_before_that_t_error
+            self.isstuck = True
         else:
-            stuck = False
-        return stuck
+            self.isstuck = False
+        return self.isstuck
 
     def escape(self):
         print "escaping"
@@ -183,6 +186,7 @@ class StreamProcessor(threading.Thread):
         turn = 0.0
         if ribbon:
             x = ribbon[0]
+            print ("ribbon at %i" % (x))
             t_error  = (self.image_centre_x - x) / self.image_centre_x
             turn = self.TURN_P * t_error
             if self.last_t_error is not None:
@@ -190,12 +194,14 @@ class StreamProcessor(threading.Thread):
                 turn -= self.TURN_D *(self.last_t_error - t_error)
             forward = self.MAX_SPEED
             self.drive.move(turn, forward)
+            self.last_before_that_t_error = self.last_t_error
             self.last_t_error = t_error
         else:
             self.drive.move(self.REVERSE_TURN, -self.REVERSE_SPEED)
             logger.info('No ribbon')
             # reset PID errors
             self.last_t_error = None
+            self.last_before_that_t_error = None
 
 
 
