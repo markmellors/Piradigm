@@ -91,8 +91,11 @@ def find_largest_contour(image):
 
 def colour_of_contour(image, contour):
     '''Returns the mean of each channel of a given contour in an image'''
-    mask = numpy.zeros(image.shape[:2], dtype="uint8")
-    cv2.drawContours(mask, [contour], -1, 255, -1)
-    mask = cv2.dilate(mask, None, iterations=2)
-    mean = cv2.mean(image, mask=mask)[:3]
+    if contour is not None:
+        mask = numpy.zeros(image.shape[:2], dtype="uint8")
+        cv2.drawContours(mask, [contour], -1, 255, -1)
+        mask = cv2.dilate(mask, None, iterations=2)
+        mean = cv2.mean(image, mask=mask)[:3]
+    else:
+        mean = None
     return mean

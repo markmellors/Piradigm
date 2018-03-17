@@ -79,12 +79,12 @@ class StreamProcessor(threading.Thread):
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
             screen.blit(frame, (30, 0))
-        marker_x, marker_y, marker_area = find_largest_contour(imrange)
+        marker_x, marker_y, marker_area, marker_contour = find_largest_contour(imrange)
         limits = self.colour_bounds.get(
             self.RIBBON_COLOUR, default_colour_bounds
         )
         imrange = threshold_image(image, limits)
-        ribbon_x, ribbon_y, ribbon_area = find_largest_contour(imrange)
+        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(imrange)
         if marker_x <> -1 and ribbon_x <> -1:
              self.last_marker_time = time.time()
              if (marker_x > ribbon_x) == self.MARKERS_ON_THE_LEFT:
@@ -155,7 +155,8 @@ class StreamProcessor(threading.Thread):
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
             screen.blit(frame, (60, 0))
             pygame.display.update()
-        ribbon_x, ribbon_y, ribbon_area = find_largest_contour(imrange)
+        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(imrange)
+        print colour_of_contour(image, ribbon_contour)
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area]
         else:
