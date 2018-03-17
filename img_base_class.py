@@ -70,7 +70,7 @@ def threshold_image(image, limits):
         return mask
 
 def find_largest_contour(image):
-        '''takes a binary image and returns coordinates and size of largest contour'''
+        '''takes a binary image and returns coordinates, size and contourobject of largest contour'''
         contourimage, contours, hierarchy = cv2.findContours(
             image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
         )
@@ -87,7 +87,7 @@ def find_largest_contour(image):
                 found_x = int(M['m10']/M['m00'])
                 found_y = int(M['m01']/M['m00'])
                 biggest_contour = contour
-        return found_x, found_y, found_area
+        return found_x, found_y, found_area, biggest_contour
 
 def colour_of_contour(image, contour):
     '''Returns the mean of each channel of a given contour in an image'''
