@@ -22,7 +22,7 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
-        self.RIBBON_COLOUR = 'yellow'
+        self.RIBBON_COLOUR = 'blue'
         self.MARKER_COLOUR = 'red'
         self.MARKERS_ON_THE_LEFT = False 
         self.found = False
