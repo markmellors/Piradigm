@@ -108,10 +108,7 @@ class StreamProcessor(threading.Thread):
         return ((lower[0][0], lower[1][0], lower[2][0]), (upper[0][0], upper[1][0], upper[2][0]))
 
     def seek(self):
-        if random.choice([True, False]):
-            self.drive.move(self.TURN_SPEED, 0)
-        else:
-            self.drive.move(-self.TURN_SPEED, 0)
+        self.drive.move(self.TURN_SPEED, 0)
         time.sleep(self.TURN_TIME)
         self.drive.move(0,0)
         time.sleep(self.SETTLE_TIME)
