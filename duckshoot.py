@@ -30,8 +30,8 @@ class StreamProcessor(threading.Thread):
         self.target_number = 0
         self.menu = False
         self.last_t_error = 0
-        self.TURN_P = 0.4
-        self.TURN_D = 0.2
+        self.TURN_P = 0.8
+        self.TURN_D = 0.4
         self.CROP_WIDTH = 320
         self.CROP_HEIGHT = 60
         self.image_centre_x = self.CROP_WIDTH / 2.0
