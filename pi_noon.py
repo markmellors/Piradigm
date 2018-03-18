@@ -12,24 +12,25 @@ class StreamProcessor(threading.Thread):
         self.image_centre_x = self.image_width / 2.0
         self.image_centre_y = self.image_height / 2.0
         self.drive = drive
+        self.drive.should_normalise_motor_speed = False
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
         self.DRIVING = True
-        self.TURN_TIME = 0.05
+        self.TURN_TIME = 0.1
         self.TURN_SPEED = 1
         self.SETTLE_TIME = 0.05
         self.MIN_BALLOON_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
-        self.TURN_HEIGHT = 23
+        self.TURN_HEIGHT = 18
         self.BACK_AWAY_START = 2000
         self.BACK_AWAY_STOP = 1500
         self.back_away = False
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.FLOOR_LIMITS  = ((85, 190, 80), (115, 255, 220)) #<yellow, red tablecloth> ((100, 150, 80), (130, 255, 220))
+        self.FLOOR_LIMITS  =  ((100, 150, 80), (130, 255, 220))#<red, yellow>  ((85, 190, 80), (115, 255, 220))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
@@ -202,7 +203,7 @@ class StreamProcessor(threading.Thread):
                 floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
                 if floor_y < self.TURN_HEIGHT:
                     self.edge = True
-                    print "no opponent found and close to edge, turning"
+                    print ("no opponent found and close to edge, turning %s" % (floor_y))
                     if self.DRIVING and self.tracking:
                         self.seek()
                 else:
@@ -300,6 +301,7 @@ class PiNoon(BaseChallenge):
         finally:
             # Tell each thread to stop, and wait for them to end
             self.logger.info("stopping threads")
+            self.drive.should_normalise_motor_speed = True
             self.image_capture_thread.terminated = True
             self.image_capture_thread.join()
             self.processor.terminated = True
