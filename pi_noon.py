@@ -1,4 +1,5 @@
 from img_base_class import *
+import random
 import cv2.aruco as aruco
 from approxeng.input.selectbinder import ControllerResource
 
@@ -33,6 +34,7 @@ class StreamProcessor(threading.Thread):
         self.tracking = False
         self.last_t_error = 0
         self.STRAIGHT_SPEED = 0.4
+        self.TURN_AROUND_SPEED = 1
         self.TURN_P = 2 * self.STRAIGHT_SPEED
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
@@ -80,6 +82,12 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_upper)
         )
         return mask
+
+    def turn_around(self):
+        print "turning around"
+        self.drive.move(self.TURN_AROUND_SPEED, 0)
+        time.sleep(0.4)
+        self.drive.move(0, 0)
 
     def get_limits(self, image, sigmas):
         """function to use the mean and standard deviation of an images
@@ -203,7 +211,10 @@ class StreamProcessor(threading.Thread):
                     t_error = (self.image_centre_x - floor_x) / self.image_centre_x
                     turn = self.TURN_P * t_error
                     if self.DRIVING and self.tracking:
-                        self.drive.move(turn, self.STRAIGHT_SPEED)
+                        if random.choice([True, False, False, False, False]):
+                            self.turn_around()
+                        else:
+                            self.drive.move(turn, self.STRAIGHT_SPEED)
         if self.tracking:
             image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
             if self.found:
