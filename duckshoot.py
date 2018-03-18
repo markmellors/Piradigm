@@ -13,9 +13,8 @@ class StreamProcessor(threading.Thread):
         super(StreamProcessor, self).__init__()
         self.camera = camera
         image_width, image_height = self.camera.resolution
-        self.image_centre_x = image_width / 2.0
-        self.image_centre_y = image_height / 2.0
         self.drive = drive
+        self.drive.should_normalise_motor_speed = False
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
@@ -35,6 +34,8 @@ class StreamProcessor(threading.Thread):
         self.TURN_D = 0.2
         self.CROP_WIDTH = 320
         self.CROP_HEIGHT = 60
+        self.image_centre_x = self.CROP_WIDTH / 2.0
+        self.image_centre_y = self.CROP_HEIGHT / 2.0
         self.CROP_H_OFFSET = 160
         self.CROP_V_OFFSET = 180
         self.colour_bounds = json.load(open('duckshoot.json'))
@@ -172,7 +173,7 @@ class StreamProcessor(threading.Thread):
             else:
                 forward = -0.01
                 turn = self.TURN_P * t_error - self.TURN_D *(self.last_t_error - t_error)
-                turn = min(max(-0.2, turn), 0.2)
+                turn = min(max(-0.25, turn), 0.25)
                 self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 print('hunting %s', t_error)
@@ -328,6 +329,7 @@ class Duckshoot(BaseChallenge):
             self.camera.close()
             self.camera = None
             self.logger.info("stopping drive")
+            self.should_normalise_motor_speed = True
             self.drive.stop()
             pygame.mouse.set_visible(False)
             self.logger.info("bye")
