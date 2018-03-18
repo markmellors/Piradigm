@@ -86,7 +86,10 @@ class StreamProcessor(threading.Thread):
 
     def turn_around(self):
         print "turning around"
-        self.drive.move(self.TURN_AROUND_SPEED, 0)
+        if random.choice([True, False]):
+            self.drive.move(self.TURN_AROUND_SPEED, 0)
+        else:
+            self.drive.move(-self.TURN_AROUND_SPEED, 0)
         time.sleep(0.4)
         self.drive.move(0, 0)
 
@@ -105,7 +108,10 @@ class StreamProcessor(threading.Thread):
         return ((lower[0][0], lower[1][0], lower[2][0]), (upper[0][0], upper[1][0], upper[2][0]))
 
     def seek(self):
-        self.drive.move(self.TURN_SPEED, 0)
+        if random.choice([True, False]):
+            self.drive.move(self.TURN_SPEED, 0)
+        else:
+            self.drive.move(-self.TURN_SPEED, 0)
         time.sleep(self.TURN_TIME)
         self.drive.move(0,0)
         time.sleep(self.SETTLE_TIME)
