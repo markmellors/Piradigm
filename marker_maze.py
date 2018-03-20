@@ -39,6 +39,8 @@ class StreamProcessor(threading.Thread):
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
+        self.driving = False
+        self.aiming = False
         self.finished = False
         logger.info("setup complete, looking")
         time.sleep(1)
@@ -120,11 +122,10 @@ class StreamProcessor(threading.Thread):
                     #if there was a real error last time then do some damping
                     turn -= self.TURN_D *(self.last_t_error - self.t_error)
                 turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
-                #if we're rate limiting the turn, go slow
-                if abs(turn) == self.MAX_TURN_SPEED:
-                    self.drive.move (turn, self.STRAIGHT_SPEED)
-                else:
-                    self.drive.move (turn, self.STRAIGHT_SPEED)
+                if self.driving:
+                    self.drive.move(turn, self.STRAIGHT_SPEED)
+                elif self.aiming:
+                    self.drive.move(turn, 0)
                 self.last_t_error = self.t_error
             else:
                 logger.info("looking for marker %d" % self.turn_number)
@@ -184,6 +185,22 @@ class Maze(BaseChallenge):
         self.dict = markers
         super(Maze, self).__init__(name='Maze', timeout=timeout, logger=logger)
 
+def joystick_handler(self, button):
+        if button['r1']:
+            print "Exiting"
+            self.timeout = 0
+        if button['r2']:
+            self.processor.driving = True
+            print "Starting"
+        if button['l1']:
+            self.processor.driving = False
+            self.processor.aiming = False
+            self.drive.move(0,0)
+            print "Stopping"
+        if button['l2']:
+            self.processor.driving = False
+            self.processor.aiming = True
+            print ("Aiming")
 
     def run(self):
         # Startup sequence
@@ -213,6 +230,8 @@ class Maze(BaseChallenge):
         try:
             while not self.should_die:
                 time.sleep(0.1)
+                if self.joystick.connected:
+                    self.joystick_handler(self.joystick.check_presses())
                 if self.processor.finished:
                     self.timeout = 0
 

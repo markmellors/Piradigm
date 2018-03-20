@@ -6,6 +6,8 @@ from approxeng.input.selectbinder import ControllerResource
 import math
 import time
 import logging
+import pygame
+from pygame.locals import*
 from base_challenge import BaseChallenge
 
 logger = logging.getLogger('piradigm.' + __name__)
@@ -23,11 +25,24 @@ class RC(BaseChallenge):
         else:    
             self.joystick = joystick
 
+    def joystick_handler(self, button):
+        if button['r1']:
+            self.drive.move(0,0)
+            self.timeout = 0
+            print "stopping"
+        if button['l1']:
+            self.drive.lights(on=False)
+            print "Turned headlights off"
+        if button['l2']:
+            self.drive.lights(on=True)
+            print "Turned headlights on"
+
     def run(self):
         self.logger.info("running %s challenge" % self.name)
         try:
             try:
                 while self.joystick.connected and not self.should_die:
+                    self.joystick_handler(self.joystick.check_presses())
                     rx, ry = self.joystick['rx', 'ry']
                     logger.debug("joystick L/R: %s, %s" % (rx, ry))
                     rx = self.exp(rx, self.exponential)
@@ -50,6 +65,7 @@ class RC(BaseChallenge):
             self.logger.info("stopping")
             self.drive.stop()
             self.logger.info("bye")
+            pygame.event.post(pygame.event.Event(USEREVENT+1,message="challenge finished"))
 
     def constrain(self, val, min_val, max_val):
         return min(max_val, max(min_val, val))
