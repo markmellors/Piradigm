@@ -15,7 +15,7 @@ class StreamProcessor(threading.Thread):
         image_width, image_height = self.camera.resolution
         self.image_centre_x = image_width / 2.0
         self.image_centre_y = image_height / 2.0
-        self.CROP_HEIGHT = 100
+        self.CROP_HEIGHT = 80
         self.drive = drive
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
@@ -26,7 +26,8 @@ class StreamProcessor(threading.Thread):
         self.ribbon_colour = 'blue'
         self.MARKER_COLOUR = 'purple'
         self.MARKERS_ON_THE_LEFT = False 
-        self.MARKER_CROP_HEIGHT = 50
+        self.MARKER_CROP_HEIGHT = 40
+        self.MARKER_CROP_WIDTH = 100
         self.found = False
         self.retreated = False
         self.cycle = 0
@@ -173,7 +174,7 @@ class StreamProcessor(threading.Thread):
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
         # Set drives or report ball status
-        marker_image = image[0:self.MARKER_CROP_HEIGHT, 0:320]
+        marker_image = image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROPWIDTH/2):(self.image_centre_x+self.MARKER_CROP_WIDTH/2)]
         limits = self.colour_bounds.get(
             self.MARKER_COLOUR, default_colour_bounds
         )
