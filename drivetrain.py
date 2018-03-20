@@ -24,7 +24,16 @@ class DriveTrain():
         self.pz.init()
         time.sleep(0.5)
         self.motor_max = 100
-        self.FULL_WHITE = (220, 255, 235)
+        self.colours = {    #rgb
+            'FULL_WHITE': (255, 240, 180),
+            'PINKISH': (50, 255, 255),  
+            'GREEN': (255, 0, 0),  #green?  line black
+            'YELLOW':(255, 255, 0), #yellowish, line black
+            'RED': (0, 255, 0), #red, line black
+            'MAGENTA': (0, 255, 255), #magenta, line shows up ok
+            'BLUE': (0, 0, 255), #blue, terrible everything shows up
+            'CYAN':(255, 0, 255), #everything shows up
+        }
         self.OFF = (0, 0, 0)
         # battery voltage check constants
         self.BATT_CONSTANTS = {
@@ -127,7 +136,7 @@ class DriveTrain():
 
     def lights(self, on):
         if on:
-            self.pz.setAllPixels(*self.FULL_WHITE)
+            self.pz.setAllPixels(*self.colours.get('PINKISH'))
         else:
             self.pz.setAllPixels(*self.OFF)
 
