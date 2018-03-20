@@ -306,7 +306,7 @@ class Ribbon(BaseChallenge):
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
-
+        self.drive.lights(True)
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
@@ -368,6 +368,7 @@ class Ribbon(BaseChallenge):
             self.camera.close()
             self.camera = None
             self.logger.info("stopping drive")
+            self.drive.lights(False)
             self.drive.stop()
             pygame.mouse.set_visible(False)
             self.logger.info("bye")
