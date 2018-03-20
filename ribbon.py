@@ -22,7 +22,7 @@ class StreamProcessor(threading.Thread):
         self.event = threading.Event()
         self.terminated = False
         self.MAX_AREA = 4000  # Largest target to move towards
-        self.MIN_CONTOUR_AREA = 3
+        self.MIN_CONTOUR_AREA = 10
         self.ribbon_colour = 'blue'
         self.MARKER_COLOUR = 'purple'
         self.MARKERS_ON_THE_LEFT = False 
@@ -84,14 +84,14 @@ class StreamProcessor(threading.Thread):
 
     def direction(self, marker, ribbon):
         '''function to check which side of the ribbon the tape marks are, indicating direction'''
-        marker_x, marker_y, marker_area, marker_contour = marker
-        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = ribbon
-        if marker_x <> -1 and ribbon_x <> -1:
-             self.last_marker_time = time.time()
-             if (marker_x > ribbon_x) == self.MARKERS_ON_THE_LEFT:
+        if marker is not None and ribbon is not None:
+            marker_x = marker[0]
+            ribbon_x = ribbon[0]
+            self.last_marker_time = time.time()
+            if (marker_x > ribbon_x) == self.MARKERS_ON_THE_LEFT:
                  #if the markers are the same side as they're meant to be, we're going the right way
                  direction = True
-             else:
+            else:
                  direction = False
         else:
             #if either marker or ribbon can't be seen, assume we're ok
@@ -174,7 +174,7 @@ class StreamProcessor(threading.Thread):
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
         # Set drives or report ball status
-        marker_image = image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROPWIDTH/2):(self.image_centre_x+self.MARKER_CROP_WIDTH/2)]
+        marker_image = image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
         limits = self.colour_bounds.get(
             self.MARKER_COLOUR, default_colour_bounds
         )
@@ -184,7 +184,7 @@ class StreamProcessor(threading.Thread):
             marker = [marker_x, marker_y, marker_area, marker_contour]
         else:
             marker = None
-        self.mode[self.mode_number](ribbon, marker, image)
+        self.mode[self.mode_number](marker, ribbon, image)
 
 
 
@@ -195,7 +195,7 @@ class StreamProcessor(threading.Thread):
     # Set the motor speed from the ball position
     def follow_ribbon(self, ribbon):
         turn = 0.0
-        if ribbon:
+        if ribbon is not None:
             x = ribbon[0]
             print ("ribbon at %i" % (x))
             t_error  = (self.image_centre_x - x) / self.image_centre_x
@@ -208,11 +208,15 @@ class StreamProcessor(threading.Thread):
             self.last_before_that_t_error = self.last_t_error
             self.last_t_error = t_error
         else:
-            self.drive.move(self.REVERSE_TURN, -self.REVERSE_SPEED)
+            if self.last_t_error is not None:
+                turn = self.TURN_P * self.last_t_error
+                self.drive.move(turn, 0)
+            else:
+                self.drive.move(0, 0)
             logger.info('No ribbon')
             # reset PID errors
-            self.last_t_error = None
-            self.last_before_that_t_error = None
+            #self.last_t_error = None
+            #self.last_before_that_t_error = None
 
 
 
