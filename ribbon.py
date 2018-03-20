@@ -15,6 +15,7 @@ class StreamProcessor(threading.Thread):
         image_width, image_height = self.camera.resolution
         self.image_centre_x = image_width / 2.0
         self.image_centre_y = image_height / 2.0
+        self.CROP_HEIGHT = 100
         self.drive = drive
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
@@ -22,12 +23,15 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
-        self.RIBBON_COLOUR = 'blue'
-        self.MARKER_COLOUR = 'red'
+        self.RIBBON_colour = 'blue'
+        self.MARKER_COLOUR = 'purple'
         self.MARKERS_ON_THE_LEFT = False 
+        self.MARKER_CROP_HEIGHT = 50
         self.found = False
         self.retreated = False
         self.cycle = 0
+        self.mode[self.ribbon_following, self.purple, self.turntable, self.block_pushing]
+        self.mode_number = 0
         self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
@@ -129,43 +133,9 @@ class StreamProcessor(threading.Thread):
         time.sleep(self.TURN_AROUND_TIME)
         self.drive.move(0, 0)
 
-    # Image processing function
-    def process_image(self, image, screen):
-        screen = pygame.display.get_surface()
-        # crop image to speed up processing and avoid false positives
-        display_image = image[20:50, 0:320]
-        img = cv2.cvtColor(display_image, cv2.COLOR_BGR2RGB)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
-            screen.fill([0, 0, 0])
-            font = pygame.font.Font(None, 24)
-            screen.blit(frame, (0, 0))
-        image = image[0:50,0:320]
-        image = cv2.medianBlur(image, 5)
-        # Convert the image from 'BGR' to HSV colour space
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        ribbon_image = image[20:50, 0:320]
-        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        # method will extract the colour we are interested in (between 0 and 180)
-        default_colour_bounds = ((40, 0, 0), (180, 255, 255))
-        limits = self.colour_bounds.get(
-            self.RIBBON_COLOUR, default_colour_bounds
-        )
-        imrange = threshold_image(ribbon_image, limits)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-            screen.blit(frame, (60, 0))
-            pygame.display.update()
-        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(imrange)
-        print colour_of_contour(image, ribbon_contour)
-        if ribbon_area > self.MIN_CONTOUR_AREA:
-            ribbon = [ribbon_x, ribbon_y, ribbon_area]
-        else:
-            ribbon = None
-        pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
-        # Set drives or report ball status
-        marker_image = image[0:30, 0:320]
+    def ribbon_following(self, marker, ribbon, image):
         if self.tracking:
+            handler[self.mode_number](
             if self.direction(marker_image):
                 if not self.stuck():
                     self.follow_ribbon(ribbon)
@@ -176,6 +146,50 @@ class StreamProcessor(threading.Thread):
                     self.turn_around()
                 else:
                     self.escape()
+
+    # Image processing function
+    def process_image(self, image, screen):
+        screen = pygame.display.get_surface()
+        # crop image to speed up processing and avoid false positives
+        image = image[0:self.CROP_HEIGHT, 0:320]
+        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        if not self.menu:
+            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+            screen.fill([0, 0, 0])
+            font = pygame.font.Font(None, 24)
+            screen.blit(frame, (0, 0))
+        blur_image = cv2.medianBlur(image, 3)
+        # Convert the image from 'BGR' to HSV colour space
+        blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
+        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
+        # method will extract the colour we are interested in (between 0 and 180)
+        default_colour_bounds = ((40, 0, 0), (180, 255, 255))
+        limits = self.colour_bounds.get(
+            self.ribbon_colour, default_colour_bounds
+        )
+        ribbon_mask = threshold_image(blur_image, limits)
+        if not self.menu:
+            frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
+            screen.blit(frame, (self.CROP_HEIGHT, 0))
+            pygame.display.update()
+        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_mask)
+        if ribbon_area > self.MIN_CONTOUR_AREA:
+            ribbon = [ribbon_x, ribbon_y, ribbon_area]
+        else:
+            ribbon = None
+        pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
+        # Set drives or report ball status
+        marker_image = image[0:self.MARKER_CROP_HEIGHT, 0:320]
+        limits = self.colour_bounds.get(
+            self.MARKER_COLOUR, default_colour_bounds
+        )
+        marker_mask = threshold_image(marker_image, limits)
+        marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_mask)
+        if marker_area > self.MIN_CONTOUR_AREA:
+            marker = [ribbon_x, ribbon_y, ribbon_area, marker_contour]
+        else:
+            marker = None
+        mode[self.mode_number](ribbon, marker, image)
 
 
 
