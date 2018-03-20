@@ -185,7 +185,7 @@ class Maze(BaseChallenge):
         self.dict = markers
         super(Maze, self).__init__(name='Maze', timeout=timeout, logger=logger)
 
-def joystick_handler(self, button):
+    def joystick_handler(self, button):
         if button['r1']:
             print "Exiting"
             self.timeout = 0

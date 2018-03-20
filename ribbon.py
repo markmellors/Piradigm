@@ -23,14 +23,14 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
-        self.RIBBON_colour = 'blue'
+        self.ribbon_colour = 'blue'
         self.MARKER_COLOUR = 'purple'
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 50
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.mode[self.ribbon_following, self.purple, self.turntable, self.block_pushing]
+        self.mode = [self.ribbon_following, self.purple, self.turntable, self.block_pushing]
         self.mode_number = 0
         self.menu = False
         self.last_a_error = 0
@@ -72,24 +72,19 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    def direction(self, image):
+    def purple(self):
+        pass
+
+    def turntable(self):
+        pass
+
+    def block_pushing(self):
+        pass
+
+    def direction(self, marker, ribbon):
         '''function to check which side of the ribbon the tape marks are, indicating direction'''
-        screen = pygame.display.get_surface()
-        image = image[0:30, 0:320]
-        default_colour_bounds = ((40, 0, 0), (180, 255, 255))
-        limits = self.colour_bounds.get(
-            self.MARKER_COLOUR, default_colour_bounds
-        )
-        imrange = threshold_image(image, limits)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-            screen.blit(frame, (30, 0))
-        marker_x, marker_y, marker_area, marker_contour = find_largest_contour(imrange)
-        limits = self.colour_bounds.get(
-            self.RIBBON_COLOUR, default_colour_bounds
-        )
-        imrange = threshold_image(image, limits)
-        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(imrange)
+        marker_x, marker_y, marker_area, marker_contour = marker
+        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = ribbon
         if marker_x <> -1 and ribbon_x <> -1:
              self.last_marker_time = time.time()
              if (marker_x > ribbon_x) == self.MARKERS_ON_THE_LEFT:
@@ -135,8 +130,7 @@ class StreamProcessor(threading.Thread):
 
     def ribbon_following(self, marker, ribbon, image):
         if self.tracking:
-            handler[self.mode_number](
-            if self.direction(marker_image):
+            if self.direction(marker, ribbon):
                 if not self.stuck():
                     self.follow_ribbon(ribbon)
                 else:
@@ -174,7 +168,7 @@ class StreamProcessor(threading.Thread):
             pygame.display.update()
         ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_mask)
         if ribbon_area > self.MIN_CONTOUR_AREA:
-            ribbon = [ribbon_x, ribbon_y, ribbon_area]
+            ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
         else:
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
@@ -186,10 +180,10 @@ class StreamProcessor(threading.Thread):
         marker_mask = threshold_image(marker_image, limits)
         marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_mask)
         if marker_area > self.MIN_CONTOUR_AREA:
-            marker = [ribbon_x, ribbon_y, ribbon_area, marker_contour]
+            marker = [marker_x, marker_y, marker_area, marker_contour]
         else:
             marker = None
-        mode[self.mode_number](ribbon, marker, image)
+        self.mode[self.mode_number](ribbon, marker, image)
 
 
 
