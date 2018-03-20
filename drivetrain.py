@@ -24,7 +24,7 @@ class DriveTrain():
         self.pz.init()
         time.sleep(0.5)
         self.motor_max = 100
-        self.FULL_WHITE = (255, 255, 220)
+        self.FULL_WHITE = (220, 255, 235)
         self.OFF = (0, 0, 0)
         # battery voltage check constants
         self.BATT_CONSTANTS = {
