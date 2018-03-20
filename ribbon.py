@@ -37,7 +37,7 @@ class StreamProcessor(threading.Thread):
         self.last_a_error = 0
         self.last_t_error = 0
         self.last_before_that_t_error = 0
-        self.MAX_SPEED = 0.8
+        self.MAX_SPEED = 0.3
         self.isstuck = False
         self.TURN_AROUND_SPEED = 1
         self.TURN_AROUND_TIME = 0.4
@@ -47,7 +47,7 @@ class StreamProcessor(threading.Thread):
         self.REVERSE_TURN = 0.1
         self.TURN_P = 4 * self.MAX_SPEED
         self.TURN_D = 2 * self.MAX_SPEED
-        self.MARKER_TIMEOUT = 4
+        self.MARKER_TIMEOUT = 40
         self.last_marker_time = time.time()
         self.colour_bounds = json.load(open('ribbon.json'))
         self.hsv_lower = (0, 0, 0)
@@ -110,15 +110,17 @@ class StreamProcessor(threading.Thread):
     def escape(self):
         print "escaping"
         # todo: make escape method varied
-        if random.choice([True, False]):
-            self.drive.move(0, self.ESCAPE_SPEED)
-            time.sleep(self.ESCAPE_TIME)
-        else:
-            if random.choice([True, False]):
-                self.drive.move(self.ESCAPE_SPEED, 0)
-            else:
-                self.drive.move(-self.ESCAPE_SPEED, 0)
-            time.sleep(self.ESCAPE_TIME)
+        self.drive.move(0, self.ESCAPE_SPEED)
+        time.sleep(self.ESCAPE_TIME)
+ #       if random.choice([True, False]):
+ #           self.drive.move(0, self.ESCAPE_SPEED)
+ #           time.sleep(self.ESCAPE_TIME)
+ #       else:
+ #           if random.choice([True, False]):
+ #               self.drive.move(self.ESCAPE_SPEED, 0)
+ #           else:
+ #               self.drive.move(-self.ESCAPE_SPEED, 0)
+ #           time.sleep(self.ESCAPE_TIME)
         self.drive.move(0, 0)
         #reset timeout
         self.last_marker_time = time.time()
@@ -209,10 +211,11 @@ class StreamProcessor(threading.Thread):
             self.last_t_error = t_error
         else:
             if self.last_t_error is not None:
-                turn = self.TURN_P * self.last_t_error
+                #if we've lost the ribbon and we had it, look in the direction it was last
+                turn = 0.35 *  self.last_t_error/abs(self.last_t_error)
                 self.drive.move(turn, 0)
             else:
-                self.drive.move(0, 0)
+                self.drive.move(0.35, 0)
             logger.info('No ribbon')
             # reset PID errors
             #self.last_t_error = None
