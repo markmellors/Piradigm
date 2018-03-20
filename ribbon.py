@@ -35,6 +35,7 @@ class StreamProcessor(threading.Thread):
         self.MAX_SPEED = 0.8
         self.isstuck = False
         self.TURN_AROUND_SPEED = 1
+        self.TURN_AROUND_TIME = 0.4
         self.ESCAPE_SPEED = 1
         self.ESCAPE_TIME = 0.2
         self.REVERSE_SPEED = 0.6
@@ -125,7 +126,7 @@ class StreamProcessor(threading.Thread):
     def turn_around(self):
         print "marker wrong side of ribbon, turning around"
         self.drive.move(self.TURN_AROUND_SPEED, 0)
-        time.sleep(0.4)
+        time.sleep(self.TURN_AROUND_TIME)
         self.drive.move(0, 0)
 
     # Image processing function
