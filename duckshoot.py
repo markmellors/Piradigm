@@ -152,17 +152,17 @@ class StreamProcessor(threading.Thread):
     # (the clue is that the streamprocessor needs a drivetrain)
 
     def fire(self):
-        print('firing')
+        logger.info('firing')
         self.drive.trigger('fire')
         time.sleep(0.4)
         self.drive.trigger('cock')
         time.sleep(0.5)
         self.found = False
         self.target_number += 1
-        print('target %s fired at', self.target_number)
+        logger.info('target %s fired at', self.target_number)
         if self.target_number > 5:
             self.running = False
-            print('last target found')
+            logger.info('last target found')
 
     def turn_toward_target(self, target):
         turn = 0.0
@@ -172,7 +172,7 @@ class StreamProcessor(threading.Thread):
             if abs(self.last_t_error) < 0.015 and abs(t_error) < 0.015:
                 self.drive.move(0, 0)
                 self.found = True
-                print('target found %s, %s', self.last_t_error, t_error)
+                logger.info('target found %s, %s', self.last_t_error, t_error)
                 self.last_t_error = 0.02
                 
             else:
@@ -181,12 +181,12 @@ class StreamProcessor(threading.Thread):
                 turn = min(max(-0.25, turn), 0.25)
                 self.drive.move(turn, forward)
                 self.last_t_error = t_error
-                print('hunting %s', t_error)
+                logger.info('hunting %s', t_error)
         else:
             #no targets found, stop
             self.found = False
             self.drive.move(0, 0)
-            print('no targets')
+            logger.info('no targets')
 
 
 
@@ -260,11 +260,11 @@ class Duckshoot(BaseChallenge):
             self.timeout = 0
         if button['r2']:
             self.processor.tracking = True
-            print "Starting"
+            logger.info("Starting")
         if button['l1']:
             self.processor.tracking = False
             self.drive.move(0,0)
-            print "Stopping"
+            logger.info("Stopping")
    
 
     def run(self):
