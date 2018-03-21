@@ -76,7 +76,11 @@ class StreamProcessor(threading.Thread):
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         # crop image to speed up processing and avoid false positives
-        image = image[self.CROP_V_OFFSET:(self.CROP_V_OFFSET+self.CROP_HEIGHT), self.CROP_H_OFFSET:(self.CROP_H_OFFSET+self.CROP_WIDTH)]
+        crop_v_min = self.CROP_V_OFFSET
+        crop_v_max = self.CROP_V_OFFSET + self.CROP_HEIGHT
+        crop_h_min = self.CROP_H_OFFSET
+        crop_h_max = self.CROP_H_OFFSET + self.CROP_WIDTH
+        image = image[crop_v_min:crop_v_max, crop_h_min:crop_h_max]
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
