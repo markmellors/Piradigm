@@ -38,7 +38,8 @@ class StreamProcessor(threading.Thread):
         self.image_centre_y = self.CROP_HEIGHT / 2.0
         self.CROP_H_OFFSET = 160
         self.CROP_V_OFFSET = 180
-        self.colour_bounds = json.load(open('duckshoot.json'))
+        with open('duckshoot.json') as json_file:
+            self.colour_bounds = json.load(json_file)
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.DRIVING = True
