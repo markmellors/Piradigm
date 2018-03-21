@@ -44,8 +44,6 @@ class StreamProcessor(threading.Thread):
         self.hsv_upper = (0, 0, 0)
         self.DRIVING = True
         self.tracking = False
-        # Why the one second sleep?
-        time.sleep(1)
         self.start()
 
     @property
@@ -287,7 +285,6 @@ class Duckshoot(BaseChallenge):
         # self.processor.colour = "blue"
         self.controls = self.setup_controls()
         logger.info('Wait ...')
-        time.sleep(2)
         logger.info('Setting up image capture thread')
         self.image_capture_thread = ImageCapture(
             camera=self.camera,
