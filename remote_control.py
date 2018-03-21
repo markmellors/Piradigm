@@ -40,8 +40,9 @@ class RC(BaseChallenge):
                 self.logger.info('Connection to joystick lost')
             except IOError:
                 # No joystick found, wait for a bit before trying again
-                self.logger.info('Unable to find any joysticks')
-                time.sleep(1.0)
+                logging.info('Unable to find any joysticks')
+                time.sleep(0.1)
+
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
