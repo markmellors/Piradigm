@@ -39,12 +39,13 @@ class StreamProcessor(threading.Thread):
         self.last_before_that_t_error = 0
         self.MAX_SPEED = 0.3
         self.isstuck = False
-        self.TURN_AROUND_SPEED = 0.5
+        self.TURN_AROUND_SPEED = 0.7
         self.TURN_AROUND_TIME = 1
-        self.ESCAPE_SPEED = 1
-        self.ESCAPE_TIME = 0.2
+        self.ESCAPE_SPEED = 0.6
+        self.ESCAPE_TIME = 0.1
         self.REVERSE_SPEED = 0.6
         self.REVERSE_TURN = 0.1
+        self.SEEK_SPEED = 0.6
         self.TURN_P = 4 * self.MAX_SPEED
         self.TURN_D = 2 * self.MAX_SPEED
         self.MARKER_TIMEOUT = 40
@@ -138,7 +139,7 @@ class StreamProcessor(threading.Thread):
             self.isstuck = True
         else:
             self.isstuck = False
-        return False #self.isstuck
+        return self.isstuck
 
     def escape(self):
         print "escaping"
@@ -232,12 +233,12 @@ class StreamProcessor(threading.Thread):
             self.last_before_that_t_error = self.last_t_error
             self.last_t_error = t_error
         else:
-            if self.last_t_error is not None:
+            if (self.last_t_error is not None) and self.last_t_error <> 0:
                 #if we've lost the ribbon and we had it, look in the direction it was last
-                turn = 0.35 *  self.last_t_error/abs(self.last_t_error)
+                turn = self.SEEK_SPEED * self.last_t_error/abs(self.last_t_error)
                 self.drive.move(turn, 0)
             else:
-                self.drive.move(0.35, 0)
+                self.drive.move(self.SEEK_SPEED, 0)
             logger.info('No ribbon')
             # reset PID errors
             #self.last_t_error = None
