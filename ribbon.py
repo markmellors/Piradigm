@@ -81,7 +81,6 @@ class StreamProcessor(threading.Thread):
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
         marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_image)
         if marker_area > self.MIN_CONTOUR_AREA:
-            print "marker spotted"
             marker = [marker_x, marker_y, marker_area, marker_contour]
             cropped_ribbon_image = ribbon_image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
             cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_GRAY2RGB)
@@ -114,7 +113,8 @@ class StreamProcessor(threading.Thread):
     def direction(self, marker, ribbon):
         '''function to check which side of the ribbon the tape marks are, indicating direction'''
         if marker is not None and ribbon is not None:
-            marker_x = marker[0]
+            image_offset = (320-self.MARKER_CROP_WIDTH)/2
+            marker_x = marker[0] + image_offset
             ribbon_x = ribbon[0]
             self.last_marker_time = time.time()
             if (marker_x > ribbon_x) == self.MARKERS_ON_THE_LEFT:
@@ -122,8 +122,13 @@ class StreamProcessor(threading.Thread):
                  direction = True
             else:
                  direction = False
+            if direction == self.MARKERS_ON_THE_LEFT:
+                print "marker spotted on the left"
+            else:
+                print "marker spotted on the right"
         else:
             #if either marker or ribbon can't be seen, assume we're ok
+            print "marker spotted but no ribbon"
             direction = True
         return direction
 
