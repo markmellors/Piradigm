@@ -23,11 +23,21 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 10
-        self.ribbon_colour = 'blue'
-        self.MARKER_COLOUR = 'red'
+        self.ribbon_colour = 'green'
+        self.MARKER_COLOUR = 'purple'
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
+        self.REF_SIZE = 10
+        self.REF_R_V_OFFSET = 20
+        self.REF_R_H_OFFSET = 20
+        self.REF_L_V_OFFSET = 30
+        self.REF_L_H_OFFSET = 280
+        self.REF_L_CTR = [[self.REF_R_H_OFFSET,self.REF_R_V_OFFSET],
+            [self.REF_R_H_OFFSET,self.REF_R_V_OFFSET+self.REF_SIZE],
+            [self.REF_R_H_OFFSET+self.REF_SIZE,self.REF_R_V_OFFSET+self.REF_SIZE],
+            [self.REF_R_H_OFFSET+self.REF_SIZE,self.REF_R_V_OFFSET]]
+        self.REF_L_CTR = numpy.array(self.REF_L_CTR).reshape((-1,1,2)).astype(numpy.int32)
         self.found = False
         self.retreated = False
         self.cycle = 0
@@ -162,6 +172,8 @@ class StreamProcessor(threading.Thread):
         ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+            print colour_of_contour(image, self.REF_L_CTR)
         else:
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
@@ -185,12 +197,19 @@ class StreamProcessor(threading.Thread):
         # crop image to speed up processing and avoid false positives
         image = image[0:self.CROP_HEIGHT, 0:320]
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        pt1 = (self.REF_L_H_OFFSET, self.REF_L_V_OFFSET + self.REF_SIZE)
+        pt2 = (self.REF_L_H_OFFSET + self.REF_SIZE, self.REF_L_V_OFFSET)
+        colour = (0, 255, 0)
+        cv2.rectangle(img, pt1, pt2, colour)
+        pt1 = (self.REF_R_H_OFFSET, self.REF_R_V_OFFSET + self.REF_SIZE)
+        pt2 = (self.REF_R_H_OFFSET + self.REF_SIZE, self.REF_R_V_OFFSET)
+        cv2.rectangle(img, pt1, pt2, colour)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
             screen.fill([0, 0, 0])
             font = pygame.font.Font(None, 24)
             screen.blit(frame, (0, 0))
-        blur_image = cv2.medianBlur(image, 3)
+        blur_image = cv2.medianBlur(image, 1)
         # Convert the image from 'BGR' to HSV colour space
         blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
@@ -335,7 +354,7 @@ class Ribbon(BaseChallenge):
         self.camera.awb_mode = 'off'
         self.camera.awb_gains = (1.149, 2.193)
         self.camera.shutter_speed = 12000
-        self.drive.lights(True)
+        self.drive.lights(False)
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(

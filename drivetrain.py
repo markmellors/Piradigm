@@ -135,7 +135,7 @@ class DriveTrain():
 
     def lights(self, on):
         if on:
-            self.pz.setAllPixels(*self.colours.get('MAGENTA'))
+            self.pz.setAllPixels(*self.colours.get('FULL_WHITE'))
         else:
             self.pz.setAllPixels(*self.OFF)
 
