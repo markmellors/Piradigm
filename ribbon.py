@@ -24,14 +24,14 @@ class StreamProcessor(threading.Thread):
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 10
         self.ribbon_colour = 'blue'
-        self.MARKER_COLOUR = 'purple'
+        self.MARKER_COLOUR = 'red'
         self.MARKERS_ON_THE_LEFT = False 
-        self.MARKER_CROP_HEIGHT = 40
+        self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.mode = [self.ribbon_following, self.purple, self.turntable, self.block_pushing]
+        self.mode = [self.ribbon_following, self.marker, self.turntable, self.block_pushing]
         self.mode_number = 0
         self.menu = False
         self.last_a_error = 0
@@ -39,8 +39,8 @@ class StreamProcessor(threading.Thread):
         self.last_before_that_t_error = 0
         self.MAX_SPEED = 0.3
         self.isstuck = False
-        self.TURN_AROUND_SPEED = 1
-        self.TURN_AROUND_TIME = 0.4
+        self.TURN_AROUND_SPEED = 0.5
+        self.TURN_AROUND_TIME = 1
         self.ESCAPE_SPEED = 1
         self.ESCAPE_TIME = 0.2
         self.REVERSE_SPEED = 0.6
@@ -72,9 +72,39 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    def purple(self):
-        pass
-
+    def marker(self, marker_image, ribbon_image, image):
+        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
+        if ribbon_area > self.MIN_CONTOUR_AREA:
+            ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+        else:
+            ribbon = None
+        pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
+        marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_image)
+        if marker_area > self.MIN_CONTOUR_AREA:
+            print "marker spotted"
+            marker = [marker_x, marker_y, marker_area, marker_contour]
+            cropped_ribbon_image = ribbon_image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
+            cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_GRAY2RGB)
+            cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_RGB2HSV)
+            marker_min_colour, marker_max_colour = self.colour_bounds.get(self.MARKER_COLOUR)
+            cv2.drawContours(cropped_ribbon_image, [marker_contour], -1, marker_max_colour, -1)
+            cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_HSV2BGR)
+            frame = pygame.surfarray.make_surface(cv2.flip(cropped_ribbon_image, 1))
+            screen = pygame.display.get_surface()
+            image_offset = (320-self.MARKER_CROP_WIDTH)/2
+            screen.blit(frame, (self.CROP_HEIGHT, image_offset))
+            pygame.display.update()
+        else:
+            marker = None
+        if not marker:
+            self.mode_number = 0
+            self.ribbon_following(marker_image, ribbon_image, image)
+        elif self.tracking:
+            if self.direction(marker, ribbon):
+                self.follow_ribbon(ribbon)
+            else:
+                self.turn_around()
+    
     def turntable(self):
         pass
 
@@ -103,7 +133,7 @@ class StreamProcessor(threading.Thread):
             self.isstuck = True
         else:
             self.isstuck = False
-        return self.isstuck
+        return False #self.isstuck
 
     def escape(self):
         print "escaping"
@@ -134,17 +164,14 @@ class StreamProcessor(threading.Thread):
             marker = [marker_x, marker_y, marker_area, marker_contour]
         else:
             marker = None
+        if marker:
+            self.mode_number = 1
+            self.marker(marker_image, ribbon_image, image)
         if self.tracking:
-            if self.direction(marker, ribbon):
-                if not self.stuck():
-                    self.follow_ribbon(ribbon)
-                else:
-                    self.escape()
+            if not self.stuck():
+                self.follow_ribbon(ribbon)
             else:
-                if not self.stuck():
-                    self.turn_around()
-                else:
-                    self.escape()
+                self.escape()
 
     # Image processing function
     def process_image(self, image, screen):
@@ -167,15 +194,15 @@ class StreamProcessor(threading.Thread):
             self.ribbon_colour, default_colour_bounds
         )
         ribbon_mask = threshold_image(blur_image, limits)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
-            screen.blit(frame, (self.CROP_HEIGHT, 0))
-            pygame.display.update()
-        marker_image = image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
+        marker_image = blur_image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
         limits = self.colour_bounds.get(
             self.MARKER_COLOUR, default_colour_bounds
         )
         marker_mask = threshold_image(marker_image, limits)
+        if not self.menu:
+            frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
+            screen.blit(frame, (self.CROP_HEIGHT, 0))
+            pygame.display.update()
         self.mode[self.mode_number](marker_mask, ribbon_mask, image)
 
 
