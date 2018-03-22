@@ -100,7 +100,6 @@ class StreamProcessor(threading.Thread):
     def stuck(self):
         #if its been more than the timeout since we last saw a marker, we're probably stuck
         if (self.last_marker_time + self.MARKER_TIMEOUT) < time.time() or ((self.last_t_error == self.last_before_that_t_error) and self.last_t_error is not None and self.last_t_error <> 0 and not self.isstuck):
-            print self.last_t_error, self.last_before_that_t_error
             self.isstuck = True
         else:
             self.isstuck = False
@@ -123,7 +122,18 @@ class StreamProcessor(threading.Thread):
         time.sleep(self.TURN_AROUND_TIME)
         self.drive.move(0, 0)
 
-    def ribbon_following(self, marker, ribbon, image):
+    def ribbon_following(self, marker_image, ribbon_image, image):
+        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
+        if ribbon_area > self.MIN_CONTOUR_AREA:
+            ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+        else:
+            ribbon = None
+        pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
+        marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_image)
+        if marker_area > self.MIN_CONTOUR_AREA:
+            marker = [marker_x, marker_y, marker_area, marker_contour]
+        else:
+            marker = None
         if self.tracking:
             if self.direction(marker, ribbon):
                 if not self.stuck():
@@ -161,24 +171,12 @@ class StreamProcessor(threading.Thread):
             frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
             screen.blit(frame, (self.CROP_HEIGHT, 0))
             pygame.display.update()
-        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_mask)
-        if ribbon_area > self.MIN_CONTOUR_AREA:
-            ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
-        else:
-            ribbon = None
-        pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
-        # Set drives or report ball status
         marker_image = image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
         limits = self.colour_bounds.get(
             self.MARKER_COLOUR, default_colour_bounds
         )
         marker_mask = threshold_image(marker_image, limits)
-        marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_mask)
-        if marker_area > self.MIN_CONTOUR_AREA:
-            marker = [marker_x, marker_y, marker_area, marker_contour]
-        else:
-            marker = None
-        self.mode[self.mode_number](marker, ribbon, image)
+        self.mode[self.mode_number](marker_mask, ribbon_mask, image)
 
 
 
