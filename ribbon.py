@@ -39,13 +39,13 @@ class StreamProcessor(threading.Thread):
         self.last_before_that_t_error = 0
         self.MAX_SPEED = 0.3
         self.isstuck = False
-        self.TURN_AROUND_SPEED = 0.7
-        self.TURN_AROUND_TIME = 1
+        self.TURN_AROUND_SPEED = 1
+        self.TURN_AROUND_TIME = 0.8
         self.ESCAPE_SPEED = 0.6
         self.ESCAPE_TIME = 0.1
         self.REVERSE_SPEED = 0.6
         self.REVERSE_TURN = 0.1
-        self.SEEK_SPEED = 0.6
+        self.SEEK_SPEED = 0.8
         self.TURN_P = 4 * self.MAX_SPEED
         self.TURN_D = 2 * self.MAX_SPEED
         self.MARKER_TIMEOUT = 40

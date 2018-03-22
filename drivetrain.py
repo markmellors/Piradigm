@@ -37,8 +37,7 @@ class DriveTrain():
         self.OFF = (0, 0, 0)
         # battery voltage check constants
         self.BATT_CONSTANTS = {
-            "adc_gain": 0.02909,
-            "adc_offset": -15.06,
+            "adc_gain": 0.0096,
             "adc_pin": 3,
             "min_v": 7.45
         }
@@ -116,7 +115,7 @@ class DriveTrain():
     def current_batt_v(self):
         """uses an ADC channel to read battery voltage"""
         voltage_at_pin = float(self.pz.readInput(self.BATT_CONSTANTS['adc_pin']))
-        return self.BATT_CONSTANTS['adc_gain'] * voltage_at_pin + self.BATT_CONSTANTS['adc_offset']
+        return self.BATT_CONSTANTS['adc_gain'] * voltage_at_pin
 
     def get_motor_values(self, steering_left, steering_right):
         motor_left = int(steering_left * self.motor_max) * -1
