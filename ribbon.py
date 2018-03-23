@@ -28,16 +28,6 @@ class StreamProcessor(threading.Thread):
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
-        self.REF_SIZE = 10
-        self.REF_R_V_OFFSET = 20
-        self.REF_R_H_OFFSET = 20
-        self.REF_L_V_OFFSET = 30
-        self.REF_L_H_OFFSET = 280
-        self.REF_L_CTR = [[self.REF_R_H_OFFSET,self.REF_R_V_OFFSET],
-            [self.REF_R_H_OFFSET,self.REF_R_V_OFFSET+self.REF_SIZE],
-            [self.REF_R_H_OFFSET+self.REF_SIZE,self.REF_R_V_OFFSET+self.REF_SIZE],
-            [self.REF_R_H_OFFSET+self.REF_SIZE,self.REF_R_V_OFFSET]]
-        self.REF_L_CTR = numpy.array(self.REF_L_CTR).reshape((-1,1,2)).astype(numpy.int32)
         self.found = False
         self.retreated = False
         self.cycle = 0
