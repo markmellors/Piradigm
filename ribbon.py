@@ -32,7 +32,7 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.mode = [self.ribbon_following, self.marker, self.turntable, self.block_pushing]
+        self.mode = [self.ribbon_following, self.marker, self.turntable, self.block_pushing, self.follow_the_light_at_the_end_of_the_tunnel]
         self.mode_number = 0
         self.menu = False
         self.last_a_error = 0
@@ -49,7 +49,7 @@ class StreamProcessor(threading.Thread):
         self.SEEK_SPEED = 0.8
         self.TURN_P = 4 * self.MAX_SPEED
         self.TURN_D = 2 * self.MAX_SPEED
-        self.TUNNEL_BRIGHTNESS = 50
+        self.TUNNEL_BRIGHTNESS = 3
         self.MARKER_TIMEOUT = 40
         self.last_marker_time = time.time()
         with open('ribbon.json') as json_file:
@@ -58,7 +58,7 @@ class StreamProcessor(threading.Thread):
         self.hsv_upper = (0, 0, 0)
         self.DRIVING = True
         self.lasttime = time.time()
-        self.tracking = False
+        self.tracking = True #False
         self.i = 0
         self.start()
 
@@ -110,11 +110,35 @@ class StreamProcessor(threading.Thread):
                 self.turn_around()
 
     def are_we_in_a_tunnel(self, image):
+        image = image[self.CROP_HEIGHT:240, 0:320]
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         av_hue, av_sat, av_val = cv2.mean(image)[:3]
         return True if av_val< self.TUNNEL_BRIGHTNESS else False
 
     def turntable(self):
         pass
+
+    def follow_the_light_at_the_end_of_the_tunnel(self, marker_mask, ribbon_mask, image):
+        if not self.are_we_in_a_tunnel(image):
+            print ("we're no longer in a tunnel!")
+            self.mode_number = 0
+            self.ribbon_following(marker_mask, ribbon_mask, image)
+        image = image[self.CROP_HEIGHT:240, 0:320]
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        limits = self.colour_bounds.get("tunnelexit")
+        tunnel_mask = threshold_image(image, limits)
+        tunnel_x, tunnel_y, tunnel_area, tunnel_contour = find_largest_contour(tunnel_mask)
+        t_error  = (self.image_centre_x - tunnel_x) / self.image_centre_x
+        print t_error
+        turn = self.TURN_P * t_error
+        if self.last_t_error is not None:
+            #if there was a real error last time then do some damping
+            turn -= self.TURN_D *(self.last_t_error - t_error)
+        forward = self.MAX_SPEED
+        if self.tracking:
+            self.drive.move(turn, forward)
+        self.last_before_that_t_error = self.last_t_error
+        self.last_t_error = t_error
 
     def block_pushing(self):
         pass
@@ -185,6 +209,10 @@ class StreamProcessor(threading.Thread):
         if marker:
             self.mode_number = 1
             self.marker(marker_image, ribbon_image, image)
+        if self.are_we_in_a_tunnel(image):
+            print ("we're in a tunnel! %d"% (self.i))
+            self.mode_number = 4
+            self.follow_the_light_at_the_end_of_the_tunnel(marker_image, ribbon_image, image)
         if self.tracking:
             if not self.stuck():
                 self.follow_ribbon(ribbon)
@@ -195,14 +223,14 @@ class StreamProcessor(threading.Thread):
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         # crop image to speed up processing and avoid false positives
-        image = image[0:self.CROP_HEIGHT, 0:320]
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        crop_image = image[0:self.CROP_HEIGHT, 0:320]
+        img = cv2.cvtColor(crop_image, cv2.COLOR_BGR2RGB)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
             screen.fill([0, 0, 0])
             font = pygame.font.Font(None, 24)
             screen.blit(frame, (0, 0))
-        blur_image = cv2.medianBlur(image, 1)
+        blur_image = cv2.medianBlur(crop_image, 1)
         # Convert the image from 'BGR' to HSV colour space
         blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
@@ -217,8 +245,6 @@ class StreamProcessor(threading.Thread):
             self.MARKER_COLOUR, default_colour_bounds
         )
         marker_mask = threshold_image(marker_image, limits)
-        if self.are_we_in_a_tunnel(blur_image):
-            print "we're in a tunnel!"
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
             screen.blit(frame, (self.CROP_HEIGHT, 0))
