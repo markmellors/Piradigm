@@ -50,6 +50,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_P = 4 * self.MAX_SPEED
         self.TURN_D = 2 * self.MAX_SPEED
         self.TUNNEL_BRIGHTNESS = 3
+        self.TUNNEL_EXIT_BRIGHTNESS = 60
         self.MARKER_TIMEOUT = 40
         self.last_marker_time = time.time()
         with open('ribbon.json') as json_file:
@@ -115,11 +116,17 @@ class StreamProcessor(threading.Thread):
         av_hue, av_sat, av_val = cv2.mean(image)[:3]
         return True if av_val< self.TUNNEL_BRIGHTNESS else False
 
+    def are_we_out_of_the_tunnel(self, image):
+        image = image[self.CROP_HEIGHT:240, 0:320]
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        av_hue, av_sat, av_val = cv2.mean(image)[:3]
+        return True if av_val< self.TUNNEL_EXIT_BRIGHTNESS else False
+
     def turntable(self):
         pass
 
     def follow_the_light_at_the_end_of_the_tunnel(self, marker_mask, ribbon_mask, image):
-        if not self.are_we_in_a_tunnel(image):
+        if not self.are_we_out_of_the_tunnel(image):
             print ("we're no longer in a tunnel!")
             self.mode_number = 0
             self.ribbon_following(marker_mask, ribbon_mask, image)
