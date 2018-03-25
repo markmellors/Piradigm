@@ -25,7 +25,7 @@ class DriveTrain():
         time.sleep(0.5)
         self.motor_max = 100
         self.colours = {    #rgb  or GRB
-            'FULL_WHITE': (255, 240, 180),
+            'FULL_WHITE': (180, 255, 100),   #180, 255, 100 for brightness=155
             'PINKISH': (0, 255, 220),  
             'GREEN': (255, 0, 0),  #green?  line black
             'YELLOW':(255, 255, 0), #yellowish, line black
@@ -44,7 +44,7 @@ class DriveTrain():
         self.pz.setInputConfig(self.BATT_CONSTANTS['adc_pin'], 1)
         self.pz.setOutputConfig(5, 3)    # set output 5 to WS2812
         time.sleep(0.01)
-        self.pz.setBrightness(155)
+        self.pz.setBrightness(255)
         self.slow_speed = 20
         self.deadband = 1
         self.boost_cycles = 1
@@ -135,7 +135,7 @@ class DriveTrain():
 
     def lights(self, on):
         if on:
-            self.pz.setAllPixels(*self.colours.get('PINKISH'))
+            self.pz.setAllPixels(*self.colours.get('FULL_WHITE'))
         else:
             self.pz.setAllPixels(*self.OFF)
 

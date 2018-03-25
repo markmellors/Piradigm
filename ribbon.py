@@ -24,10 +24,11 @@ class StreamProcessor(threading.Thread):
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 10
         self.ribbon_colour = 'blue'
-        self.MARKER_COLOUR = 'yellow'
+        self.MARKER_COLOUR = 'green'
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
+        self.MAX_MARKER_TO_RIBBON_DIST = 50
         self.found = False
         self.retreated = False
         self.cycle = 0
@@ -48,6 +49,7 @@ class StreamProcessor(threading.Thread):
         self.SEEK_SPEED = 0.8
         self.TURN_P = 4 * self.MAX_SPEED
         self.TURN_D = 2 * self.MAX_SPEED
+        self.TUNNEL_BRIGHTNESS = 50
         self.MARKER_TIMEOUT = 40
         self.last_marker_time = time.time()
         with open('ribbon.json') as json_file:
@@ -55,7 +57,9 @@ class StreamProcessor(threading.Thread):
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.DRIVING = True
+        self.lasttime = time.time()
         self.tracking = False
+        self.i = 0
         self.start()
 
     def run(self):
@@ -104,7 +108,11 @@ class StreamProcessor(threading.Thread):
                 self.follow_ribbon(ribbon)
             else:
                 self.turn_around()
-    
+
+    def are_we_in_a_tunnel(self, image):
+        av_hue, av_sat, av_val = cv2.mean(image)[:3]
+        return True if av_val< self.TUNNEL_BRIGHTNESS else False
+
     def turntable(self):
         pass
 
@@ -120,9 +128,12 @@ class StreamProcessor(threading.Thread):
             self.last_marker_time = time.time()
             if (marker_x > ribbon_x) == self.MARKERS_ON_THE_LEFT:
                  #if the markers are the same side as they're meant to be, we're going the right way
-                 direction = True
+                direction = True
+            elif abs(marker_x - ribbon_x) > self.MAX_MARKER_TO_RIBBON_DIST:
+                #if the marker is a long way from the line, its probably a false alarm
+                direction = True
             else:
-                 direction = False
+                direction = False
             if direction == self.MARKERS_ON_THE_LEFT:
                 print "marker spotted on the left"
             else:
@@ -163,7 +174,6 @@ class StreamProcessor(threading.Thread):
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
             image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-            print colour_of_contour(image, ribbon_contour)
         else:
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
@@ -207,11 +217,19 @@ class StreamProcessor(threading.Thread):
             self.MARKER_COLOUR, default_colour_bounds
         )
         marker_mask = threshold_image(marker_image, limits)
+        if self.are_we_in_a_tunnel(blur_image):
+            print "we're in a tunnel!"
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
             screen.blit(frame, (self.CROP_HEIGHT, 0))
             pygame.display.update()
         self.mode[self.mode_number](marker_mask, ribbon_mask, image)
+        img_name = "%dimg.jpg" % (self.i)
+        # filesave for debugging: 
+        #cv2.imwrite(img_name, image)
+        self.i += 1
+        #print time.time()-self.lasttime
+        self.lasttime = time.time()
 
 
 
@@ -336,8 +354,8 @@ class Ribbon(BaseChallenge):
         self.camera.iso = 800
         self.camera.awb_mode = 'off'
         self.camera.awb_gains = (1.149, 2.193)
-        self.camera.shutter_speed = 12000
-        self.drive.lights(True)
+        self.camera.shutter_speed = 10000
+        self.drive.lights(False)
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
