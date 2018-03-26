@@ -170,7 +170,7 @@ class StreamProcessor(threading.Thread):
         found_identifier = "F" if self.found else "NF"
         img_name = "%d%simg.jpg" % (self.i, found_identifier)
         # filesave for debugging: 
-        cv2.imwrite(img_name, gray)
+        #cv2.imwrite(img_name, gray)
         self.i += 1
 
 

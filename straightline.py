@@ -90,12 +90,12 @@ class StreamProcessor(threading.Thread):
                     self.finished = True
                 pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
                 self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
-                turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
+                turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
                 if self.last_t_error is not 0:
                     #if there was a real error last time then do some damping
-                    turn_amount -= self.TURN_D *(self.last_t_error - self.t_error)
+                    turn -= self.TURN_D *(self.last_t_error - self.t_error)
 
-                turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+                turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
 
                 #if we're rate limiting the turn_amount, go slow
                 # TODO Rate limit the speed change
