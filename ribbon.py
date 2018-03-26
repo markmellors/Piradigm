@@ -59,7 +59,7 @@ class StreamProcessor(threading.Thread):
         self.hsv_upper = (0, 0, 0)
         self.DRIVING = True
         self.lasttime = time.time()
-        self.tracking = True #False
+        self.tracking = False
         self.i = 0
         self.start()
 
