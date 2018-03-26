@@ -337,6 +337,7 @@ class Ribbon(BaseChallenge):
         self.camera.awb_mode = 'off'
         self.camera.awb_gains = (1.149, 2.193)
         self.camera.shutter_speed = 12000
+        self.camera.video_denoise = False
         self.drive.lights(True)
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
