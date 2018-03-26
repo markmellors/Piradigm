@@ -62,16 +62,18 @@ class StreamProcessor(threading.Thread):
                     self.event.clear()
 
     def turn_right(self):
-        self.drive.move(self.NINTY_TURN, 0)
-        time.sleep(self.TURN_TIME)
-        self.drive.move(0,0)
-        time.sleep(self.SETTLE_TIME)
+        if self.driving:
+            self.drive.move(self.NINTY_TURN, 0)
+            time.sleep(self.TURN_TIME)
+            self.drive.move(0,0)
+            time.sleep(self.SETTLE_TIME)
                 
     def turn_left(self):
-        self.drive.move(-self.NINTY_TURN, 0)
-        time.sleep(self.TURN_TIME)
-        self.drive.move(0,0)
-        time.sleep(self.SETTLE_TIME)
+        if self.driving:
+            self.drive.move(-self.NINTY_TURN, 0)
+            time.sleep(self.TURN_TIME)
+            self.drive.move(0,0)
+            time.sleep(self.SETTLE_TIME)
 
     def brake(self):
         self.drive.move(0,-self.BRAKING_FORCE)
@@ -146,7 +148,8 @@ class StreamProcessor(threading.Thread):
             logger.info("looking for marker %d" % self.turn_number)
             #if marker was found, then probably best to stop and look
             if self.found:
-                self.drive.move(0, self.STRAIGHT_SPEED/2)
+                if self.driving:
+                    self.drive.move(0, self.STRAIGHT_SPEED/2)
             else:
                 #otherwise, go looking
                 if self.turn_number <= 2:
@@ -177,7 +180,7 @@ class Maze(BaseChallenge):
 
     def __init__(self, timeout=120, screen=None, joystick=None, markers=None):
         self.image_width = 480  # Camera image width
-        self.image_height = 360  # Camera image height
+        self.image_height = 368  # Camera image height
         self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
@@ -185,7 +188,7 @@ class Maze(BaseChallenge):
         self.dict = markers
         super(Maze, self).__init__(name='Maze', timeout=timeout, logger=logger)
 
-def joystick_handler(self, button):
+    def joystick_handler(self, button):
         if button['r1']:
             print "Exiting"
             self.timeout = 0
