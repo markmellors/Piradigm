@@ -30,6 +30,7 @@ class StreamProcessor(threading.Thread):
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
+        self.MARKER_SPEED=0.1
         self.found = False
         self.retreated = False
         self.cycle = 0
@@ -107,7 +108,7 @@ class StreamProcessor(threading.Thread):
             self.ribbon_following(marker_image, ribbon_image, image)
         elif self.tracking:
             if self.direction(marker, ribbon):
-                self.follow_ribbon(ribbon)
+                self.follow_ribbon(ribbon, self.MARKER_SPEED)
             else:
                 self.turn_around()
     
@@ -145,7 +146,7 @@ class StreamProcessor(threading.Thread):
             self.isstuck = True
         else:
             self.isstuck = False
-        return self.isstuck
+        return False #self.isstuck
 
     def escape(self):
         print "escaping"
@@ -169,7 +170,6 @@ class StreamProcessor(threading.Thread):
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
             image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-            print colour_of_contour(image, ribbon_contour)
         else:
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
@@ -183,7 +183,7 @@ class StreamProcessor(threading.Thread):
             self.marker(marker_image, ribbon_image, image)
         if self.tracking:
             if not self.stuck():
-                self.follow_ribbon(ribbon)
+                self.follow_ribbon(ribbon, self.MAX_SPEED)
             else:
                 self.escape()
 
@@ -232,7 +232,7 @@ class StreamProcessor(threading.Thread):
     # (the clue is that the streamprocessor needs a drivetrain)
 
     # Set the motor speed from the ball position
-    def follow_ribbon(self, ribbon):
+    def follow_ribbon(self, ribbon, speed):
         turn = 0.0
         if ribbon is not None:
             x = ribbon[0]
@@ -242,8 +242,7 @@ class StreamProcessor(threading.Thread):
             if self.last_t_error is not None:
                 #if there was a real error last time then do some damping
                 turn -= self.TURN_D *(self.last_t_error - t_error)
-            forward = self.MAX_SPEED
-            self.drive.move(turn, forward)
+            self.drive.move(turn, speed)
             self.last_before_that_t_error = self.last_t_error
             self.last_t_error = t_error
         else:
