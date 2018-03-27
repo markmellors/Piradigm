@@ -9,7 +9,7 @@ import random
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
-    def __init__(self, screen=None, camera=None, drive=None, colour="any"):
+    def __init__(self, screen=None, camera=None, drive=None, dict=None):
         super(StreamProcessor, self).__init__()
         self.camera = camera
         image_width, image_height = self.camera.resolution
@@ -21,10 +21,11 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
+        self.small_dict = dict
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 10
         self.MIN_MARKER_AREA = 200
-        self.ribbon_colour = 'green'
+        self.ribbon_colour = 'blue'
         self.MARKER_COLOUR = 'purple'
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
@@ -84,7 +85,6 @@ class StreamProcessor(threading.Thread):
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
         marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_image)
         if marker_area > self.MIN_MARKER_AREA:
-            print marker_area
             marker = [marker_x, marker_y, marker_area, marker_contour]
             cropped_ribbon_image = ribbon_image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
             cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_GRAY2RGB)
@@ -260,7 +260,7 @@ class StreamProcessor(threading.Thread):
 class Ribbon(BaseChallenge):
     """Ribbon following challenge class"""
 
-    def __init__(self, timeout=120, screen=None, joystick=None):
+    def __init__(self, timeout=120, screen=None, joystick=None, markers=None):
         self.image_width = 656  # Camera image width
         self.image_height = 496  # Camera image height
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
@@ -268,6 +268,7 @@ class Ribbon(BaseChallenge):
         time.sleep(0.01)
         self.menu = False
         self.joystick=joystick
+        self.dict=markers
         super(Ribbon, self).__init__(name='Ribbon', timeout=timeout, logger=logger)
 
     def setup_controls(self):
@@ -354,7 +355,7 @@ class Ribbon(BaseChallenge):
             screen=self.screen,
             camera=self.camera,
             drive=self.drive,
-            colour="yellow"
+            markers=self.dict
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"

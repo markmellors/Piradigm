@@ -141,7 +141,7 @@ class Menu():
             return new_challenge
         elif event.label is "Obstacle":
             logger.info("launching Ribbon following")
-            new_challenge = Ribbon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = Ribbon(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers= self.markers)
             return new_challenge
         elif event.label is "Maze":
             logger.info("launching Maze challenge")
