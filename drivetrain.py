@@ -26,7 +26,8 @@ class DriveTrain():
         self.motor_max = 100
         self.colours = {    #rgb  or GRB
             'FULL_WHITE': (180, 255, 100),
-            'PINKISH': (0, 255, 220),  
+            'PINKISH': (0, 255, 220),
+            'YELLOWISH': (200, 255, 75),
             'GREEN': (255, 0, 0),  #green?  line black
             'YELLOW':(255, 255, 0), #yellowish, line black
             'RED': (0, 255, 0), #red, line black
@@ -135,7 +136,7 @@ class DriveTrain():
 
     def lights(self, on):
         if on:
-            self.pz.setAllPixels(*self.colours.get('FULL_WHITE'))
+            self.pz.setAllPixels(*self.colours.get('YELLOWISH'))
         else:
             self.pz.setAllPixels(*self.OFF)
 

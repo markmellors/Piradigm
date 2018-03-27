@@ -6,6 +6,7 @@ from my_button import MyScale
 # Load all standard tools for image processing challenges
 from img_base_class import *
 import random
+import cv2.aruco as aruco
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -90,6 +91,41 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (self.CROP_HEIGHT, image_offset))
         pygame.display.update()
 
+    def check_for_aruco(self, image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        parameters =  aruco.DetectorParameters_create()
+        #lists of ids and the corners beloning to each id
+        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
+        if ids != None:
+            if len(ids)>1:
+                logger.info( "found %d aruco markers" % len(ids))
+                closest_marker_index = 0
+                closest_marker_width = 0
+                for marker_number in range(0, len(ids)):
+                    #more than one aruco marker found. cycle through them all, look for biggest
+                    m = marker_number #to keep next few lines short
+                    width = math.sqrt(math.pow(corners[m][0][0][0]-corners[m][0][1][0],2)
+                        +math.pow(corners[m][0][0][1]-corners[m][0][1][1],2))
+                    if width > closest_marker_width:
+                        closest_marker_width = width
+                        closest_marker_index = marker_number
+                        closest_marker_y = sum([arr[0] for arr in corners[m][0]])  / 4
+                        closest_marker_x = sum([arr[1] for arr in corners[m][0]])  / 4
+            else:
+                closest_marker_index = 0
+                m = closest_marker_index #to keep next few lines short
+                closest_marker_y = sum([arr[0] for arr in corners[m][0]])  / 4
+                closest_marker_x = sum([arr[1] for arr in corners[m][0]])  / 4
+            marker_id = ids[closest_marker_index]
+            logger.info ("closest aruco marker is number %d" % marker_id)
+        else:
+            logger.info ("marker tape detected but no aruco markers recognised")
+            closest_marker_y = None
+            closest_marker_x = None
+            marker_id = None
+        return marker_id, closest_marker_x, closest_marker_y
+
+   
     def marker(self, marker_image, ribbon_image, image):
         ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
         if ribbon_area > self.MIN_CONTOUR_AREA:
@@ -101,6 +137,10 @@ class StreamProcessor(threading.Thread):
         if marker_area > self.MIN_MARKER_AREA:
             marker = [marker_x, marker_y, marker_area, marker_contour]
             self.display_marker(ribbon_image, marker_contour)
+            aruco_id, aruco_x, aruco_y = self.check_for_aruco(image)
+            if aruco_id:
+                self.drive.move(0,0)
+                time.sleep(1)
         else:
             marker = None
         if not marker:
@@ -131,12 +171,12 @@ class StreamProcessor(threading.Thread):
             else:
                  direction = False
             if direction == self.MARKERS_ON_THE_LEFT:
-                print "marker spotted on the left"
+                logger.info ("marker spotted on the left")
             else:
-                print "marker spotted on the right"
+                logger.info ("marker spotted on the right")
         else:
             #if either marker or ribbon can't be seen, assume we're ok
-            print "marker spotted but no ribbon"
+            logger.info ("marker spotted but no ribbon")
             direction = True
         return direction
 
@@ -170,6 +210,7 @@ class StreamProcessor(threading.Thread):
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
             image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+            print colour_of_contour(image, ribbon_contour)
         else:
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
@@ -193,14 +234,14 @@ class StreamProcessor(threading.Thread):
         # scale down and crop image to speed up processing and avoid false positives
         #scale down used instead of jsut capturing at lower resolution, so maximum hue resolution captured
         image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x * 2), int(self.image_centre_y * 2)))
-        image = image[0:self.CROP_HEIGHT, 0:320]
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        cropped_image = image[0:self.CROP_HEIGHT, 0:320]
         if not self.menu:
+            img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
             frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
             screen.fill([0, 0, 0])
             font = pygame.font.Font(None, 24)
             screen.blit(frame, (0, 0))
-        blur_image = cv2.medianBlur(image, 1)
+        blur_image = cv2.medianBlur(cropped_image, 1)
         # Convert the image from 'BGR' to HSV colour space
         blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
