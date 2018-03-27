@@ -76,6 +76,19 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
+    def display_marker(self, ribbon_image, marker_contour):
+        cropped_ribbon_image = ribbon_image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
+        cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_GRAY2RGB)
+        cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_RGB2HSV)
+        marker_min_colour, marker_max_colour = self.colour_bounds.get(self.MARKER_COLOUR)
+        cv2.drawContours(cropped_ribbon_image, [marker_contour], -1, marker_max_colour, -1)
+        cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_HSV2BGR)
+        frame = pygame.surfarray.make_surface(cv2.flip(cropped_ribbon_image, 1))
+        screen = pygame.display.get_surface()
+        image_offset = (320-self.MARKER_CROP_WIDTH)/2
+        screen.blit(frame, (self.CROP_HEIGHT, image_offset))
+        pygame.display.update()
+
     def marker(self, marker_image, ribbon_image, image):
         ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
         if ribbon_area > self.MIN_CONTOUR_AREA:
@@ -86,17 +99,7 @@ class StreamProcessor(threading.Thread):
         marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_image)
         if marker_area > self.MIN_MARKER_AREA:
             marker = [marker_x, marker_y, marker_area, marker_contour]
-            cropped_ribbon_image = ribbon_image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
-            cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_GRAY2RGB)
-            cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_RGB2HSV)
-            marker_min_colour, marker_max_colour = self.colour_bounds.get(self.MARKER_COLOUR)
-            cv2.drawContours(cropped_ribbon_image, [marker_contour], -1, marker_max_colour, -1)
-            cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_HSV2BGR)
-            frame = pygame.surfarray.make_surface(cv2.flip(cropped_ribbon_image, 1))
-            screen = pygame.display.get_surface()
-            image_offset = (320-self.MARKER_CROP_WIDTH)/2
-            screen.blit(frame, (self.CROP_HEIGHT, image_offset))
-            pygame.display.update()
+            self.display_marker(ribbon_image, marker_contour)
         else:
             marker = None
         if not marker:
@@ -355,7 +358,7 @@ class Ribbon(BaseChallenge):
             screen=self.screen,
             camera=self.camera,
             drive=self.drive,
-            markers=self.dict
+            dict=self.dict
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
