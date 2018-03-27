@@ -31,7 +31,7 @@ class StreamProcessor(threading.Thread):
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
-        self.MARKER_SPEED=0.1
+        self.MARKER_SPEED=0.15
         self.found = False
         self.retreated = False
         self.cycle = 0
@@ -210,7 +210,7 @@ class StreamProcessor(threading.Thread):
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
             image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-            print colour_of_contour(image, ribbon_contour)
+#            print colour_of_contour(image, ribbon_contour)
         else:
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
@@ -221,6 +221,8 @@ class StreamProcessor(threading.Thread):
             marker = None
         if marker:
             self.mode_number = 1
+            self.drive.move(0,0)
+            time.sleep(0.6)
             self.marker(marker_image, ribbon_image, image)
         if self.tracking:
             if not self.stuck():
@@ -391,6 +393,7 @@ class Ribbon(BaseChallenge):
         self.camera.awb_gains = (1.149, 2.193)
         self.camera.shutter_speed = 15000
         self.camera.video_denoise = False
+        self.camera.saturation = 20
         self.drive.lights(True)
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
