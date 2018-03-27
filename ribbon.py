@@ -23,8 +23,9 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 10
-        self.ribbon_colour = 'blue'
-        self.MARKER_COLOUR = 'yellow'
+        self.MIN_MARKER_AREA = 200
+        self.ribbon_colour = 'green'
+        self.MARKER_COLOUR = 'purple'
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
@@ -56,6 +57,7 @@ class StreamProcessor(threading.Thread):
         self.hsv_upper = (0, 0, 0)
         self.DRIVING = True
         self.tracking = False
+        self.i = 0
         self.start()
 
     def run(self):
@@ -81,7 +83,8 @@ class StreamProcessor(threading.Thread):
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
         marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_image)
-        if marker_area > self.MIN_CONTOUR_AREA:
+        if marker_area > self.MIN_MARKER_AREA:
+            print marker_area
             marker = [marker_x, marker_y, marker_area, marker_contour]
             cropped_ribbon_image = ribbon_image[0:self.MARKER_CROP_HEIGHT, (self.image_centre_x - self.MARKER_CROP_WIDTH/2):(self.image_centre_x + self.MARKER_CROP_WIDTH/2)]
             cropped_ribbon_image = cv2.cvtColor(cropped_ribbon_image, cv2.COLOR_GRAY2RGB)
@@ -168,7 +171,7 @@ class StreamProcessor(threading.Thread):
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
         marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_image)
-        if marker_area > self.MIN_CONTOUR_AREA:
+        if marker_area > self.MIN_MARKER_AREA:
             marker = [marker_x, marker_y, marker_area, marker_contour]
         else:
             marker = None
@@ -214,6 +217,10 @@ class StreamProcessor(threading.Thread):
             screen.blit(frame, (self.CROP_HEIGHT, 0))
             pygame.display.update()
         self.mode[self.mode_number](marker_mask, ribbon_mask, image)
+        img_name = "%dimg.jpg" % (self.i)
+        # filesave for debugging: 
+        #cv2.imwrite(img_name, image)
+        self.i += 1
 
 
 
@@ -338,7 +345,7 @@ class Ribbon(BaseChallenge):
         self.camera.iso = 800
         self.camera.awb_mode = 'off'
         self.camera.awb_gains = (1.149, 2.193)
-        self.camera.shutter_speed = 12000
+        self.camera.shutter_speed = 15000
         self.camera.video_denoise = False
         self.drive.lights(True)
         logger.info('Setup the stream processing thread')
