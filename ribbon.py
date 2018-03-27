@@ -13,8 +13,8 @@ class StreamProcessor(threading.Thread):
         super(StreamProcessor, self).__init__()
         self.camera = camera
         image_width, image_height = self.camera.resolution
-        self.image_centre_x = image_width / 2.0
-        self.image_centre_y = image_height / 2.0
+        self.image_centre_x = image_width / 4.0
+        self.image_centre_y = image_height / 4.0
         self.CROP_HEIGHT = 80
         self.drive = drive
         self.screen = screen
@@ -184,7 +184,9 @@ class StreamProcessor(threading.Thread):
     # Image processing function
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
-        # crop image to speed up processing and avoid false positives
+        # scale down and crop image to speed up processing and avoid false positives
+        #scale down used instead of jsut capturing at lower resolution, so maximum hue resolution captured
+        image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x * 2), int(self.image_centre_y * 2)))
         image = image[0:self.CROP_HEIGHT, 0:320]
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         if not self.menu:
@@ -252,8 +254,8 @@ class Ribbon(BaseChallenge):
     """Ribbon following challenge class"""
 
     def __init__(self, timeout=120, screen=None, joystick=None):
-        self.image_width = 320  # Camera image width
-        self.image_height = 240  # Camera image height
+        self.image_width = 656  # Camera image width
+        self.image_height = 496  # Camera image height
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
