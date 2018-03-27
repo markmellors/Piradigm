@@ -25,7 +25,7 @@ class DriveTrain():
         time.sleep(0.5)
         self.motor_max = 100
         self.colours = {    #rgb  or GRB
-            'FULL_WHITE': (255, 240, 180),
+            'FULL_WHITE': (180, 255, 100),
             'PINKISH': (0, 255, 220),  
             'GREEN': (255, 0, 0),  #green?  line black
             'YELLOW':(255, 255, 0), #yellowish, line black
