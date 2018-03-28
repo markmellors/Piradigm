@@ -91,6 +91,7 @@ def find_largest_contour(image):
 
 def colour_of_contour(image, contour):
     '''Returns the mean of each channel of a given contour in an image'''
+    image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
     if contour is not None:
         mask = numpy.zeros(image.shape[:2], dtype="uint8")
         cv2.drawContours(mask, [contour], -1, 255, -1)
@@ -98,8 +99,28 @@ def colour_of_contour(image, contour):
         mean = cv2.mean(image, mask=mask)[:3]
     else:
         mean = None
-    return mean
+    return rgb2hsv(*mean)
 
+def rgb2hsv(r, g, b):
+    r, g, b = r/255.0, g/255.0, b/255.0
+    mx = max(r, g, b)
+    mn = min(r, g, b)
+    df = mx-mn
+    if mx == mn:
+        h = 0
+    elif mx == r:
+        h = (60 * ((g-b)/df) + 360) % 360
+    elif mx == g:
+        h = (60 * ((b-r)/df) + 120) % 360
+    elif mx == b:
+        h = (60 * ((r-g)/df) + 240) % 360
+    if mx == 0:
+        s = 0
+    else:
+        s = df/mx * 255
+    v = mx * 255
+    h = h * 180 / 360 #to covnert to opencv equivalent hue (0-180)
+    return h, s, v
 
 def wrapping_inRange(image, lower_limit, upper_limit):
     '''function to behave like opencv imrange, but allow hue to wrap around
