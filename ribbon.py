@@ -40,6 +40,7 @@ class StreamProcessor(threading.Thread):
         self.TURNTABLE_MARKER = 3
         self.turntable_approached = False
         self.APPROACH_DIST = 50
+        self.RIBBON_APPROACH_DIST = 10
         self.APPROACH_TOL = 0.05
         self.menu = False
         self.last_a_error = 0
@@ -123,9 +124,9 @@ class StreamProcessor(threading.Thread):
                 closest_marker_x = sum([arr[0] for arr in corners[m][0]])  / 4
                 closest_marker_y = sum([arr[1] for arr in corners[m][0]])  / 4
             marker_id = ids[closest_marker_index]
-            logger.info ("closest aruco marker is number %d" % marker_id)
+            logger.debug ("closest aruco marker is number %d" % marker_id)
         else:
-            logger.info ("no aruco markers recognised")
+            logger.debug ("no aruco markers recognised")
             closest_marker_y = None
             closest_marker_x = None
             marker_id = None
@@ -150,6 +151,7 @@ class StreamProcessor(threading.Thread):
                 self.turntable(marker_image, ribbon_image, image)
             elif self.tracking:
                 if self.direction(marker, ribbon):
+                    logger.info ("ribbon at %i, %i" % (ribbon_x, ribbon_y))
                     self.follow_ribbon(ribbon, self.MARKER_SPEED)
                 else:
                     self.turn_around()
@@ -161,13 +163,12 @@ class StreamProcessor(threading.Thread):
         aruco_id, aruco_x, aruco_y = self.check_for_aruco(image)
         if not self.turntable_approached:
             if aruco_id is not None:
-                logger.info ("aruco at %i, %i" % (aruco_x, aruco_y))
+                logger.info ("Approaching turntable, aruco at %i, %i" % (aruco_x, aruco_y))
                 t_error  = (self.image_centre_x - aruco_x) / self.image_centre_x
                 dist_error = (aruco_y - self.APPROACH_DIST) / self.image_centre_y
-                print dist_error
                 if dist_error < self.APPROACH_TOL:
                     self.turntable_approached = True
-                    logger.info("at the turntable!")
+                    logger.info("Aruco triggered: At the turntable!")
                     self.drive.move(0, 0)
                     self.finished = True
                 else:
@@ -177,11 +178,16 @@ class StreamProcessor(threading.Thread):
                     self.follow_ribbon(ribbon, speed)
             else:
                 #no auroc marker detected
-                logger.info("approaching turntable, lost the aruco marker")
                 ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
-                logger.info ("ribbon at %i, %i" % (ribbon_x, ribbon_y))
-                ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
-                self.follow_ribbon(ribbon, self.MARKER_SPEED)
+                logger.info ("Approaching turntable, ribbon at %i, %i" % (ribbon_x, ribbon_y))
+                if ribbon_y < self.RIBBON_APPROACH_DIST:
+                    self.turntable_approached = True
+                    logger.info("Ribbon triggered: At the turntable!")
+                    self.drive.move(0, 0)
+                    self.finished = True
+                else:
+                    ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+                    self.follow_ribbon(ribbon, self.MARKER_SPEED)
 
     def block_pushing(self):
         pass
