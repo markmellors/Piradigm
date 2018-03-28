@@ -31,12 +31,16 @@ class StreamProcessor(threading.Thread):
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
-        self.MARKER_SPEED=0.15
+        self.MARKER_SPEED=0.2
         self.found = False
         self.retreated = False
         self.cycle = 0
         self.mode = [self.ribbon_following, self.marker, self.turntable, self.block_pushing]
         self.mode_number = 0
+        self.TURNTABLE_MARKER = 3
+        self.turntable_approached = False
+        self.APPROACH_DIST = 50
+        self.APPROACH_TOL = 0.05
         self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
@@ -52,6 +56,7 @@ class StreamProcessor(threading.Thread):
         self.SEEK_SPEED = 0.8
         self.TURN_P = 4 * self.MAX_SPEED
         self.TURN_D = 2 * self.MAX_SPEED
+        self.SPEED_P = 1
         self.MARKER_TIMEOUT = 40
         self.last_marker_time = time.time()
         with open('ribbon.json') as json_file:
@@ -60,6 +65,7 @@ class StreamProcessor(threading.Thread):
         self.hsv_upper = (0, 0, 0)
         self.DRIVING = True
         self.tracking = False
+        self.finished = False
         self.i = 0
         self.start()
 
@@ -109,17 +115,17 @@ class StreamProcessor(threading.Thread):
                     if width > closest_marker_width:
                         closest_marker_width = width
                         closest_marker_index = marker_number
-                        closest_marker_y = sum([arr[0] for arr in corners[m][0]])  / 4
-                        closest_marker_x = sum([arr[1] for arr in corners[m][0]])  / 4
+                        closest_marker_x = sum([arr[0] for arr in corners[m][0]])  / 4
+                        closest_marker_y = sum([arr[1] for arr in corners[m][0]])  / 4
             else:
                 closest_marker_index = 0
                 m = closest_marker_index #to keep next few lines short
-                closest_marker_y = sum([arr[0] for arr in corners[m][0]])  / 4
-                closest_marker_x = sum([arr[1] for arr in corners[m][0]])  / 4
+                closest_marker_x = sum([arr[0] for arr in corners[m][0]])  / 4
+                closest_marker_y = sum([arr[1] for arr in corners[m][0]])  / 4
             marker_id = ids[closest_marker_index]
             logger.info ("closest aruco marker is number %d" % marker_id)
         else:
-            logger.info ("marker tape detected but no aruco markers recognised")
+            logger.info ("no aruco markers recognised")
             closest_marker_y = None
             closest_marker_x = None
             marker_id = None
@@ -138,22 +144,44 @@ class StreamProcessor(threading.Thread):
             marker = [marker_x, marker_y, marker_area, marker_contour]
             self.display_marker(ribbon_image, marker_contour)
             aruco_id, aruco_x, aruco_y = self.check_for_aruco(image)
-            if aruco_id:
-                self.drive.move(0,0)
-                time.sleep(1)
+            if aruco_id == self.TURNTABLE_MARKER:
+                logger.info ("Turntable marker detected, switching modes")
+                self.mode_number = 2
+                self.turntable(marker_image, ribbon_image, image)
+            elif self.tracking:
+                if self.direction(marker, ribbon):
+                    self.follow_ribbon(ribbon, self.MARKER_SPEED)
+                else:
+                    self.turn_around()
         else:
-            marker = None
-        if not marker:
             self.mode_number = 0
             self.ribbon_following(marker_image, ribbon_image, image)
-        elif self.tracking:
-            if self.direction(marker, ribbon):
-                self.follow_ribbon(ribbon, self.MARKER_SPEED)
-            else:
-                self.turn_around()
     
-    def turntable(self):
-        pass
+    def turntable(self, marker_image, ribbon_image, image):
+        aruco_id, aruco_x, aruco_y = self.check_for_aruco(image)
+        if not self.turntable_approached:
+            if aruco_id is not None:
+                logger.info ("aruco at %i, %i" % (aruco_x, aruco_y))
+                t_error  = (self.image_centre_x - aruco_x) / self.image_centre_x
+                dist_error = (aruco_y - self.APPROACH_DIST) / self.image_centre_y
+                print dist_error
+                if dist_error < self.APPROACH_TOL:
+                    self.turntable_approached = True
+                    logger.info("at the turntable!")
+                    self.drive.move(0, 0)
+                    self.finished = True
+                else:
+                    ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
+                    ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+                    speed = max(min(self.SPEED_P * dist_error, self.MARKER_SPEED), -self.MARKER_SPEED)
+                    self.follow_ribbon(ribbon, speed)
+            else:
+                #no auroc marker detected
+                logger.info("approaching turntable, lost the aruco marker")
+                ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
+                logger.info ("ribbon at %i, %i" % (ribbon_x, ribbon_y))
+                ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+                self.follow_ribbon(ribbon, self.MARKER_SPEED)
 
     def block_pushing(self):
         pass
@@ -210,7 +238,7 @@ class StreamProcessor(threading.Thread):
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
             image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-            print colour_of_contour(image, ribbon_contour)
+#            print colour_of_contour(image, ribbon_contour)
         else:
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
@@ -419,6 +447,8 @@ class Ribbon(BaseChallenge):
                 if self.joystick.connected:
                     self.joystick_handler(self.joystick.check_presses())
                 self.processor.menu = self.menu
+                if self.processor.finished:
+                    self.timeout = 0
                 if self.menu:
                     screen.fill([0, 0, 0])
                     colour = self.processor.colour
@@ -433,8 +463,6 @@ class Ribbon(BaseChallenge):
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
                             ctrl['ctrl'].remove(fade=False)
-                if self.processor.retreated:
-                    self.progress_colour()
                 sgc.update(time)
 
         except KeyboardInterrupt:
