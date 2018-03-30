@@ -124,7 +124,7 @@ class StreamProcessor(threading.Thread):
                 found_x = cx
                 found_y = cy
                 biggest_contour = contour
-        if found_area > self.MIN_CONTOUR_AREA:
+        if biggest_contour is not None:
             target = [found_x, found_y, found_area]
         else:
             target = None
