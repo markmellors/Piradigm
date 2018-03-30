@@ -1,8 +1,10 @@
 import logging
 import time
+import os
 
 from drivetrain import DriveTrain
-logging.config.fileConfig('logging.ini')
+file_path = os.path.dirname(os.path.realpath(__file__))
+logging.config.fileConfig(os.path.join(file_path, 'logging.ini'))
 logger = logging.getLogger('piradigm.' + __name__)
 
 class BaseChallenge(object):
@@ -25,6 +27,7 @@ class BaseChallenge(object):
 
     def stop(self):
         self.logger.info("%s challenge stopping" % self.name)
+        self.drive.stop()
         self.killed = True
 
     def run(self):

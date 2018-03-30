@@ -297,7 +297,7 @@ class Rainbow(BaseChallenge):
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                 'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
         elif button['r1']:
-            self.timeout = 0
+            self.stop()
         elif button['r2']:
             self.processor.tracking = True
             print "Starting"
@@ -318,7 +318,7 @@ class Rainbow(BaseChallenge):
             self.processor.retreated = False
         else:
             print "finished"
-            self.timeout=0
+            self.stop()
 
     def run(self):
         # Startup sequence
