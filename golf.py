@@ -397,7 +397,7 @@ class Golf(BaseChallenge):
                 if self.joystick.connected:
                     self.joystick_handler(self.joystick.check_presses())
                 if self.processor.finished:
-                    self.timeout = 0
+                    self.stop()
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
