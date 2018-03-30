@@ -37,6 +37,8 @@ class StreamProcessor(threading.Thread):
         self.cycle = 0
         self.mode = [self.ribbon_following, self.marker, self.turntable, self.block_pushing]
         self.mode_number = 0
+        self.turntable_stage= [self.approach, self.entry, self.leaving]
+        self.stage_number = 0
         self.TURNTABLE_MARKER = 3
         self.turntable_approached = False
         self.APPROACH_DIST = 50
@@ -148,6 +150,7 @@ class StreamProcessor(threading.Thread):
             if aruco_id == self.TURNTABLE_MARKER:
                 logger.info ("Turntable marker detected, switching modes")
                 self.mode_number = 2
+                self.stage_number = 0
                 self.turntable(marker_image, ribbon_image, image)
             elif self.tracking:
                 if self.direction(marker, ribbon):
@@ -158,36 +161,45 @@ class StreamProcessor(threading.Thread):
         else:
             self.mode_number = 0
             self.ribbon_following(marker_image, ribbon_image, image)
-    
+
     def turntable(self, marker_image, ribbon_image, image):
+        self.turntable_stage[self.stage_number](marker_mask, ribbon_mask, image)
+
+    def approach(self, marker_image, ribbon_image, image):
         aruco_id, aruco_x, aruco_y = self.check_for_aruco(image)
-        if not self.turntable_approached:
-            if aruco_id is not None:
-                logger.info ("Approaching turntable, aruco at %i, %i" % (aruco_x, aruco_y))
-                t_error  = (self.image_centre_x - aruco_x) / self.image_centre_x
-                dist_error = (aruco_y - self.APPROACH_DIST) / self.image_centre_y
-                if dist_error < self.APPROACH_TOL:
-                    self.turntable_approached = True
-                    logger.info("Aruco triggered: At the turntable!")
-                    self.drive.move(0, 0)
-                    self.finished = True
-                else:
-                    ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
-                    ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
-                    speed = max(min(self.SPEED_P * dist_error, self.MARKER_SPEED), -self.MARKER_SPEED)
-                    self.follow_ribbon(ribbon, speed)
+        if aruco_id is not None:
+            logger.info ("Approaching turntable, aruco at %i, %i" % (aruco_x, aruco_y))
+            t_error  = (self.image_centre_x - aruco_x) / self.image_centre_x
+            dist_error = (aruco_y - self.APPROACH_DIST) / self.image_centre_y
+            if dist_error < self.APPROACH_TOL:
+                self.stage_number = 1
+                logger.info("Aruco triggered: At the turntable!")
+                self.drive.move(0, 0)
+                self.finished = True
             else:
-                #no auroc marker detected
                 ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
-                logger.info ("Approaching turntable, ribbon at %i, %i" % (ribbon_x, ribbon_y))
-                if ribbon_y < self.RIBBON_APPROACH_DIST:
-                    self.turntable_approached = True
-                    logger.info("Ribbon triggered: At the turntable!")
-                    self.drive.move(0, 0)
-                    self.finished = True
-                else:
-                    ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
-                    self.follow_ribbon(ribbon, self.MARKER_SPEED)
+                ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+                speed = max(min(self.SPEED_P * dist_error, self.MARKER_SPEED), -self.MARKER_SPEED)
+                self.follow_ribbon(ribbon, speed)
+        else:
+            #no auroc marker detected
+            ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
+            logger.info ("Approaching turntable, ribbon at %i, %i" % (ribbon_x, ribbon_y))
+            if ribbon_y < self.RIBBON_APPROACH_DIST:
+                self.stage_number = 1
+                logger.info("Ribbon triggered: At the turntable!")
+                self.drive.move(0, 0)
+                self.finished = True
+            else:
+                ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+                self.follow_ribbon(ribbon, self.MARKER_SPEED)
+
+
+    def entry(self):
+        pass
+
+    def leaving(self):
+        pass
 
     def block_pushing(self):
         pass
