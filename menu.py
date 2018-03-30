@@ -64,6 +64,7 @@ class Menu():
         ]
         for var_name, val in env_vars:
             os.environ[var_name] = val
+        self.challenge_thread = None
         self.timeout = kwargs.pop('timeout', 120)
         self.markers = aruco.Dictionary_create(6, 3)
 
@@ -205,7 +206,7 @@ class Menu():
                 time = clock.tick(30)
                 pygame.display.update()
                 sgc.update(time)
-                if self.joystick.connected:
+                if self.joystick.connected and (self.challenge_thread is None or not self.challenge_thread.is_alive()):
                     self.joystick_handler(self.joystick.check_presses())
                 for event in pygame.event.get():
                     sgc.event(event)
