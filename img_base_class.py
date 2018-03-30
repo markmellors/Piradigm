@@ -22,7 +22,8 @@ import numpy
 from fractions import Fraction
 from base_challenge import BaseChallenge
 
-logging.config.fileConfig('logging.ini')
+file_path = os.path.dirname(os.path.realpath(__file__))
+logging.config.fileConfig(os.path.join(file_path, 'logging.ini'))
 logger = logging.getLogger('piradigm.' + __name__)
 logger.debug('Libraries loaded')
 
