@@ -251,7 +251,7 @@ class Duckshoot(BaseChallenge):
                 with open('duckshoot.json', 'w') as f:
                     json.dump(data, f)
         if button['r1']:
-            self.timeout = 0
+            self.stop()
         if button['r2']:
             self.processor.tracking = True
             print "Starting"
