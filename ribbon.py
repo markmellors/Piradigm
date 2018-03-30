@@ -163,7 +163,7 @@ class StreamProcessor(threading.Thread):
             self.ribbon_following(marker_image, ribbon_image, image)
 
     def turntable(self, marker_image, ribbon_image, image):
-        self.turntable_stage[self.stage_number](marker_mask, ribbon_mask, image)
+        self.turntable_stage[self.stage_number](marker_image, ribbon_image, image)
 
     def approach(self, marker_image, ribbon_image, image):
         aruco_id, aruco_x, aruco_y = self.check_for_aruco(image)
@@ -289,7 +289,7 @@ class StreamProcessor(threading.Thread):
             screen.fill([0, 0, 0])
             font = pygame.font.Font(None, 24)
             screen.blit(frame, (0, 0))
-        blur_image = cv2.medianBlur(cropped_image, 1)
+        blur_image = cv2.medianBlur(cropped_image, 3)
         # Convert the image from 'BGR' to HSV colour space
         blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
@@ -435,8 +435,10 @@ class Ribbon(BaseChallenge):
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
         self.camera.iso = 800
+        time.sleep(2)
+#        print self.camera.awb_gains
         self.camera.awb_mode = 'off'
-        self.camera.awb_gains = (1.149, 2.193)
+        self.camera.awb_gains = (1, 2.4)
         self.camera.shutter_speed = 15000
         self.camera.video_denoise = False
         self.camera.saturation = 20

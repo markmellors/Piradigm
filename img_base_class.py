@@ -96,11 +96,13 @@ def colour_of_contour(image, contour):
     if contour is not None:
         mask = numpy.zeros(image.shape[:2], dtype="uint8")
         cv2.drawContours(mask, [contour], -1, 255, -1)
-        mask = cv2.erode(mask, None, iterations=1) #erode makes smaller, dilate makes bigger
-        mean = cv2.mean(image, mask=mask)[:3]
+        mask = cv2.dilate(mask, None, iterations=1) #erode makes smaller, dilate makes bigger
+        mean, stddev = cv2.meanStdDev(image, mask=mask)
+        lower = mean - 1.5 * stddev
+        upper = mean + 1.5 * stddev
     else:
         mean = None
-    return rgb2hsv(*mean)
+    return rgb2hsv(*lower), rgb2hsv(*upper)
 
 def rgb2hsv(r, g, b):
     r, g, b = r/255.0, g/255.0, b/255.0
