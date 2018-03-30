@@ -281,7 +281,7 @@ class Rainbow(BaseChallenge):
                 with open('rainbow.json', 'w') as f:
                     json.dump(data, f)
         if button['r1']:
-            self.timeout = 0
+            self.stop()
         if button['r2']:
             self.processor.tracking = True
             print "Starting"
@@ -302,7 +302,7 @@ class Rainbow(BaseChallenge):
             self.processor.retreated = False
         else:
             print "finished"
-            self.timeout=0
+            self.stop()
 
     def run(self):
         # Startup sequence

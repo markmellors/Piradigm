@@ -214,7 +214,7 @@ class Maze(BaseChallenge):
             while not self.should_die:
                 time.sleep(0.1)
                 if self.processor.finished:
-                    self.timeout = 0
+                    self.stop()
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
