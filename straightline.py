@@ -23,7 +23,7 @@ class StreamProcessor(threading.Thread):
         self.STEERING_OFFSET = -0.2  #more positive make it turn left
         self.CROP_WIDTH = 200
         self.i = 0
-        self.TIMEOUT = 8 #was 30
+        self.TIMEOUT = 8
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.found = False
@@ -168,7 +168,7 @@ class StraightLineSpeed(BaseChallenge):
             while not self.should_die:
                 time.sleep(0.1)
                 if self.processor.finished:
-                    self.timeout = 0
+                    self.stop()
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives

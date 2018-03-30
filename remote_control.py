@@ -19,7 +19,7 @@ class RC(BaseChallenge):
         super(RC, self).__init__(name='RC', timeout=timeout, logger=logger)
         if not joystick:
             logger.info("No joystick available for RC, stopping")
-            self.timeout = 0
+            self.stop()
         else:    
             self.joystick = joystick
 
