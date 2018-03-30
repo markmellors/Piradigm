@@ -1,8 +1,9 @@
 import logging
 import time
+import os
 
 from drivetrain import DriveTrain
-logging.config.fileConfig('logging.ini')
+logging.config.fileConfig(os.path.realpath('logging.ini'))
 logger = logging.getLogger('piradigm.' + __name__)
 
 class BaseChallenge(object):
