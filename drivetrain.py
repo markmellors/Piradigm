@@ -14,7 +14,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
 class DriveTrain():
     def __init__(self, timeout=120):
         time.sleep(0.01)
@@ -25,6 +24,8 @@ class DriveTrain():
         self.pz.init()
         time.sleep(0.5)
         self.motor_max = 100
+        self.FULL_WHITE = (255, 255, 255)
+        self.OFF = (0, 0, 0)
         # battery voltage check constants
         self.BATT_CONSTANTS = {
             "adc_gain": 0.02909,
@@ -33,7 +34,9 @@ class DriveTrain():
             "min_v": 7.45
         }
         self.pz.setInputConfig(self.BATT_CONSTANTS['adc_pin'], 1)
+        self.pz.setOutputConfig(5, 3)    # set output 5 to WS2812
         time.sleep(0.01)
+        self.pz.setBrightness(255)
         self.slow_speed = 20
         self.deadband = 1
         self.boost_cycles = 1
@@ -120,6 +123,11 @@ class DriveTrain():
         self.pz.stop()
         self.pz.cleanup()
         self.killed = True
+
+
+    def lights(self, on):
+        rgb_values = self.FULL_WHITE if on else self.OFF
+        self.pz.setAllPixels(*rgb_values)
 
     def dither(self, counter, speed):
         # function takes a speed and occassionally adds a boost, helpful at very

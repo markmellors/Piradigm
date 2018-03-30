@@ -280,12 +280,28 @@ class Rainbow(BaseChallenge):
                 data = self.processor.colour_bounds
                 with open('rainbow.json', 'w') as f:
                     json.dump(data, f)
-        if button['r1']:
+        elif button['dright']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+        elif button['dleft']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+        elif button['ddown']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+        elif button['dup']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+        elif button['r1']:
             self.stop()
-        if button['r2']:
+        elif button['r2']:
             self.processor.tracking = True
             print "Starting"
-        if button['l1']:
+        elif button['l1']:
             self.processor.tracking = False
             self.drive.move(0,0)
             print "Stopping"

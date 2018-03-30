@@ -31,7 +31,9 @@ class StreamProcessor(threading.Thread):
         self.MARKER_STOP_WIDTH = 70
         self.loop_start_time=0
         self.target_aruco_marker_id = 3
-        self.marker_to_track=0 
+        self.marker_to_track=0
+        self.driving = False
+        self.aiming = False
         self.finished = False
         logger.info("setup complete, looking")
         time.sleep(1)
@@ -88,19 +90,19 @@ class StreamProcessor(threading.Thread):
                     self.finished = True
                 pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
                 self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
-                turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
+                turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
                 if self.last_t_error is not 0:
                     #if there was a real error last time then do some damping
-                    turn_amount -= self.TURN_D *(self.last_t_error - self.t_error)
+                    turn -= self.TURN_D *(self.last_t_error - self.t_error)
 
-                turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+                turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
 
                 #if we're rate limiting the turn_amount, go slow
                 # TODO Rate limit the speed change
-                if abs(turn_amount) == self.MAX_TURN_SPEED:
-                    self.drive.move (turn_amount, self.STRAIGHT_SPEED)
-                else:
-                    self.drive.move (turn_amount, self.STRAIGHT_SPEED)
+                if self.driving:
+                    self.drive.move(turn, self.STRAIGHT_SPEED)
+                elif self.aiming:
+                    self.drive.move(turn, 0)
                 self.last_t_error = self.t_error
             else:
                 self.stop_and_wait()
@@ -138,6 +140,22 @@ class StraightLineSpeed(BaseChallenge):
         self.dict = markers
         super(StraightLineSpeed, self).__init__(name='StraightLineSpeed', timeout=timeout, logger=logger)
 
+    def joystick_handler(self, button):
+        if button['r1']:
+            print "Exiting"
+            self.timeout = 0
+        if button['r2']:
+            self.processor.driving = True
+            print "Starting"
+        if button['l1']:
+            self.processor.driving = False
+            self.processor.aiming = False
+            self.drive.move(0,0)
+            print "Stopping"
+        if button['l2']:
+            self.processor.driving = False
+            self.processor.aiming = True
+            print ("Aiming")
 
     def run(self):
         # Startup sequence
@@ -167,6 +185,8 @@ class StraightLineSpeed(BaseChallenge):
         try:
             while not self.should_die:
                 time.sleep(0.1)
+                if self.joystick.connected:
+                    self.joystick_handler(self.joystick.check_presses())
                 if self.processor.finished:
                     self.stop()
 
