@@ -25,6 +25,7 @@ class BaseChallenge(object):
 
     def stop(self):
         self.logger.info("%s challenge stopping" % self.name)
+        self.drive.stop()
         self.killed = True
 
     def run(self):
