@@ -28,6 +28,7 @@ class StreamProcessor(threading.Thread):
         self.MIN_MARKER_AREA = 200
         self.ribbon_colour = 'blue'
         self.MARKER_COLOUR = 'purple'
+        self.ALT_MARKER = 'green'
         self.MARKERS_ON_THE_LEFT = False 
         self.MARKER_CROP_HEIGHT = 35
         self.MARKER_CROP_WIDTH = 100
@@ -194,21 +195,25 @@ class StreamProcessor(threading.Thread):
 
 
     def entry(self, marker_image, ribbon_image, image):
-        cropped_image = image[self.CROP_HEIGHT:(self.image_centre_x * 2), 0:320]
+        cropped_image = image[self.CROP_HEIGHT:(self.CROP_HEIGHT+40), 0:320]
+        blur_image = cv2.medianBlur(cropped_image, 3)
+        blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         limits = self.colour_bounds.get(
-            self.MARKER_COLOUR, default_colour_bounds
+            self.ALT_MARKER, default_colour_bounds
         )
-        marker_mask = threshold_image(cropped_image, limits)
-        marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_image)
+        marker_mask = threshold_image(blur_image, limits)
+        marker_x, marker_y, marker_area, marker_contour = find_largest_contour(marker_mask)
+        pygame.mouse.set_pos(marker_y+self.CROP_HEIGHT, 320 - marker_x)
         screen = pygame.display.get_surface()
         frame = pygame.surfarray.make_surface(cv2.flip(marker_mask, 1))
-        screen.blit(frame, (120, 0))
+        screen.blit(frame, (self.CROP_HEIGHT, 0))
         pygame.display.update()
-        logger.info("Turntable barrier spotted at %d" % (marker_x))
-        print marker_area
-#        if (marker_area > self.MIN_MARKER_AREA) and (marker_x > self.image_centre_x):
-#             self.drive.move(0, 0)
+        if (marker_area > self.MIN_MARKER_AREA) and (marker_x > self.image_centre_x):  #>=go when marker on elft, <=go when marker on right
+            logger.info("Turntable barrier spotted at %d" % (marker_x))
+            self.drive.move(0, 1)
+            time.sleep(0.4)
+            self.drive.move(0, 0)
 
     def leaving(self):
         pass
@@ -268,7 +273,7 @@ class StreamProcessor(threading.Thread):
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
             image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-            print colour_of_contour(image, ribbon_contour)
+#            print colour_of_contour(image, ribbon_contour)
         else:
             ribbon = None
         pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
@@ -316,10 +321,10 @@ class StreamProcessor(threading.Thread):
             self.MARKER_COLOUR, default_colour_bounds
         )
         marker_mask = threshold_image(marker_image, limits)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
-            screen.blit(frame, (self.CROP_HEIGHT, 0))
-            pygame.display.update()
+#        if not self.menu:
+#            frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
+#            screen.blit(frame, (self.CROP_HEIGHT, 0))
+#            pygame.display.update()
         self.mode[self.mode_number](marker_mask, ribbon_mask, image)
         img_name = "%dimg.jpg" % (self.i)
         # filesave for debugging: 

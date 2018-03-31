@@ -101,7 +101,8 @@ def colour_of_contour(image, contour):
         lower = mean - 1.5 * stddev
         upper = mean + 1.5 * stddev
     else:
-        mean = None
+        lower = None
+        upper = None
     return rgb2hsv(*lower), rgb2hsv(*upper)
 
 def rgb2hsv(r, g, b):
