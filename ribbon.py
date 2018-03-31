@@ -195,7 +195,7 @@ class StreamProcessor(threading.Thread):
 
 
     def entry(self, marker_image, ribbon_image, image):
-        cropped_image = image[self.CROP_HEIGHT:(self.CROP_HEIGHT+40), 0:320]
+        cropped_image = image[self.CROP_HEIGHT:(self.CROP_HEIGHT+45), 0:320]
         blur_image = cv2.medianBlur(cropped_image, 3)
         blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
