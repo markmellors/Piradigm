@@ -135,8 +135,8 @@ class DriveTrain():
         self.killed = True
 
 
-    def lights(self, on):
-        rgb_values = self.FULL_WHITE if on else self.OFF
+    def lights(self, on, requested_rgb=self.FULL_WHITE):
+        rgb_values = requested_rgb if on else self.OFF
         self.pz.setAllPixels(*rgb_values)
 
     def dither(self, counter, speed):
