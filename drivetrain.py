@@ -23,6 +23,7 @@ class DriveTrain():
         self.pz = piconzero
         self.pz.init()
         time.sleep(0.5)
+        self.pz.setOutputConfig(0,2)
         self.motor_max = 100
         self.FULL_WHITE = (255, 255, 255)
         self.OFF = (0, 0, 0)
@@ -48,6 +49,12 @@ class DriveTrain():
         self.killed = False
         self.left_counter = 0
         self.right_counter = 0
+        self.trigger_angle = {
+            'fire': 100,
+            'cock': 140,
+            'safe': 150,
+        }
+        self.safe_trigger = self.trigger_angle.get('safe')
         # Initialise self.average_batt_v with current_batt_v
         self.average_batt_v = self.current_batt_v
 
@@ -72,6 +79,9 @@ class DriveTrain():
             self.pz.setMotor(1, 0)
             self.pz.setMotor(0, 0)
 
+    def trigger(self, position):
+        self.pz.setOutput(0, self.trigger_angle.get(position, self.safe_trigger))
+       
     @property
     def should_die(self):
         # TODO this should be monitored by the calling thread using a
