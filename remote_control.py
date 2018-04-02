@@ -40,6 +40,30 @@ class RC(BaseChallenge):
             rgb_colour = hsv2rgb(self.hue, self.saturation, self.value)
             self.drive.lights(on=True, rgb=rgb_colour)
             print "Turned headlights on"
+        if button['triangle']:
+            self.saturation +=25
+            if self.saturation>255: self.saturation = 255
+            rgb_colour = hsv2rgb(self.hue, self.saturation, self.value)
+            self.drive.lights(on=True, rgb=rgb_colour)
+            print "Turned headlight saturation up"
+        if button['square']:
+            self.hue -=10
+            if self.hue<0: self.hue += 180
+            rgb_colour = hsv2rgb(self.hue, self.saturation, self.value)
+            self.drive.lights(on=True, rgb=rgb_colour)
+            print "Turned headlight hue down"
+        if button['cross']:
+            self.saturation -=25
+            if self.saturation<0: self.saturation = 0
+            rgb_colour = hsv2rgb(self.hue, self.saturation, self.value)
+            self.drive.lights(on=True, rgb=rgb_colour)
+            print "Turned headlight saturation down"
+        if button['circle']:
+            self.hue +=10
+            if self.hue>180: self.hue -= 180
+            rgb_colour = hsv2rgb(self.hue, self.saturation, self.value)
+            self.drive.lights(on=True, rgb=rgb_colour)
+            print "Turned headlight hue up"
 
     def run(self):
         self.logger.info("running %s challenge" % self.name)
