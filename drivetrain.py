@@ -138,7 +138,8 @@ class DriveTrain():
     def lights(self, on, rgb=None):
         if rgb is None: rgb = self.FULL_WHITE
         rgb_values = rgb if on else self.OFF
-        self.pz.setAllPixels(*rgb_values)
+        r, g, b = rgb_values
+        self.pz.setAllPixels(g, r, b)
 
     def dither(self, counter, speed):
         # function takes a speed and occassionally adds a boost, helpful at very

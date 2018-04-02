@@ -15,13 +15,13 @@ logger = logging.getLogger('piradigm.' + __name__)
 
 
 class RC(BaseChallenge):
-    def __init__(self, timeout=120, screen=None, joystick=None):
+    def __init__(self, drive=None, timeout=120, screen=None, joystick=None):
         time.sleep(0.01)
         self.exponential = 2
         self.hue = 0
         self.saturation = 0
         self.value = 255
-        super(RC, self).__init__(name='RC', timeout=timeout, logger=logger)
+        super(RC, self).__init__(name='RC', drive=drive, timeout=timeout, logger=logger)
         if not joystick:
             logger.info("No joystick available for RC, stopping")
             self.stop()

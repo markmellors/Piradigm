@@ -32,6 +32,7 @@ from pi_noon import PiNoon
 from approxeng.input.selectbinder import ControllerResource
 import cv2.aruco as aruco
 from tendo.singleton import SingleInstance
+from drivetrain import DriveTrain
 
 VERSION = '0.3Mazing'
 
@@ -45,6 +46,7 @@ BUTTON_CLICK_TIME = 0.5
 SCREEN_SIZE = width, height = 240, 320
 
 # colours
+RED = 255, 0, 0
 BLUE = 26, 0, 255
 SKY = 100, 50, 255
 CREAM = 254, 255, 250
@@ -66,8 +68,10 @@ class Menu():
         ]
         for var_name, val in env_vars:
             os.environ[var_name] = val
+        self.joystick_was_disconnected = True
         self.challenge_thread = None
         self.timeout = kwargs.pop('timeout', 120)
+        self.drive = DriveTrain(timeout=self.timeout)
         self.markers = aruco.Dictionary_create(6, 3)
 
     def launch_challenge(self, new_challenge):
@@ -135,26 +139,26 @@ class Menu():
         logger.debug("%s button pressed", event.label)
         if event.label is "RC":
             logger.info("launching RC challenge")
-            new_challenge = RC(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = RC(drive=self.drive, timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Rainbow":
             logger.info("launching Rainbow challenge")
-            new_challenge = Rainbow(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = Rainbow(drive=self.drive, timeout=self.timeout, screen=self.screen, joystick=self.joystick)
         elif event.label is "Shooting":
             logger.info("launching Duck Shoot challenge")
-            new_challenge = Duckshoot(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = Duckshoot(drive=self.drive, timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Maze":
             logger.info("launching Maze challenge")
-            new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
+            new_challenge = Maze(drive=self.drive, timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
             return new_challenge
         elif event.label is "Speed":
             logger.info("launching Speed challenge")
-            new_challenge = StraightLineSpeed(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
+            new_challenge = StraightLineSpeed(drive=self.drive, timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
             return new_challenge
         elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")
-            new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = PiNoon(drive=self.drive, timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
@@ -211,8 +215,19 @@ class Menu():
                 time = clock.tick(30)
                 pygame.display.update()
                 sgc.update(time)
-                if self.joystick.connected and (self.challenge_thread is None or not self.challenge_thread.is_alive()):
-                    self.joystick_handler(self.joystick.check_presses())
+                if self.joystick.connected:
+                    if self.joystick_was_disconnected:
+                        logger.info("joystick connection made")
+                        self.drive.lights(on=False)
+                        self.joystick_was_disconnected = False
+                    if (self.challenge_thread is None or not self.challenge_thread.is_alive()):
+                        #only handle joystick presses here if we're not in a challenge,
+                        #otherwise we may be stealing presses
+                        self.joystick_handler(self.joystick.check_presses())
+                else:
+                    logger.info("joystick connection lost")
+                    self.joystick_was_disconnected = True
+                    self.drive.lights(on=True, rgb=RED)
                 for event in pygame.event.get():
                     sgc.event(event)
                     if event.type== GUI:

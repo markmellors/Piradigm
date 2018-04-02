@@ -8,7 +8,7 @@ logging.config.fileConfig(os.path.join(file_path, 'logging.ini'))
 logger = logging.getLogger('piradigm.' + __name__)
 
 class BaseChallenge(object):
-    def __init__(self, logger=logger, screen=None, timeout=120, name="Unamed"):
+    def __init__(self, drive=None, logger=logger, screen=None, timeout=120, name="Unamed"):
         self.logger = logger
         self.logger.info("initialising %s" % name)
         self.screen = screen
@@ -16,7 +16,7 @@ class BaseChallenge(object):
         self.start_time = time.clock()
         self.name = name
         self.killed = False
-        self.drive = DriveTrain(timeout=self.timeout)
+        self.drive = drive
 
     @property
     def should_die(self):
