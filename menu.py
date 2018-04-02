@@ -31,7 +31,7 @@ from straightline import StraightLineSpeed
 from pi_noon import PiNoon
 from approxeng.input.selectbinder import ControllerResource
 import cv2.aruco as aruco
-import tendo
+from tendo.singleton import SingleInstance
 
 VERSION = '0.3Mazing'
 
