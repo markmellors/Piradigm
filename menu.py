@@ -31,6 +31,7 @@ from straightline import StraightLineSpeed
 from pi_noon import PiNoon
 from approxeng.input.selectbinder import ControllerResource
 import cv2.aruco as aruco
+import tendo
 
 VERSION = '0.3Mazing'
 
@@ -242,5 +243,9 @@ class Menu():
 
 
 if __name__ == "__main__":
+    # Prevent the script from running in parallel by instantiatinh SingleInstance() class.
+    # If is there another instance already running it will throw a `SingleInstanceException`.
+
+    me = SingleInstance()
     menu = Menu(timeout=int(arguments['--timeout']))
     menu.run()
