@@ -9,7 +9,7 @@ import logging
 import pygame
 from pygame.locals import*
 from base_challenge import BaseChallenge
-
+from img_base_class import hsv2rgb
 logger = logging.getLogger('piradigm.' + __name__)
 
 
@@ -18,6 +18,9 @@ class RC(BaseChallenge):
     def __init__(self, timeout=120, screen=None, joystick=None):
         time.sleep(0.01)
         self.exponential = 2
+        self.hue = 0
+        self.saturation = 0
+        self.value = 255
         super(RC, self).__init__(name='RC', timeout=timeout, logger=logger)
         if not joystick:
             logger.info("No joystick available for RC, stopping")
@@ -34,7 +37,8 @@ class RC(BaseChallenge):
             self.drive.lights(on=False)
             print "Turned headlights off"
         if button['l2']:
-            self.drive.lights(on=True)
+            rgb_colour = hsv2rgb(self.hue, self.saturation, self.value)
+            self.drive.lights(on=True, rgb=rgb_colour)
             print "Turned headlights on"
 
     def run(self):
