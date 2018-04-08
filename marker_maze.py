@@ -187,6 +187,7 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.last_t_error = 0 
         wall_x, wall_y, wall_area, wall_contour = find_largest_contour(wall_mask)
+        print colour_of_contour(cropped_image, wall_contour)
         crop_width = self.WALL_CROP_RIGHT - self.WALL_CROP_LEFT
         pygame.mouse.set_pos(int(wall_y+(self.CROP_TOP-self.CROP_BOTTOM)), int(crop_width - wall_x))
         turn = 0.0
