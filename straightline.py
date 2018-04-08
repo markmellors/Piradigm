@@ -10,6 +10,7 @@ class StreamProcessor(threading.Thread):
         self.image_centre_x = image_width / 2.0
         self.image_centre_y = image_height / 2.0
         self.drive = drive
+        self.drive.should_normalise_motor_speed = False
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
@@ -18,10 +19,12 @@ class StreamProcessor(threading.Thread):
         self.last_t_error = 0
         self.TURN_P = 4
         self.TURN_D = 2
+        self.AIM_P = 1
+        self.AIM_D = 0.5
         self.LINE_TURN_P = 2
         self.LINE_TURN_D = 1
         self.STRAIGHT_SPEED = 1
-        self.MAX_TURN_SPEED = 0.4
+        self.MAX_TURN_SPEED = 0.6
         self.STEERING_OFFSET = -0.2  #more positive make it turn left
         self.CROP_WIDTH = 200
         self.CROP_BOTTOM = 170
@@ -35,7 +38,8 @@ class StreamProcessor(threading.Thread):
         self.TIMEOUT = 8
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
-        self.found = False
+        self.m_found = False
+        self.l_found = False
         self.TURN_TARGET = 5
         self.MARKER_STOP_WIDTH = 70
         self.loop_start_time=0
@@ -89,7 +93,7 @@ class StreamProcessor(threading.Thread):
                 self.marker_to_track = 0
             if ids[self.marker_to_track][0] == self.target_aruco_marker_id:
                 m = self.marker_to_track
-                self.found = True
+                self.m_found = True
                 #if found, compute the centre and move the cursor there
                 found_y = sum([arr[0] for arr in corners[m][0]])  / 4
                 found_x = sum([arr[1] for arr in corners[m][0]])  / 4
@@ -118,6 +122,7 @@ class StreamProcessor(threading.Thread):
                     self.stop_and_wait()
         else:
             logger.info("no marker, looking for ribbon")
+            self.m_found = False
             cropped_image = image[self.LINE_CROP_BOTTOM:self.LINE_CROP_TOP, self.LINE_CROP_LEFT:self.LINE_CROP_RIGHT]
             img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
             ribbon_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
@@ -131,8 +136,9 @@ class StreamProcessor(threading.Thread):
         frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
         screen.blit(frame, (self.LINE_CROP_TOP,0))
         pygame.display.update()
-        found_identifier = "F" if self.found else "NF"
-        img_name = "%d%s%dimg.jpg" % (self.i, found_identifier, self.ribbon_pos)
+        m_found_identifier = "mF" if self.m_found else "NmF"
+        l_found_identifier = "lF" if self.l_found else "NlF"
+        img_name = "%d%s%s%dimg.jpg" % (self.i, m_found_identifier, l_found_identifier, self.ribbon_pos)
         # filesave for debugging: 
         if self.driving:
             cv2.imwrite(img_name, image)
@@ -142,11 +148,11 @@ class StreamProcessor(threading.Thread):
         ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
-            self.found = True
+            self.l_found = True
             self.ribbon_pos = ribbon_x
         else:
             ribbon = None
-            self.found = False
+            self.l_found = False
             self.ribbon_pos = 0
         crop_width = self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT
         pygame.mouse.set_pos(int(ribbon_y), int(crop_width - ribbon_x))
@@ -159,12 +165,17 @@ class StreamProcessor(threading.Thread):
             logger.info ("ribbon spotted at %i" % (x))
             image_centre_x = (self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT)/2
             t_error  = float(image_centre_x - x) / image_centre_x
-            turn = self.LINE_TURN_P * t_error
-            print turn
+            if self.aiming:
+                turn = self.AIM_P * t_error
+            else:
+                turn = self.LINE_TURN_P * t_error
             turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
             if self.last_t_error is not None:
                 #if there was a real error last time then do some damping
-                turn -= self.LINE_TURN_D *(self.last_t_error - t_error)
+                if self.aiming:
+                    turn -= self.LINE_TURN_D *(self.last_t_error - t_error)
+                else:
+                    turn -= self.AIM_D *(self.last_t_error - t_error)
             if self.driving:
                 self.drive.move(turn, self.STRAIGHT_SPEED)
             elif self.aiming:
