@@ -171,7 +171,7 @@ class StreamProcessor(threading.Thread):
         #cv2.imwrite(img_name, gray)
         self.i += 1
 
-def follow_wall(self, image)
+    def follow_wall(self, image):
         self.m_found = False
         cropped_image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x), int(self.image_centre_y)))
         cropped_image = cropped_image[self.WALL_CROP_BOTTOM:self.WALL_CROP_TOP, self.WALL_CROP_LEFT:self.WALL_CROP_RIGHT]
