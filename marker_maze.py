@@ -41,12 +41,12 @@ class StreamProcessor(threading.Thread):
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
         self.COLOURS = {
-            "red": ((110, 100, 50), (150, 255, 255)),
-            "blue": ((165, 32, 128), (34, 255, 255)),
-            "yellow": ((75, 50, 120), (110, 255, 255)),
-            "white": ((0, 0, 120), (180, 55, 255)),
-            "green": ((35, 70, 70), (70, 255, 230)),
-            "black": ((0, 0, 0), (180, 75, 150))}
+            "red": ((110, 100, 100), (150, 255, 255)),
+            "blue": ((170, 100, 128), (34, 255, 255)),
+            "yellow": ((75, 100, 90), (110, 255, 255)),
+            "white": ((0, 0, 130), (180, 60, 255)),
+            "green": ((35, 100, 100), (75, 255, 230)),
+            "black": ((0, 0, 0), (180, 80, 170))}
         self.wall_colour = ["blue", "white", "yellow", "white", "blue"]
         self.driving = False
         self.aiming = False
