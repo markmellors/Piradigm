@@ -32,8 +32,8 @@ class StreamProcessor(threading.Thread):
         self.CROP_TOP = 255
         self.WALL_CROP_LEFT = 0
         self.WALL_CROP_RIGHT = 320
-        self.WALL_CROP_BOTTOM = 65
-        self.WALL_CROP_TOP = 95
+        self.WALL_CROP_BOTTOM = 68
+        self.WALL_CROP_TOP = 90
         self.i = 0
         self.TIMEOUT = 30.0
         self.START_TIME = time.clock()
@@ -52,10 +52,10 @@ class StreamProcessor(threading.Thread):
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
         self.COLOURS = {
-            "red": ((110, 100, 100), (150, 255, 255)),
+            "red": ((110, 80, 80), (130, 255, 255)),
             "blue": ((170, 100, 128), (34, 255, 255)),
             "yellow": ((75, 100, 90), (110, 255, 255)),
-            "white": ((0, 0, 130), (180, 60, 255)),
+            "white": ((0, 0, 90), (180, 60, 255)),
             "green": ((35, 100, 100), (75, 255, 230)),
             "black": ((0, 0, 0), (180, 80, 170))}
         self.WALL_COLOUR = ["white", "red", "blue", "red", "black"]
@@ -126,8 +126,8 @@ class StreamProcessor(threading.Thread):
                 m = self.marker_to_track
                 self.found = True
                 #if found, comptue the centre and move the cursor there
-                found_y = sum([arr[0] for arr in corners[m][0]])  / 4
-                found_x = sum([arr[1] for arr in corners[m][0]])  / 4
+                found_y = sum([arr[0] for arr in corners[m][0]]) / 4
+                found_x = sum([arr[1] for arr in corners[m][0]]) / 4
                 width = abs(corners[m][0][0][0]-corners[m][0][1][0]+corners[m][0][3][0]-corners[m][0][2][0])/2
                 logger.info('marker width %s' % width)
                 if width > self.TURN_WIDTH[self.turn_number]:
@@ -182,14 +182,13 @@ class StreamProcessor(threading.Thread):
         screen = pygame.display.get_surface()
         colour_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
         screen.blit(colour_frame, ((self.CROP_TOP-self.CROP_BOTTOM), 0))
-        blur_image = cv2.medianBlur(cropped_image, 3)
-        blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
-        wall_mask = threshold_image(blur_image, self.COLOURS.get(self.WALL_COLOUR[self.turn_number]))
+        cropped_image = cv2.cvtColor(cropped_image, cv2.COLOR_RGB2HSV)
+        wall_mask = threshold_image(cropped_image, self.COLOURS.get(self.WALL_COLOUR[self.turn_number]))
         self.found = False
         self.last_t_error = 0 
         wall_x, wall_y, wall_area, wall_contour = find_largest_contour(wall_mask)
         crop_width = self.WALL_CROP_RIGHT - self.WALL_CROP_LEFT
-        pygame.mouse.set_pos(int(wall_y), int(crop_width - wall_x))
+        pygame.mouse.set_pos(int(wall_y+(self.CROP_TOP-self.CROP_BOTTOM)), int(crop_width - wall_x))
         turn = 0.0
         if wall_area > self.MIN_CONTOUR_AREA:
             self.w_found = True
@@ -279,7 +278,7 @@ class Maze(BaseChallenge):
             camera=self.camera,
             processor=self.processor
         )
-        pygame.mouse.set_visible(False)
+        pygame.mouse.set_visible(True)
         try:
             while not self.should_die:
                 time.sleep(0.1)
