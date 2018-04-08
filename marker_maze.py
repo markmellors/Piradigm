@@ -55,7 +55,7 @@ class StreamProcessor(threading.Thread):
             "white": ((0, 0, 130), (180, 60, 255)),
             "green": ((35, 100, 100), (75, 255, 230)),
             "black": ((0, 0, 0), (180, 80, 170))}
-        self.wall_colour = ["white", "red", "blue", "red", "black"]
+        self.WALL_COLOUR = ["white", "red", "blue", "red", "black"]
         self.driving = False
         self.aiming = False
         self.finished = False
@@ -181,7 +181,7 @@ class StreamProcessor(threading.Thread):
         screen.blit(colour_frame, (0, 0))
         blur_image = cv2.medianBlur(cropped_image, 3)
         blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
-        wall_mask = threshold_image(blur_image, self.colour.get(self.wall_colour[self.turn_number]))
+        wall_mask = threshold_image(blur_image, self.COLOURS.get(self.WALL_COLOUR[self.turn_number]))
         self.found = False
         self.last_t_error = 0 
         wall_x, wall_y, wall_area, wall_contour = find_largest_contour(wall_mask)
