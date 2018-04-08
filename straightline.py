@@ -150,7 +150,7 @@ class StreamProcessor(threading.Thread):
             x = ribbon[0]
             logger.info ("ribbon spotted at %i" % (x))
             image_centre_x = (self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT)/2
-            t_error  = (image_centre_x - x) / image_centre_x
+            t_error  = float(image_centre_x - x) / image_centre_x
             turn = self.TURN_P * t_error
             if self.last_t_error is not None:
                 #if there was a real error last time then do some damping
