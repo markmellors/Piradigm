@@ -142,8 +142,8 @@ class StreamProcessor(threading.Thread):
         l_found_identifier = "lF" if self.l_found else "NlF"
         img_name = "%d%s%s%dimg.jpg" % (self.i, m_found_identifier, l_found_identifier, self.ribbon_pos)
         # filesave for debugging: 
-        if self.driving:
-            cv2.imwrite(img_name, image)
+#        if self.driving:
+#            cv2.imwrite(img_name, image)
         self.i += 1
 
     def ribbon_following(self, ribbon_image):
