@@ -39,11 +39,11 @@ class StreamProcessor(threading.Thread):
         self.target_aruco_marker_id = 3
         self.marker_to_track=0
         self.ribbon_colour = ((0, 0, 100), (180, 55, 255))
+        self.MIN_CONTOUR_AREA = 30
         self.driving = False
         self.aiming = False
         self.finished = False
         logger.info("setup complete, looking")
-        time.sleep(1)
         self.start()
 
     def run(self):
@@ -116,20 +116,16 @@ class StreamProcessor(threading.Thread):
             logger.info("no marker, lookign for ribbon")
             cropped_image = image[self.LINE_CROP_BOTTOM:self.LINE_CROP_TOP, self.LINE_CROP_LEFT:self.LINE_CROP_RIGHT]
             img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
-            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
-            screen.blit(frame, (130, 0))
+            ribbon_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+            screen.blit(ribbon_frame, (0, 0))
             blur_image = cv2.medianBlur(cropped_image, 3)
             blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
-            default_colour_bounds = ((40, 0, 0), (180, 255, 255))
-            limits = self.colour_bounds.get(
-                self.ribbon_colour, default_colour_bounds
-            )
-            ribbon_mask = threshold_image(blur_image, limits)
-            ribbon_following(ribbon_mask)
+            ribbon_mask = threshold_image(blur_image, self.ribbon_colour)
+            self.ribbon_following(ribbon_mask)
             
         # Display the resulting frame
         frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
-        screen.blit(frame, (0,0))
+        screen.blit(frame, (130,0))
         pygame.display.update()
         found_identifier = "F" if self.found else "NF"
         img_name = "%d%simg.jpg" % (self.i, found_identifier)
@@ -213,6 +209,7 @@ class StraightLineSpeed(BaseChallenge):
         self.camera.framerate = self.frame_rate
         self.camera.iso = 800
         self.camera.shutter_speed = 12000
+        time.sleep(0.2)
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
@@ -221,8 +218,6 @@ class StraightLineSpeed(BaseChallenge):
             drive=self.drive,
             dict=self.dict
         )
-        logger.info('Wait ...')
-        time.sleep(2)
         logger.info('Setting up image capture thread')
         self.image_capture_thread = ImageCapture(
             camera=self.camera,
