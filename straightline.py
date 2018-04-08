@@ -21,18 +21,18 @@ class StreamProcessor(threading.Thread):
         self.TURN_D = 2
         self.AIM_P = 1
         self.AIM_D = 0.5
-        self.LINE_TURN_P = 2
-        self.LINE_TURN_D = 1
+        self.LINE_TURN_P = 4
+        self.LINE_TURN_D = 2
         self.STRAIGHT_SPEED = 1
         self.MAX_TURN_SPEED = 0.6
         self.STEERING_OFFSET = -0.2  #more positive make it turn left
         self.CROP_WIDTH = 200
         self.CROP_BOTTOM = 170
         self.CROP_TOP = 300
-        self.LINE_CROP_LEFT = 220
-        self.LINE_CROP_RIGHT = 420
-        self.LINE_CROP_BOTTOM = 0
-        self.LINE_CROP_TOP = 110
+        self.LINE_CROP_LEFT = 0
+        self.LINE_CROP_RIGHT = 320
+        self.LINE_CROP_BOTTOM = 30
+        self.LINE_CROP_TOP = 55
         self.ribbon_pos = 0
         self.i = 0
         self.TIMEOUT = 8
@@ -123,7 +123,8 @@ class StreamProcessor(threading.Thread):
         else:
             logger.info("no marker, looking for ribbon")
             self.m_found = False
-            cropped_image = image[self.LINE_CROP_BOTTOM:self.LINE_CROP_TOP, self.LINE_CROP_LEFT:self.LINE_CROP_RIGHT]
+            cropped_image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x), int(self.image_centre_y)))
+            cropped_image = cropped_image[self.LINE_CROP_BOTTOM:self.LINE_CROP_TOP, self.LINE_CROP_LEFT:self.LINE_CROP_RIGHT]
             img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
             ribbon_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
             screen.blit(ribbon_frame, (0, 0))
