@@ -10,6 +10,7 @@ class StreamProcessor(threading.Thread):
         self.image_centre_x = image_width / 2.0
         self.image_centre_y = image_height / 2.0
         self.drive = drive
+        self.drive.__init__()
         self.drive.should_normalise_motor_speed = False
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
