@@ -17,9 +17,11 @@ class StreamProcessor(threading.Thread):
         self.small_dict = dict 
         self.last_t_error = 0
         self.TURN_P = 4
-        self.TURN_D = 1
+        self.TURN_D = 2
+        self.LINE_TURN_P = 2
+        self.LINE_TURN_D = 1
         self.STRAIGHT_SPEED = 1
-        self.MAX_TURN_SPEED = 0.5
+        self.MAX_TURN_SPEED = 0.4
         self.STEERING_OFFSET = -0.2  #more positive make it turn left
         self.CROP_WIDTH = 200
         self.CROP_BOTTOM = 170
@@ -28,6 +30,7 @@ class StreamProcessor(threading.Thread):
         self.LINE_CROP_RIGHT = 420
         self.LINE_CROP_BOTTOM = 0
         self.LINE_CROP_TOP = 110
+        self.ribbon_pos = 0
         self.i = 0
         self.TIMEOUT = 8
         self.START_TIME = time.clock()
@@ -129,17 +132,22 @@ class StreamProcessor(threading.Thread):
         screen.blit(frame, (self.LINE_CROP_TOP,0))
         pygame.display.update()
         found_identifier = "F" if self.found else "NF"
-        img_name = "%d%simg.jpg" % (self.i, found_identifier)
+        img_name = "%d%s%dimg.jpg" % (self.i, found_identifier, self.ribbon_pos)
         # filesave for debugging: 
-        # cv2.imwrite(img_name, gray)
+        if self.driving:
+            cv2.imwrite(img_name, image)
         self.i += 1
 
     def ribbon_following(self, ribbon_image):
         ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
         if ribbon_area > self.MIN_CONTOUR_AREA:
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+            self.found = True
+            self.ribbon_pos = ribbon_x
         else:
             ribbon = None
+            self.found = False
+            self.ribbon_pos = 0
         crop_width = self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT
         pygame.mouse.set_pos(int(ribbon_y), int(crop_width - ribbon_x))
         self.follow_ribbon(ribbon, self.STRAIGHT_SPEED)
@@ -151,17 +159,19 @@ class StreamProcessor(threading.Thread):
             logger.info ("ribbon spotted at %i" % (x))
             image_centre_x = (self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT)/2
             t_error  = float(image_centre_x - x) / image_centre_x
-            turn = self.TURN_P * t_error
+            turn = self.LINE_TURN_P * t_error
+            print turn
+            turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
             if self.last_t_error is not None:
                 #if there was a real error last time then do some damping
-                turn -= self.TURN_D *(self.last_t_error - t_error)
+                turn -= self.LINE_TURN_D *(self.last_t_error - t_error)
             if self.driving:
                 self.drive.move(turn, self.STRAIGHT_SPEED)
             elif self.aiming:
                 self.drive.move(turn, 0)
-            self.last_before_that_t_error = self.last_t_error
             self.last_t_error = t_error
         else:
+            self.last_t_error = None
             logger.info('No ribbon either')
             if self.driving:
                 self.stop_and_wait()
@@ -170,7 +180,7 @@ class StreamProcessor(threading.Thread):
     def stop_and_wait(self):
         self.drive.move(0, self.STRAIGHT_SPEED)
         self.found = False
-        self.last_t_error = 0
+        self.last_t_error = None
 
 
 class StraightLineSpeed(BaseChallenge):
