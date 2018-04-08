@@ -27,7 +27,7 @@ class StreamProcessor(threading.Thread):
         self.LINE_CROP_LEFT = 220
         self.LINE_CROP_RIGHT = 420
         self.LINE_CROP_BOTTOM = 0
-        self.LINE_CROP_TOP = 150
+        self.LINE_CROP_TOP = 110
         self.i = 0
         self.TIMEOUT = 8
         self.START_TIME = time.clock()
@@ -96,7 +96,7 @@ class StreamProcessor(threading.Thread):
                     logger.info('finished!')
                     self.drive.move(0,0)
                     self.finished = True
-                pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
+                pygame.mouse.set_pos(int(found_x)+self.LINE_CROP_TOP, int(self.CROP_WIDTH-found_y))
                 self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
                 turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
                 if self.last_t_error is not 0:
@@ -111,9 +111,10 @@ class StreamProcessor(threading.Thread):
                     self.drive.move(turn, 0)
                 self.last_t_error = self.t_error
             else:
-                self.stop_and_wait()
+                if self.driving:
+                    self.stop_and_wait()
         else:
-            logger.info("no marker, lookign for ribbon")
+            logger.info("no marker, looking for ribbon")
             cropped_image = image[self.LINE_CROP_BOTTOM:self.LINE_CROP_TOP, self.LINE_CROP_LEFT:self.LINE_CROP_RIGHT]
             img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
             ribbon_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
@@ -125,7 +126,7 @@ class StreamProcessor(threading.Thread):
             
         # Display the resulting frame
         frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
-        screen.blit(frame, (130,0))
+        screen.blit(frame, (self.LINE_CROP_TOP,0))
         pygame.display.update()
         found_identifier = "F" if self.found else "NF"
         img_name = "%d%simg.jpg" % (self.i, found_identifier)
@@ -139,7 +140,8 @@ class StreamProcessor(threading.Thread):
             ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
         else:
             ribbon = None
-        pygame.mouse.set_pos(ribbon_y, 320 - ribbon_x)
+        crop_width = self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT
+        pygame.mouse.set_pos(int(ribbon_y), int(crop_width - ribbon_x))
         self.follow_ribbon(ribbon, self.STRAIGHT_SPEED)
 
     def follow_ribbon(self, ribbon, speed):
@@ -147,21 +149,22 @@ class StreamProcessor(threading.Thread):
         if ribbon is not None:
             x = ribbon[0]
             logger.info ("ribbon spotted at %i" % (x))
-            t_error  = (self.image_centre_x - x) / self.image_centre_x
+            image_centre_x = (self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT)/2
+            t_error  = (image_centre_x - x) / image_centre_x
             turn = self.TURN_P * t_error
             if self.last_t_error is not None:
                 #if there was a real error last time then do some damping
                 turn -= self.TURN_D *(self.last_t_error - t_error)
-                if self.driving:
-                    self.drive.move(turn, self.STRAIGHT_SPEED)
-                elif self.aiming:
-                    self.drive.move(turn, 0)
-            self.drive.move(turn, speed)
+            if self.driving:
+                self.drive.move(turn, self.STRAIGHT_SPEED)
+            elif self.aiming:
+                self.drive.move(turn, 0)
             self.last_before_that_t_error = self.last_t_error
             self.last_t_error = t_error
         else:
             logger.info('No ribbon either')
-            self.stop_and_wait()
+            if self.driving:
+                self.stop_and_wait()
 
 
     def stop_and_wait(self):
@@ -208,7 +211,7 @@ class StraightLineSpeed(BaseChallenge):
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
         self.camera.iso = 800
-        self.camera.shutter_speed = 12000
+        self.camera.shutter_speed = 8000
         time.sleep(0.2)
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
@@ -223,7 +226,7 @@ class StraightLineSpeed(BaseChallenge):
             camera=self.camera,
             processor=self.processor
         )
-        pygame.mouse.set_visible(False)
+        pygame.mouse.set_visible(True)
         try:
             while not self.should_die:
                 time.sleep(0.1)
