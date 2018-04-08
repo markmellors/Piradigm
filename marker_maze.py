@@ -22,16 +22,18 @@ class StreamProcessor(threading.Thread):
         self.TURN_D = 0.6 #0.5
         self.AIM_P = 1
         self.AIM_D = 0.5
-        self.LINE_TURN_P = 4
-        self.LINE_TURN_D = 2
+        self.WALL_TURN_P = 4
+        self.WALL_TURN_D = 2
         self.drive.__init__()
         self.STRAIGHT_SPEED = 0.9 #was 0.8
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 480
+        self.CROP_BOTTOM = 75
+        self.CROP_TOP = 255
         self.WALL_CROP_LEFT = 0
         self.WALL_CROP_RIGHT = 320
-        self.WALL_CROP_BOTTOM = 30
-        self.WALL_CROP_TOP = 55
+        self.WALL_CROP_BOTTOM = 65
+        self.WALL_CROP_TOP = 95
         self.i = 0
         self.TIMEOUT = 30.0
         self.START_TIME = time.clock()
@@ -44,6 +46,7 @@ class StreamProcessor(threading.Thread):
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.05 #was 0.04
         self.MAX_TURN_SPEED = 0.8 #was 0.25
+        self.MIN_CONTOUR_AREA = 30
         self.loop_start_time=0
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
@@ -103,7 +106,7 @@ class StreamProcessor(threading.Thread):
         if self.turn_number >= self.TURN_TARGET:
            logger.info("finished!")
            self.finished = True
-        frame = image[75:255, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+        frame = image[self.CROP_BOTTOM:self.CROP_TOP, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
@@ -176,9 +179,9 @@ class StreamProcessor(threading.Thread):
         cropped_image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x), int(self.image_centre_y)))
         cropped_image = cropped_image[self.WALL_CROP_BOTTOM:self.WALL_CROP_TOP, self.WALL_CROP_LEFT:self.WALL_CROP_RIGHT]
         img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
-        colour_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
         screen = pygame.display.get_surface()
-        screen.blit(colour_frame, (0, 0))
+        colour_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+        screen.blit(colour_frame, ((self.CROP_TOP-self.CROP_BOTTOM), 0))
         blur_image = cv2.medianBlur(cropped_image, 3)
         blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
         wall_mask = threshold_image(blur_image, self.COLOURS.get(self.WALL_COLOUR[self.turn_number]))
