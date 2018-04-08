@@ -20,10 +20,18 @@ class StreamProcessor(threading.Thread):
         self.last_t_error = 0
         self.TURN_P = 2  #0.9
         self.TURN_D = 0.6 #0.5
+        self.AIM_P = 1
+        self.AIM_D = 0.5
+        self.LINE_TURN_P = 4
+        self.LINE_TURN_D = 2
         self.drive.__init__()
         self.STRAIGHT_SPEED = 0.9 #was 0.8
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 480
+        self.WALL_CROP_LEFT = 0
+        self.WALL_CROP_RIGHT = 320
+        self.WALL_CROP_BOTTOM = 30
+        self.WALL_CROP_TOP = 55
         self.i = 0
         self.TIMEOUT = 30.0
         self.START_TIME = time.clock()
@@ -47,7 +55,7 @@ class StreamProcessor(threading.Thread):
             "white": ((0, 0, 130), (180, 60, 255)),
             "green": ((35, 100, 100), (75, 255, 230)),
             "black": ((0, 0, 0), (180, 80, 170))}
-        self.wall_colour = ["blue", "white", "yellow", "white", "blue"]
+        self.wall_colour = ["white", "red", "blue", "red", "black"]
         self.driving = False
         self.aiming = False
         self.finished = False
@@ -91,6 +99,7 @@ class StreamProcessor(threading.Thread):
     
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
+        screen.fill([0,0,0])
         if self.turn_number >= self.TURN_TARGET:
            logger.info("finished!")
            self.finished = True
@@ -154,7 +163,6 @@ class StreamProcessor(threading.Thread):
             self.follow_wall(image)
         # Display the resulting frame
         frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
-        screen.fill([0,0,0])
         screen.blit(frame, (0,0))
         pygame.display.update()
         found_identifier = "F" if self.found else "NF"
@@ -169,10 +177,11 @@ def follow_wall(self, image)
         cropped_image = cropped_image[self.WALL_CROP_BOTTOM:self.WALL_CROP_TOP, self.WALL_CROP_LEFT:self.WALL_CROP_RIGHT]
         img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
         colour_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+        screen = pygame.display.get_surface()
         screen.blit(colour_frame, (0, 0))
         blur_image = cv2.medianBlur(cropped_image, 3)
         blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
-        wall_mask = threshold_image(blur_image, self.wall_colour(self.turn_number))
+        wall_mask = threshold_image(blur_image, self.colour.get(self.wall_colour[self.turn_number]))
         self.found = False
         self.last_t_error = 0 
         wall_x, wall_y, wall_area, wall_contour = find_largest_contour(wall_mask)
@@ -189,12 +198,12 @@ def follow_wall(self, image)
             if self.aiming:
                 turn = self.AIM_P * t_error
             else:
-                turn = self.LINE_TURN_P * t_error
+                turn = self.WALL_TURN_P * t_error
             turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
             if self.last_t_error is not None:
                 #if there was a real error last time then do some damping
                 if self.aiming:
-                    turn -= self.LINE_TURN_D *(self.last_t_error - t_error)
+                    turn -= self.WALL_TURN_D *(self.last_t_error - t_error)
                 else:
                     turn -= self.AIM_D *(self.last_t_error - t_error)
             if self.driving:
