@@ -40,6 +40,14 @@ class StreamProcessor(threading.Thread):
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
+        self.COLOURS = {
+            "red": ((110, 100, 50), (150, 255, 255)),
+            "blue": ((165, 32, 128), (34, 255, 255)),
+            "yellow": ((75, 50, 120), (110, 255, 255)),
+            "white": ((0, 0, 120), (180, 55, 255)),
+            "green": ((35, 70, 70), (70, 255, 230)),
+            "black": ((0, 0, 0), (180, 75, 150))}
+        self.wall_colour = ["blue", "white", "yellow", "white", "blue"]
         self.driving = False
         self.aiming = False
         self.finished = False
@@ -139,30 +147,11 @@ class StreamProcessor(threading.Thread):
                     self.drive.move(turn, 0)
                 self.last_t_error = self.t_error
             else:
-                logger.info("looking for marker %d" % self.turn_number)
-                if self.found:
-                    self.drive.move(0,0)
-                else:
-                    if self.turn_number <= 2:
-                        self.turn_right()
-                    else:
-                        self.turn_left()
-                self.found = False
-                self.last_t_error = 0 
+                logger.info("wrong marker found, looking for %d" % self.turn_number)
+                self.follow_wall(image)
         else:
-            logger.info("looking for marker %d" % self.turn_number)
-            #if marker was found, then probably best to stop and look
-            if self.found:
-                if self.driving:
-                    self.drive.move(0, 0) #self.STRAIGHT_SPEED/2)
-            else:
-                #otherwise, go looking
-                if self.turn_number <= 2:
-                    self.turn_right()
-                else:
-                    self.turn_left()
-            self.found = False
-            self.last_t_error = 0
+            logger.info("looking for marker %d, none found" % self.turn_number)
+            self.follow_wall(image)
         # Display the resulting frame
         frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
         screen.fill([0,0,0])
@@ -174,7 +163,55 @@ class StreamProcessor(threading.Thread):
         #cv2.imwrite(img_name, gray)
         self.i += 1
 
-
+def follow_wall(self, image)
+        self.m_found = False
+        cropped_image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x), int(self.image_centre_y)))
+        cropped_image = cropped_image[self.WALL_CROP_BOTTOM:self.WALL_CROP_TOP, self.WALL_CROP_LEFT:self.WALL_CROP_RIGHT]
+        img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
+        colour_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+        screen.blit(colour_frame, (0, 0))
+        blur_image = cv2.medianBlur(cropped_image, 3)
+        blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
+        wall_mask = threshold_image(blur_image, self.wall_colour(self.turn_number))
+        self.found = False
+        self.last_t_error = 0 
+        wall_x, wall_y, wall_area, wall_contour = find_largest_contour(wall_mask)
+        crop_width = self.WALL_CROP_RIGHT - self.WALL_CROP_LEFT
+        pygame.mouse.set_pos(int(wall_y), int(crop_width - wall_x))
+        turn = 0.0
+        if wall_area > self.MIN_CONTOUR_AREA:
+            self.w_found = True
+            self.wall_pos = wall_x
+            x = wall_x
+            logger.info ("wall spotted at %i" % (x))
+            image_centre_x = (self.WALL_CROP_RIGHT - self.WALL_CROP_LEFT)/2
+            t_error  = float(image_centre_x - x) / image_centre_x
+            if self.aiming:
+                turn = self.AIM_P * t_error
+            else:
+                turn = self.LINE_TURN_P * t_error
+            turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+            if self.last_t_error is not None:
+                #if there was a real error last time then do some damping
+                if self.aiming:
+                    turn -= self.LINE_TURN_D *(self.last_t_error - t_error)
+                else:
+                    turn -= self.AIM_D *(self.last_t_error - t_error)
+            if self.driving:
+                self.drive.move(turn, self.STRAIGHT_SPEED)
+            elif self.aiming:
+                self.drive.move(turn, 0)
+            self.last_t_error = t_error
+        else:
+            self.m_found = False
+            self.wall_pos = 0
+            if self.found:
+                self.drive.move(0,0)
+            else:
+                if self.turn_number <= 2:
+                    self.turn_right()
+                else:
+                    self.turn_left()
 
 class Maze(BaseChallenge):
     """Minimal Maze challenge class"""
