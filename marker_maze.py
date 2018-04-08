@@ -21,7 +21,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_P = 2  #0.9
         self.TURN_D = 0.6 #0.5
         self.drive.__init__()
-        self.STRAIGHT_SPEED = 0.8 #was 0.5
+        self.STRAIGHT_SPEED = 0.9 #was 0.8
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 480
         self.i = 0
@@ -31,11 +31,11 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [36, 30, 38, 42, 34, 24] # [32, 27, 34, 33, 27, 24]
+        self.TURN_WIDTH = [41, 31, 38, 45, 34, 24] # [32, 27, 34, 33, 27, 24]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
-        self.TURN_TIME = 0.04
-        self.MAX_TURN_SPEED = 0.7 #was 0.25
+        self.TURN_TIME = 0.05 #was 0.04
+        self.MAX_TURN_SPEED = 0.8 #was 0.25
         self.loop_start_time=0
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
@@ -44,7 +44,7 @@ class StreamProcessor(threading.Thread):
         self.aiming = False
         self.finished = False
         logger.info("setup complete, looking")
-        time.sleep(1)
+        time.sleep(0.1)
         self.start()
 
     def run(self):
@@ -224,7 +224,7 @@ class Maze(BaseChallenge):
             dict=self.dict
         )
         logger.info('Wait ...')
-        time.sleep(2)
+        time.sleep(0.2)
         logger.info('Setting up image capture thread')
         self.image_capture_thread = ImageCapture(
             camera=self.camera,
