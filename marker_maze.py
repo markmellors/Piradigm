@@ -31,7 +31,7 @@ class StreamProcessor(threading.Thread):
         self.CROP_BOTTOM = 75
         self.CROP_TOP = 255
         self.WALL_CROP_LEFT = 0
-        self.WALL_CROP_RIGHT = 320
+        self.WALL_CROP_RIGHT = 240
         self.WALL_CROP_BOTTOM = 68
         self.WALL_CROP_TOP = 90
         self.i = 0
@@ -52,7 +52,7 @@ class StreamProcessor(threading.Thread):
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
         self.COLOURS = {
-            "red": ((105, 90, 100), (130, 255, 255)),
+            "red": ((105, 90, 80), (130, 255, 255)),
             "blue": ((170, 100, 128), (34, 255, 255)),
             "yellow": ((75, 100, 90), (100, 255, 255)),
             "white": ((0, 0, 90), (180, 60, 255)),
@@ -146,6 +146,9 @@ class StreamProcessor(threading.Thread):
                         if self.turn_number == 4:
                             self.brake()
                         self.turn_left()
+                # Display the frame
+                frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
+                screen.blit(frame, (0,0))
                 pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
                 self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
                 turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
@@ -164,9 +167,6 @@ class StreamProcessor(threading.Thread):
         else:
             logger.info("looking for marker %d, none found" % self.turn_number)
             self.follow_wall(image)
-        # Display the resulting frame
-        frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
-        screen.blit(frame, (0,0))
         pygame.display.update()
         found_identifier = "F" if self.found else "NF"
         img_name = "%d%simg.jpg" % (self.i, found_identifier)
@@ -187,9 +187,8 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.last_t_error = 0 
         wall_x, wall_y, wall_area, wall_contour = find_largest_contour(wall_mask)
-        print colour_of_contour(cropped_image, wall_contour)
-        crop_width = self.WALL_CROP_RIGHT - self.WALL_CROP_LEFT
-        pygame.mouse.set_pos(int(wall_y+(self.CROP_TOP-self.CROP_BOTTOM)), int(crop_width - wall_x))
+        wall_crop_width = self.WALL_CROP_RIGHT - self.WALL_CROP_LEFT
+        pygame.mouse.set_pos(int(wall_y+(self.CROP_TOP-self.CROP_BOTTOM)), int(wall_crop_width - wall_x))
         turn = 0.0
         if wall_area > self.MIN_CONTOUR_AREA:
             self.w_found = True
