@@ -18,9 +18,10 @@ class StreamProcessor(threading.Thread):
         #create small cust dictionary
         self.small_dict = dict #aruco.Dictionary_create(6, 3)
         self.last_t_error = 0
-        self.TURN_P = 0.9
-        self.TURN_D = 0.5
-        self.STRAIGHT_SPEED = 0.6 #was 0.5
+        self.TURN_P = 2  #0.9
+        self.TURN_D = 0.6 #0.5
+        self.drive.__init__()
+        self.STRAIGHT_SPEED = 0.8 #was 0.5
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 480
         self.i = 0
@@ -30,11 +31,11 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [32, 27, 34, 33, 27, 24]
+        self.TURN_WIDTH = [36, 30, 38, 42, 34, 24] # [32, 27, 34, 33, 27, 24]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.04
-        self.MAX_TURN_SPEED = 0.5 #was 0.25
+        self.MAX_TURN_SPEED = 0.7 #was 0.25
         self.loop_start_time=0
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
@@ -113,10 +114,18 @@ class StreamProcessor(threading.Thread):
                     self.turn_number += 1
                     self.found = False
                     logger.info('Close to marker making turn %s' % self.turn_number)
-                    if self.turn_number == 5:
+                    if self.turn_number <= 2:
+                        if self.turn_number == 1:
+                            self.brake()
+                        self.turn_right()
+                    elif self.turn_number == 5:
                         logger.info('finished!')
                         self.drive.move(0,0)
                         self.finished = True
+                    else:
+                        if self.turn_number == 4:
+                            self.brake()
+                        self.turn_left()
                 pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
                 self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
                 turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
@@ -135,12 +144,8 @@ class StreamProcessor(threading.Thread):
                     self.drive.move(0,0)
                 else:
                     if self.turn_number <= 2:
-                        if self.turn_number == 1:
-                            self.brake()
                         self.turn_right()
                     else:
-                        if self.turn_number == 4:
-                            self.brake()
                         self.turn_left()
                 self.found = False
                 self.last_t_error = 0 
@@ -149,16 +154,12 @@ class StreamProcessor(threading.Thread):
             #if marker was found, then probably best to stop and look
             if self.found:
                 if self.driving:
-                    self.drive.move(0, self.STRAIGHT_SPEED/2)
+                    self.drive.move(0, 0) #self.STRAIGHT_SPEED/2)
             else:
                 #otherwise, go looking
                 if self.turn_number <= 2:
-                    if self.turn_number == 1:
-                        self.brake()
                     self.turn_right()
                 else:
-                    if self.turn_number == 4:
-                        self.brake()
                     self.turn_left()
             self.found = False
             self.last_t_error = 0
