@@ -1,5 +1,6 @@
 from img_base_class import *
 import random
+import json
 import cv2.aruco as aruco
 from approxeng.input.selectbinder import ControllerResource
 
@@ -22,7 +23,7 @@ class StreamProcessor(threading.Thread):
         self.BLUR = 3
         self.mode = [self.file_selection, self.auto_calibrating, self.manual_calibrating, self.thresholding]
         self.mode_number = 0
-        self.colour_limits = ((0, 0, 0), (180, 255, 255))
+        self.colour_value = ((0, 0, 0), (180, 255, 255))
         self.cal_x = self.image_width/3
         self.cal_y = self.image_height/3
         self.cal_width = self.image_width/3
@@ -61,7 +62,7 @@ class StreamProcessor(threading.Thread):
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
         screen.blit(frame, (0, 0))
         self.show_cal_label(screen)
-        self.colour_limits = self.get_limits(image, 1.5)
+        self.colour_value = self.get_limits(image, 1.5)
         h, w = image.shape[:2]
         # pygame screen, (colour tuple), (top left x, top left y, width, height), line thickness
         pygame.draw.rect(screen, (255,0,0), (self.cal_y, self.cal_x, self.cal_height, self.cal_width), 2)
@@ -71,7 +72,7 @@ class StreamProcessor(threading.Thread):
 
     def thresholding(self, image, screen):
         self.show_thresholding_label(screen)
-        obj_range = threshold_image(image, self.colour_limits)
+        obj_range = threshold_image(image, self.colour_value)
         frame = pygame.surfarray.make_surface(cv2.flip(obj_range, 1))
         screen.blit(frame, (0, 0))
         obj_x, obj_y, obj_a, obj_contour = find_largest_contour(obj_range)
@@ -142,7 +143,7 @@ class Calibrate(BaseChallenge):
             self.display_files()
         if button['start']:
             if self.processor.mode_number <> 0:
-                self.logger.info("colour value set to %s" %  self.colour_limits)
+                self.logger.info("colour value set to %s" %  self.colour_value)
                 #TODO: add value save routine here 
                 self.logger.info("value saved")
         if button['select']:
@@ -150,6 +151,7 @@ class Calibrate(BaseChallenge):
                 'mod': 0, 'scancode': 32, 'key': pygame.K_SPACE, 'unicode': u' '}))
             pygame.event.post(pygame.event.Event(pygame.KEYUP,{
                 'mod': 0, 'scancode': 32, 'key': pygame.K_SPACE, 'unicode': u' '}))
+            time.sleep(0.1)
             if self.processor.mode_number == 0:
                 #TODO: add file/value selection here
                 self.display_values()
@@ -202,20 +204,26 @@ class Calibrate(BaseChallenge):
                 button_x = (button_index % 2) * 120 + 10
                 button_y = ((button_index - 1) % 2 + button_index) * 10
                 radio_button = sgc.Radio(group="file", label=display_name, pos=(button_x, button_y), col = (255,255,255))
-                self.file_radio_buttons.append(radio_button)
+                data = dict(btn=radio_button, label=display_name, index=button_index)
+                self.file_radio_buttons.append(data)
                 radio_button.add(button_index)
                 button_index += 1
-        self.file_radio_buttons[0]._activate()
+        self.file_radio_buttons[0]['btn']._activate()
 
     def display_values(self):
-        pass
+        for button in self.file_radio_buttons:
+            if button['btn'].selected:
+                filename = button['label'] + ".json"
+        with open(filename) as json_file:
+            self.colour_values = json.load(json_file)
+        for colour in self.colour_values.keys():
+            print colour
 
     def remove_combo_boxes(self):
         if self.processor.mode_number == 0:
-            button_index = 0
             for button in self.file_radio_buttons:
-                button.remove(button_index)
-                button_index += 1
+                button['btn'].remove(button['index'])
+
 
     def run(self):
         # Startup sequence
