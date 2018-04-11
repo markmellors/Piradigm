@@ -133,6 +133,8 @@ class Calibrate(BaseChallenge):
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
+        self.colour_radio_buttons = []
+        self.colour_label = None
         super(Calibrate, self).__init__(name='Calibrate', timeout=timeout, logger=logger)
 
     def joystick_handler(self, button):
@@ -152,26 +154,21 @@ class Calibrate(BaseChallenge):
             pygame.event.post(pygame.event.Event(pygame.KEYUP,{
                 'mod': 0, 'scancode': 32, 'key': pygame.K_SPACE, 'unicode': u' '}))
             time.sleep(0.1)
-            if self.processor.mode_number == 0:
-                #TODO: add file/value selection here
-                self.display_values()
-#                self.logger.info("%s file selected for colour editing" % self.processor.colour_limits)
- #               self.logger.info("%s value selected for editing" % self.processor.colour_limits)
+            self.update_display()
         if button['r1']:
             self.processor.finished = True
         if button['r2']:
-            self.remove_combo_boxes()
+            self.remove_radio_buttons()
             self.processor.mode_number = 3
             self.logger.info("Entering thresholding mode")
             pygame.mouse.set_visible(True)
         if button['l1']:
-            self.remove_combo_boxes()
+            self.remove_radio_buttons()
             self.processor.mode_number = 2
             self.logger.info("Manual calibration mode")
             pygame.mouse.set_visible(False)
-            self.remove_combo_boxes()
         if button['l2']:
-            self.remove_combo_boxes()
+            self.remove_radio_buttons()
             self.processor.mode_number = 1
             self.logger.info("Auto calibrating mode")
             pygame.mouse.set_visible(False)
@@ -192,6 +189,22 @@ class Calibrate(BaseChallenge):
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                 'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
 
+    def update_display(self):
+        for radio in self.file_radio_buttons:
+            if radio['btn'].has_focus():
+                self.display_values()
+                self.logger.info("%s file selected for colour editing" % radio['label'])
+        for radio in self.colour_radio_buttons:
+            if radio['btn'].has_focus():
+                self.processor.colour_value = self.colour_values[radio['label']]
+                label_text = str(self.colour_values[radio['label']])
+                if self.colour_label:
+                    self.colour_label.text = label_text
+                else:
+                    self.colour_label = sgc.Label(text=label_text, pos=(15, 120), col=(255,255,255))
+                    self.colour_label.add(100)
+                self.logger.info("%s value selected for editing" % radio['label'])
+
     def display_files(self):
         file_path = os.path.dirname(os.path.realpath(__file__))
         all_files = os.listdir(file_path)
@@ -202,7 +215,7 @@ class Calibrate(BaseChallenge):
             if filename.endswith('.json') and filename <> 'calibration.json': 
                 display_name = filename[:len(filename)-5] #trim filetype off
                 button_x = (button_index % 2) * 120 + 10
-                button_y = ((button_index - 1) % 2 + button_index) * 10
+                button_y = ((button_index - 1) % 2 + button_index) * 12
                 radio_button = sgc.Radio(group="file", label=display_name, pos=(button_x, button_y), col = (255,255,255))
                 data = dict(btn=radio_button, label=display_name, index=button_index)
                 self.file_radio_buttons.append(data)
@@ -211,18 +224,32 @@ class Calibrate(BaseChallenge):
         self.file_radio_buttons[0]['btn']._activate()
 
     def display_values(self):
+        for button in self.colour_radio_buttons:
+            button['btn'].remove(button['index'])
         for button in self.file_radio_buttons:
             if button['btn'].selected:
                 filename = button['label'] + ".json"
         with open(filename) as json_file:
             self.colour_values = json.load(json_file)
+        self.colour_radio_buttons = []
+        num_of_file_radio_btns = len(self.file_radio_buttons)
+        button_index = 0
+        button_start_y = ((num_of_file_radio_btns - 2) % 2 + num_of_file_radio_btns - 1) * 12 + 15
         for colour in self.colour_values.keys():
-            print colour
+            button_x = (button_index % 2) * 120 + 10
+            button_y = ((button_index - 1) % 2 + button_index) * 12 + button_start_y
+            radio_button = sgc.Radio(group="colour", label=colour, pos=(button_x, button_y), col = (255,255,255))
+            data = dict(btn=radio_button, label=colour, index=button_index+num_of_file_radio_btns)
+            self.colour_radio_buttons.append(data)
+            radio_button.add(button_index+num_of_file_radio_btns)
+            button_index += 1
 
-    def remove_combo_boxes(self):
-        if self.processor.mode_number == 0:
-            for button in self.file_radio_buttons:
-                button['btn'].remove(button['index'])
+    def remove_radio_buttons(self):
+       for button in self.file_radio_buttons:
+            button['btn'].remove(button['index'])
+       for button in self.colour_radio_buttons:
+            button['btn'].remove(button['index'])
+       self.colour_label.remove      
 
 
     def run(self):
@@ -251,7 +278,6 @@ class Calibrate(BaseChallenge):
         pygame.mouse.set_visible(False)
 
         self.display_files()
-        self.display_values()
         try:
             while not self.should_die:
                 time.sleep(0.01)
@@ -265,7 +291,7 @@ class Calibrate(BaseChallenge):
             self.logger.info("killed from keyboard")
             self.drive.move(0,0)
         finally:
-            self.remove_combo_boxes()
+            self.remove_radio_buttons()
             # Tell each thread to stop, and wait for them to end
             self.logger.info("stopping threads")
             self.drive.should_normalise_motor_speed = True
