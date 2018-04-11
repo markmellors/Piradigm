@@ -25,7 +25,7 @@ class StreamProcessor(threading.Thread):
         self.WALL_TURN_P = 4
         self.WALL_TURN_D = 2
         self.drive.__init__()
-        self.STRAIGHT_SPEED = 0.9 #was 0.8
+        self.STRAIGHT_SPEED = 1 #was 0.8
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 480
         self.CROP_BOTTOM = 75
@@ -41,10 +41,10 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [41, 31, 38, 45, 34, 24] # [32, 27, 34, 33, 27, 24]
+        self.TURN_WIDTH = [44, 31, 38, 45, 34, 24] # [32, 27, 34, 33, 27, 24]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
-        self.TURN_TIME = 0.05 #was 0.04
+        self.TURN_TIME = 0.07 #was 0.04
         self.MAX_TURN_SPEED = 0.8 #was 0.25
         self.MIN_CONTOUR_AREA = 30
         self.loop_start_time=0
@@ -53,7 +53,7 @@ class StreamProcessor(threading.Thread):
         self.BRAKE_TIME = 0.05
         self.COLOURS = {
             "red": ((105, 90, 80), (130, 255, 255)),
-            "blue": ((170, 100, 128), (34, 255, 255)),
+            "blue": ((0, 60, 60), (25, 255, 255)),
             "yellow": ((75, 100, 90), (100, 255, 255)),
             "white": ((0, 0, 90), (180, 60, 255)),
             "green": ((35, 100, 100), (75, 255, 230)),
@@ -163,10 +163,16 @@ class StreamProcessor(threading.Thread):
                 self.last_t_error = self.t_error
             else:
                 logger.info("wrong marker found, looking for %d" % self.turn_number)
-                self.follow_wall(image)
+                if self.turn_number <> 4:
+                    self.follow_wall(image)
+                else:
+                    self.turn_left()
         else:
             logger.info("looking for marker %d, none found" % self.turn_number)
-            self.follow_wall(image)
+            if self.turn_number <> 4:
+                self.follow_wall(image)
+            else:
+                self.turn_left()
         pygame.display.update()
         found_identifier = "F" if self.found else "NF"
         img_name = "%d%simg.jpg" % (self.i, found_identifier)
@@ -191,6 +197,7 @@ class StreamProcessor(threading.Thread):
         pygame.mouse.set_pos(int(wall_y+(self.CROP_TOP-self.CROP_BOTTOM)), int(wall_crop_width - wall_x))
         turn = 0.0
         if wall_area > self.MIN_CONTOUR_AREA:
+            print colour_of_contour(cropped_image, wall_contour)
             self.w_found = True
             self.wall_pos = wall_x
             x = wall_x
