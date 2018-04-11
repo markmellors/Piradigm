@@ -47,27 +47,6 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    def threshold_image(self, image, limits):
-        '''function to find what parts of an image liue within limits.
-        returns the parts of the original image within the limits, and the mask'''
-        hsv_lower, hsv_upper = limits
-       
-        mask = cv2.inRange(
-            image,
-            numpy.array(hsv_lower),
-            numpy.array(hsv_upper)
-        )
-        return mask
-
-    def turn_around(self):
-#        print "turning around"
-        if random.choice([True, False]):
-            self.drive.move(self.TURN_AROUND_SPEED, 0)
-        else:
-            self.drive.move(-self.TURN_AROUND_SPEED, 0)
-        time.sleep(self.TURN_AROUND_TIME)
-        self.drive.move(0, 0)
-
     def get_limits(self, image, sigmas):
         """function to use the mean and standard deviation of an images
         channels in the centre of the image to create suggested threshold
@@ -81,13 +60,7 @@ class StreamProcessor(threading.Thread):
         lower = mean - sigmas * stddev
         upper = mean + sigmas * stddev
         return ((lower[0][0], lower[1][0], lower[2][0]), (upper[0][0], upper[1][0], upper[2][0]))
-
-    def seek(self):
-        self.drive.move(self.TURN_SPEED, 0)
-        time.sleep(self.TURN_TIME)
-        self.drive.move(0,0)
-        time.sleep(self.SETTLE_TIME)
-    
+   
     def show_cal_label(self, screen):
         font = pygame.font.Font(None, 60)
         label = font.render(str("Calibrating"), 1, (255,255,255))
@@ -98,34 +71,10 @@ class StreamProcessor(threading.Thread):
         label = font.render(str("Tracking"), 1, (255,255,255))
         screen.blit(label, (10, 200))
 
-    def find_largest_contour(self,image):
-        '''takes a binary image and returns coordinates and size of largest contour'''
-        contourimage, contours, hierarchy = cv2.findContours(
-            image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
-        )
-        # Go through each contour
-        found_area = 1
-        found_x = -1
-        found_y = -1
-        biggest_contour = None
-        for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            area = cv2.contourArea(contour)
-            aspect_ratio = float(h)/w
-            if found_area < area:
-                found_area = area
-                M = cv2.moments(contour)
-                found_x = int(M['m10']/M['m00'])
-                found_y = int(M['m01']/M['m00'])
-                biggest_contour = contour
-        return found_x, found_y, found_area
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        ball_image = image[self.BALL_CROP_HEIGHT:self.image_height, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
-        floor_image = image[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
-        image=image[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
         #for floor calibration:       print cv2.meanStdDev(floor_image)
         # Our operations on the frame come here
         screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
@@ -138,55 +87,16 @@ class StreamProcessor(threading.Thread):
             print self.colour_limits
         if self.tracking:
             self.show_tracking_label(screen)
-        ball_range = self.threshold_image(ball_image, self.colour_limits)
-        floor_range =  self.threshold_image(floor_image, self.FLOOR_LIMITS)
+        ball_range = threshold_image(ball_image, self.colour_limits)
         # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        frame = pygame.surfarray.make_surface(cv2.flip(floor_range, 1))
-        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START, 0))
         frame = pygame.surfarray.make_surface(cv2.flip(ball_range, 1))
-        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
+        screen.blit(frame, (0, 0))
         pygame.display.update()
         # Find the contours
         balloon_x, balloon_y, balloon_a = self.find_largest_contour(ball_range)
         if balloon_a is not None:
-            pygame.mouse.set_pos(balloon_y+self.FLOOR_CROP_HEIGHT-self.FLOOR_CROP_START, self.BALL_CROP_WIDTH - balloon_x)
-        if balloon_a > self.MIN_BALLOON_SIZE:
-                #opponent is disrupting countour shape, making it concave
-#                print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
-                self.found = True
-                t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
-                turn = self.TURN_P * t_error
-                if balloon_a > self.BACK_AWAY_START or (balloon_a > self.BACK_AWAY_STOP and self.back_away):
-                    #we're probably close, back off
- #                   print "backing off"
-                    self.back_away = True
-                    if self.DRIVING and self.tracking:
-                        self.drive.move(turn/2, -self.STRAIGHT_SPEED/2)
-                else:
-                    self.back_away = False
-                    if self.DRIVING and self.tracking:
-                        self.drive.move(turn, self.STRAIGHT_SPEED)
-        else:
-            self.edge = False
-            self.back_away = False
-            self.found = False
-            floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
-            if floor_y < self.TURN_HEIGHT:
-                self.edge = True
- #               print ("no opponent found and close to edge, turning %s" % (floor_y))
-                if self.DRIVING and self.tracking:
-                    self.seek()
-            else:
-                self.edge = False
- #               print "no opponent found, ambling"
-                t_error = (self.image_centre_x - floor_x) / self.image_centre_x
-                turn = self.TURN_P * t_error
-                if self.DRIVING and self.tracking:
-                    #turn around one time in 5. is there a better way to do this?
-                    if random.choice([True, False, False, False, False]):
-                        self.turn_around()
-                    else:
-                        self.drive.move(turn, self.STRAIGHT_SPEED)
+            pygame.mouse.set_pos(balloon_y, self.BALL_CROP_WIDTH - balloon_x)
+
         if self.tracking:
             image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
             if self.found:
