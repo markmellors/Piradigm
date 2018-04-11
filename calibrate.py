@@ -23,6 +23,10 @@ class StreamProcessor(threading.Thread):
         self.mode = [self.file_selection, self.auto_calibrating, self.manual_calibrating, self.thresholding]
         self.mode_number = 0
         self.colour_limits = ((0, 0, 0), (180, 255, 255))
+        self.cal_x = self.image_width/3
+        self.cal_y = self.image_height/3
+        self.cal_width = self.image_width/3
+        self.cal_height = self.image_width/3
         self.TIMEOUT = 30.0
         self.PARAM = 60
         self.START_TIME = time.clock()
@@ -48,15 +52,17 @@ class StreamProcessor(threading.Thread):
                     self.event.clear()
 
     def file_selection(self, image, screen):
-        screen.fill([0, 0, 0])
+        pass
 
     def auto_calibrating(self, image, screen):
         screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
-        screen.fill([0, 0, 0])
         screen.blit(frame, (0, 0))
         self.show_cal_label(screen)
         self.colour_limits = self.get_limits(image, 1.5)
+        h, w = image.shape[:2]
+        # pygame screen, (colour tuple), (top left x, top left y, width, height), line thickness
+        pygame.draw.rect(screen, (255,0,0), (self.cal_y, self.cal_x, self.cal_height, self.cal_width), 2)
 
     def manual_calibrating(self, image, screen):
         pass
@@ -83,9 +89,12 @@ class StreamProcessor(threading.Thread):
         limits based on number of 'sigmas' (usually less than three).
         returns a tuple of tuples ((low1, low2, low3),(upp1, upp2, upp3))"""
         h, w = image.shape[:2]
-        mask_radius = min(h, w)/2
         mask = numpy.zeros(image.shape[:2], numpy.uint8)
-        cv2.circle(mask, (w/2, h/2), mask_radius, 255, -1)
+        cal_x1 = self.cal_x
+        cal_y1 = self.cal_y
+        cal_x2 = self.cal_x + self.cal_width
+        cal_y2 = self.cal_y + self.cal_height
+        cv2.rectangle(mask, (cal_x1, cal_y1), (cal_x2, cal_y2), 255, -1)
         mean, stddev = cv2.meanStdDev(image, mask=mask)
         lower = mean - sigmas * stddev
         upper = mean + sigmas * stddev
@@ -94,16 +103,17 @@ class StreamProcessor(threading.Thread):
     def show_cal_label(self, screen):
         font = pygame.font.Font(None, 60)
         label = font.render(str("Calibrating"), 1, (255,255,255))
-        screen.blit(label, (10, 200))
+        screen.blit(label, (10, 240))
 
     def show_thresholding_label(self, screen):
         font = pygame.font.Font(None, 60)
         label = font.render(str("Testing"), 1, (255,255,255))
-        screen.blit(label, (10, 200))
+        screen.blit(label, (10, 240))
 
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
+        screen.fill([0, 0, 0])
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         self.mode[self.mode_number](image, screen)
         pygame.display.update()
@@ -114,9 +124,9 @@ class Calibrate(BaseChallenge):
     """Colour calibration function, allows any json file storing colours to be tuned"""
 
     def __init__(self, timeout=120, screen=None, joystick=None):
-        self.image_width = 160  # Camera image width
-        self.image_height = 128  # Camera image height
-        self.frame_rate = 30  # Camera image capture frame rate
+        self.image_width = 240  # Camera image width
+        self.image_height = 192  # Camera image height
+        self.frame_rate = 40  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
@@ -126,6 +136,7 @@ class Calibrate(BaseChallenge):
         if button['home']:
             self.processor.mode_number = 0
             self.logger.info("File selection mode")
+            pygame.mouse.set_visible(False)
         if button['select']:
             if self.processor.mode_number <> 0:
                 self.logger.info("colour value set to %s" %  self.colour_limits)
@@ -136,12 +147,15 @@ class Calibrate(BaseChallenge):
         if button['r2']:
             self.processor.mode_number = 3
             self.logger.info("Entering thresholding mode")
+            pygame.mouse.set_visible(True)
         if button['l1']:
             self.processor.mode_number = 2
             self.logger.info("Manual calibration mode")
+            pygame.mouse.set_visible(False)
         if button['l2']:
             self.processor.mode_number = 1
-            self.logger.info("auto calibrating mode")
+            self.logger.info("Auto calibrating mode")
+            pygame.mouse.set_visible(False)
 
     def run(self):
         # Startup sequence
@@ -161,14 +175,12 @@ class Calibrate(BaseChallenge):
             camera=self.camera,
             drive=self.drive,
         )
-        logger.info('Wait ...')
-        time.sleep(2)
         logger.info('Setting up image capture thread')
         self.image_capture_thread = ImageCapture(
             camera=self.camera,
             processor=self.processor
         )
-        pygame.mouse.set_visible(True)
+        pygame.mouse.set_visible(False)
         try:
             while not self.should_die:
                 time.sleep(0.01)
