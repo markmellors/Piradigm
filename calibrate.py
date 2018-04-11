@@ -194,11 +194,13 @@ class Calibrate(BaseChallenge):
             if radio['btn'].has_focus():
                 self.display_values()
                 self.logger.info("%s file selected for colour editing" % radio['label'])
+                if self.colour_label:
+                    self.colour_label.remove(fade=False)
         for radio in self.colour_radio_buttons:
             if radio['btn'].has_focus():
                 self.processor.colour_value = self.colour_values[radio['label']]
                 label_text = str(self.colour_values[radio['label']])
-                if self.colour_label:
+                if self.colour_label and self.colour_label.active():
                     self.colour_label.text = label_text
                 else:
                     self.colour_label = sgc.Label(text=label_text, pos=(15, 120), col=(255,255,255))
@@ -249,7 +251,8 @@ class Calibrate(BaseChallenge):
             button['btn'].remove(button['index'])
        for button in self.colour_radio_buttons:
             button['btn'].remove(button['index'])
-       self.colour_label.remove      
+       if self.colour_label:
+           self.colour_label.remove(fade=False)
 
 
     def run(self):
