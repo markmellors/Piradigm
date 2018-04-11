@@ -29,6 +29,7 @@ class StreamProcessor(threading.Thread):
         self.cal_height = self.image_width/3
         self.TIMEOUT = 30.0
         self.PARAM = 60
+        self.clock = pygame.time.Clock()
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.finished = False
@@ -52,7 +53,8 @@ class StreamProcessor(threading.Thread):
                     self.event.clear()
 
     def file_selection(self, image, screen):
-        pass
+        time = self.clock.tick(30)
+        sgc.update(time)
 
     def auto_calibrating(self, image, screen):
         screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
@@ -137,25 +139,71 @@ class Calibrate(BaseChallenge):
             self.processor.mode_number = 0
             self.logger.info("File selection mode")
             pygame.mouse.set_visible(False)
-        if button['select']:
+            self.display_files()
+        if button['start']:
             if self.processor.mode_number <> 0:
                 self.logger.info("colour value set to %s" %  self.colour_limits)
                 #TODO: add value save routine here 
                 self.logger.info("value saved")
+        if button['select']:
+            if self.processor.mode_number == 0:
+                #TODO: add file/value selection here
+                self.display_values()
+#                self.logger.info("%s file selected for colour editing" % self.processor.colour_limits)
+ #               self.logger.info("%s value selected for editing" % self.processor.colour_limits)
         if button['r1']:
             self.processor.finished = True
         if button['r2']:
+            self.remove_combo_boxes()
             self.processor.mode_number = 3
             self.logger.info("Entering thresholding mode")
             pygame.mouse.set_visible(True)
         if button['l1']:
+            self.remove_combo_boxes()
             self.processor.mode_number = 2
             self.logger.info("Manual calibration mode")
             pygame.mouse.set_visible(False)
+            self.remove_combo_boxes()
         if button['l2']:
+            self.remove_combo_boxes()
             self.processor.mode_number = 1
             self.logger.info("Auto calibrating mode")
             pygame.mouse.set_visible(False)
+        if button['dright']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+        if button['dleft']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+        if button['ddown']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+        if button['dup']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
+
+    def display_files(self):
+        file_path = os.path.dirname(os.path.realpath(__file__))
+        all_files = os.listdir(file_path)
+        self.display_names = ()
+        for filename in os.listdir(file_path):
+            if filename.endswith('.json') and filename <> 'calibration.json': 
+                self.display_names += ((filename[:len(filename)-5]),) #trim filetype off and add to sequence
+        print self.display_names
+        screen = pygame.display.get_surface()
+        self.file_combo = sgc.Combo(screen, pos=(100, 100), label ="choose file:", label_side="top", values=("rainbow", "test")) #self.display_names)
+        self.file_combo.add(1)
+
+    def display_values(self):
+        pass
+
+    def remove_combo_boxes(self):
+        if self.processor.mode_number == 0:
+            self.file_combo.remove(0)
 
     def run(self):
         # Startup sequence
@@ -181,6 +229,9 @@ class Calibrate(BaseChallenge):
             processor=self.processor
         )
         pygame.mouse.set_visible(False)
+
+        self.display_files()
+        self.display_values()
         try:
             while not self.should_die:
                 time.sleep(0.01)
@@ -194,6 +245,7 @@ class Calibrate(BaseChallenge):
             self.logger.info("killed from keyboard")
             self.drive.move(0,0)
         finally:
+            self.remove_combo_boxes()
             # Tell each thread to stop, and wait for them to end
             self.logger.info("stopping threads")
             self.drive.should_normalise_motor_speed = True
