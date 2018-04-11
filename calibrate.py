@@ -3,6 +3,7 @@ import random
 import json
 import cv2.aruco as aruco
 from approxeng.input.selectbinder import ControllerResource
+from my_button import MyScale
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -68,7 +69,8 @@ class StreamProcessor(threading.Thread):
         pygame.draw.rect(screen, (255,0,0), (self.cal_y, self.cal_x, self.cal_height, self.cal_width), 2)
 
     def manual_calibrating(self, image, screen):
-        pass
+        time = self.clock.tick(30)
+        sgc.update(time)
 
     def thresholding(self, image, screen):
         self.show_thresholding_label(screen)
@@ -137,11 +139,57 @@ class Calibrate(BaseChallenge):
         self.colour_label = None
         self.file_index = None
         self.colour_index = None
+        self.controls = self.setup_controls()
         super(Calibrate, self).__init__(name='Calibrate', timeout=timeout, logger=logger)
+
+    def display_controls(self):
+         colour_bounds = self.processor.colour_value
+         for ctrl in self.controls:
+             if not ctrl['ctrl'].active():
+                 ctrl['ctrl'].add(ctrl['index'])
+                 i = ctrl['index']
+                 ctrl['ctrl'].value = colour_bounds[i % 2][int(i/2)]
+
+    def remove_controls(self):
+         for ctrl in self.controls:
+             if ctrl['ctrl'].active():
+                 ctrl['ctrl'].remove(fade=False)
+
+    def setup_controls(self):
+        # colours
+        #why do these need repeating when theyre in menu.py? aren't they global?
+        BLUE = 26, 0, 255
+        SKY = 100, 50, 255
+        CREAM = 254, 255, 250
+        BLACK = 0, 0, 0
+        WHITE = 255, 255, 255
+        control_config = [
+           ("min hue", 5, 90, BLACK, WHITE),
+           ("max hue", 115, 90, BLACK, WHITE),
+           ("min saturation", 5, 165, BLACK, WHITE),
+           ("max saturation", 115, 165, BLACK, WHITE),
+           ("min value", 5, 240, BLACK, WHITE),
+           ("max value", 115, 240, WHITE, WHITE),
+        ]
+        return [
+            self.make_controls(index, *item)
+            for index, item
+            in enumerate(control_config)
+        ]
+
+    def make_controls(self, index, text, xpo, ypo, colour, text_colour):
+        """make a slider control at the specified position"""
+        logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
+        return dict(
+            index=index,
+            label=text,
+            ctrl = MyScale(label=text, pos=(xpo, ypo), col=colour, min=0, max=255, label_col=text_colour, label_side="top")
+        )
 
     def joystick_handler(self, button):
         if button['home']:
             self.processor.mode_number = 0
+            self.remove_controls()
             self.logger.info("File selection mode")
             pygame.mouse.set_visible(False)
             self.display_files(index=self.file_index)
@@ -149,7 +197,7 @@ class Calibrate(BaseChallenge):
                 self.display_values(index=self.colour_index)
         if button['start']:
             if self.processor.mode_number <> 0:
-                self.logger.info("colour value set to %s" %  self.colour_value)
+                self.logger.info("colour value set to %s" %  self.processor.colour_value)
                 #TODO: add value save routine here 
                 self.logger.info("value saved")
         if button['select']:
@@ -162,6 +210,7 @@ class Calibrate(BaseChallenge):
         if button['r1']:
             self.processor.finished = True
         if button['r2']:
+            self.remove_controls()
             self.remove_radio_buttons()
             self.processor.mode_number = 3
             self.logger.info("Entering thresholding mode")
@@ -170,12 +219,21 @@ class Calibrate(BaseChallenge):
             self.remove_radio_buttons()
             self.processor.mode_number = 2
             self.logger.info("Manual calibration mode")
+            self.display_controls()
             pygame.mouse.set_visible(False)
         if button['l2']:
+            self.remove_controls()
             self.remove_radio_buttons()
             self.processor.mode_number = 1
             self.logger.info("Auto calibrating mode")
             pygame.mouse.set_visible(False)
+        #if left or right buttons on right side of joystick pressed, treat them like arrow buttons
+        if button['circle']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 77, 'key': pygame.K_RIGHT, 'unicode': "u'\t'"}))
+        if button['square']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 75, 'key': pygame.K_LEFT, 'unicode': "u'\t'"}))
         if button['dright']:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                 'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
@@ -216,7 +274,6 @@ class Calibrate(BaseChallenge):
         all_files = os.listdir(file_path)
         self.file_radio_buttons = []
         button_index = 0
-        screen = pygame.display.get_surface()
         for filename in os.listdir(file_path):
             if filename.endswith('.json') and filename <> 'calibration.json': 
                 display_name = filename[:len(filename)-5] #trim filetype off
@@ -310,6 +367,7 @@ class Calibrate(BaseChallenge):
             self.drive.move(0,0)
         finally:
             self.remove_radio_buttons()
+            self.remove_controls()
             # Tell each thread to stop, and wait for them to end
             self.logger.info("stopping threads")
             self.drive.should_normalise_motor_speed = True
