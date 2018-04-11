@@ -135,6 +135,8 @@ class Calibrate(BaseChallenge):
         self.joystick=joystick
         self.colour_radio_buttons = []
         self.colour_label = None
+        self.file_index = None
+        self.colour_index = None
         super(Calibrate, self).__init__(name='Calibrate', timeout=timeout, logger=logger)
 
     def joystick_handler(self, button):
@@ -142,7 +144,9 @@ class Calibrate(BaseChallenge):
             self.processor.mode_number = 0
             self.logger.info("File selection mode")
             pygame.mouse.set_visible(False)
-            self.display_files()
+            self.display_files(index=self.file_index)
+            if self.colour_index:
+                self.display_values(index=self.colour_index)
         if button['start']:
             if self.processor.mode_number <> 0:
                 self.logger.info("colour value set to %s" %  self.colour_value)
@@ -207,7 +211,7 @@ class Calibrate(BaseChallenge):
                     self.colour_label.add(100)
                 self.logger.info("%s value selected for editing" % radio['label'])
 
-    def display_files(self):
+    def display_files(self, index=None):
         file_path = os.path.dirname(os.path.realpath(__file__))
         all_files = os.listdir(file_path)
         self.file_radio_buttons = []
@@ -223,9 +227,9 @@ class Calibrate(BaseChallenge):
                 self.file_radio_buttons.append(data)
                 radio_button.add(button_index)
                 button_index += 1
-        self.file_radio_buttons[0]['btn']._activate()
+        self.file_radio_buttons[index]['btn']._activate() if index else self.file_radio_buttons[0]['btn']._activate()
 
-    def display_values(self):
+    def display_values(self, index=None):
         for button in self.colour_radio_buttons:
             button['btn'].remove(button['index'])
         for button in self.file_radio_buttons:
@@ -245,8 +249,10 @@ class Calibrate(BaseChallenge):
             self.colour_radio_buttons.append(data)
             radio_button.add(button_index+num_of_file_radio_btns)
             button_index += 1
+        if index: self.colour_radio_buttons[index-num_of_file_radio_btns]['btn']._activate()
 
     def remove_radio_buttons(self):
+       self.update_indexs()
        for button in self.file_radio_buttons:
             button['btn'].remove(button['index'])
        for button in self.colour_radio_buttons:
@@ -254,6 +260,15 @@ class Calibrate(BaseChallenge):
        if self.colour_label:
            self.colour_label.remove(fade=False)
 
+    def update_indexs(self):
+        self.file_index = None
+        for radio in self.file_radio_buttons:
+            if radio['btn'].selected:
+                self.file_index = radio['index']
+        self.colour_index = None
+        for radio in self.colour_radio_buttons:
+            if radio['btn'].selected:
+                self.colour_index = radio['index']
 
     def run(self):
         # Startup sequence
