@@ -208,16 +208,17 @@ class Menu():
         self.buttons = self.setup_menu(self.screen)
         for btn in self.buttons:
            btn['btn'].add(btn['index'])
+        pygame.display.update()
         running_challenge = None
         
         # While loop to manage touch screen inputs
         with ControllerResource() as self.joystick:
             while True:
                 time = clock.tick(30)
-                pygame.display.update()
                 sgc.update(time)
                 if self.joystick.connected and (self.challenge_thread is None or not self.challenge_thread.is_alive()):
                     self.joystick_handler(self.joystick.check_presses())
+                    pygame.display.update()
                 for event in pygame.event.get():
                     sgc.event(event)
                     if event.type== GUI:
@@ -225,6 +226,7 @@ class Menu():
                             requested_challenge = self.button_handler(event)
                             for btn in self.buttons:
                                 btn['btn'].remove(btn['index'])
+                            pygame.display.update()
                             if requested_challenge:
                                 logger.info("about to stop a thread if there's one running")
                                 if running_challenge:
@@ -245,6 +247,7 @@ class Menu():
                         self.screen.fill(BLACK)
                         for btn in self.buttons:
                             btn['btn'].add(btn['index'])
+                        pygame.display.update()
 
 
 if __name__ == "__main__":
