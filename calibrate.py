@@ -20,8 +20,9 @@ class StreamProcessor(threading.Thread):
         self.DRIVING = True
         self.edge = False
         self.BLUR = 3
-        self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.calibrating = False
+        self.mode = [self.file_selection, self.auto_calibrating, self.manual_calibrating, self.thresholding]
+        self.mode_number = 0
+        self.colour_limits = ((0, 0, 0), (180, 255, 255))
         self.TIMEOUT = 30.0
         self.PARAM = 60
         self.START_TIME = time.clock()
@@ -46,6 +47,36 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
+    def file_selection(self, image, screen):
+        screen.fill([0, 0, 0])
+
+    def auto_calibrating(self, image, screen):
+        screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
+        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
+        screen.fill([0, 0, 0])
+        screen.blit(frame, (0, 0))
+        self.show_cal_label(screen)
+        self.colour_limits = self.get_limits(image, 1.5)
+
+    def manual_calibrating(self, image, screen):
+        pass
+
+    def thresholding(self, image, screen):
+        self.show_thresholding_label(screen)
+        obj_range = threshold_image(image, self.colour_limits)
+        frame = pygame.surfarray.make_surface(cv2.flip(obj_range, 1))
+        screen.blit(frame, (0, 0))
+        obj_x, obj_y, obj_a, obj_contour = find_largest_contour(obj_range)
+        if obj_contour is not None:
+            pygame.mouse.set_pos(obj_y, self.image_width - obj_x)
+            img_name = str(self.i) + "Fimg.jpg"
+        else:
+            img_name = str(self.i) + "NFimg.jpg"
+        image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
+        #filesave for debugging: 
+        #cv2.imwrite(img_name, image)
+        self.i += 1
+
     def get_limits(self, image, sigmas):
         """function to use the mean and standard deviation of an images
         channels in the centre of the image to create suggested threshold
@@ -65,48 +96,18 @@ class StreamProcessor(threading.Thread):
         label = font.render(str("Calibrating"), 1, (255,255,255))
         screen.blit(label, (10, 200))
 
-    def show_tracking_label(self, screen):
+    def show_thresholding_label(self, screen):
         font = pygame.font.Font(None, 60)
-        label = font.render(str("Tracking"), 1, (255,255,255))
+        label = font.render(str("Testing"), 1, (255,255,255))
         screen.blit(label, (10, 200))
 
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        #for floor calibration:       print cv2.meanStdDev(floor_image)
-        # Our operations on the frame come here
-        screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
-        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
-        screen.fill([0, 0, 0])
-        screen.blit(frame, (0, 0))
-        if self.calibrating:
-            self.show_cal_label(screen)
-            self.colour_limits = self.get_limits(ball_image, 1.5)
-            print self.colour_limits
-        if self.tracking:
-            self.show_tracking_label(screen)
-        ball_range = threshold_image(ball_image, self.colour_limits)
-        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        frame = pygame.surfarray.make_surface(cv2.flip(ball_range, 1))
-        screen.blit(frame, (0, 0))
+        self.mode[self.mode_number](image, screen)
         pygame.display.update()
-        # Find the contours
-        balloon_x, balloon_y, balloon_a = self.find_largest_contour(ball_range)
-        if balloon_a is not None:
-            pygame.mouse.set_pos(balloon_y, self.BALL_CROP_WIDTH - balloon_x)
 
-        if self.tracking:
-            image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-            if self.found:
-                img_name = str(self.i) + "Fimg.jpg"
-            else:
-            #if self.edge:
-                #cv2.imwrite(str(self.i) + "imrange.jpg", imrange)
-                img_name = str(self.i) + "NFimg.jpg"
-            #filesave for debugging: 
-            #cv2.imwrite(img_name, image)
-            self.i += 1
 
 
 class Calibrate(BaseChallenge):
@@ -115,27 +116,32 @@ class Calibrate(BaseChallenge):
     def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 160  # Camera image width
         self.image_height = 128  # Camera image height
-        self.frame_rate = 40  # Camera image capture frame rate
+        self.frame_rate = 30  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
         super(Calibrate, self).__init__(name='Calibrate', timeout=timeout, logger=logger)
 
     def joystick_handler(self, button):
+        if button['home']:
+            self.processor.mode_number = 0
+            self.logger.info("File selection mode")
+        if button['select']:
+            if self.processor.mode_number <> 0:
+                self.logger.info("colour value set to %s" %  self.colour_limits)
+                #TODO: add value save routine here 
+                self.logger.info("value saved")
         if button['r1']:
             self.processor.finished = True
         if button['r2']:
-            self.processor.tracking = True
-            self.processor.calibrating = False
-            print "Tracking"
+            self.processor.mode_number = 3
+            self.logger.info("Entering thresholding mode")
         if button['l1']:
-            self.processor.tracking = False
-            self.processor.calibrating = False
-            print "finished calibrating or stopping tracking"
+            self.processor.mode_number = 2
+            self.logger.info("Manual calibration mode")
         if button['l2']:
-            self.processor.tracking = False
-            self.processor.calibrating = True
-            print "calibrating"
+            self.processor.mode_number = 1
+            self.logger.info("auto calibrating mode")
 
     def run(self):
         # Startup sequence

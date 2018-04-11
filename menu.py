@@ -159,7 +159,7 @@ class Menu():
             return new_challenge
         elif event.label == "Calibrate":
             logger.info("launching Calibration routine")
-            new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            new_challenge = Calibrate(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
