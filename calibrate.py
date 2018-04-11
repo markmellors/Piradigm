@@ -146,6 +146,10 @@ class Calibrate(BaseChallenge):
                 #TODO: add value save routine here 
                 self.logger.info("value saved")
         if button['select']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
+                'mod': 0, 'scancode': 32, 'key': pygame.K_SPACE, 'unicode': u' '}))
+            pygame.event.post(pygame.event.Event(pygame.KEYUP,{
+                'mod': 0, 'scancode': 32, 'key': pygame.K_SPACE, 'unicode': u' '}))
             if self.processor.mode_number == 0:
                 #TODO: add file/value selection here
                 self.display_values()
@@ -189,21 +193,29 @@ class Calibrate(BaseChallenge):
     def display_files(self):
         file_path = os.path.dirname(os.path.realpath(__file__))
         all_files = os.listdir(file_path)
-        self.display_names = ()
+        self.file_radio_buttons = []
+        button_index = 0
+        screen = pygame.display.get_surface()
         for filename in os.listdir(file_path):
             if filename.endswith('.json') and filename <> 'calibration.json': 
-                self.display_names += ((filename[:len(filename)-5]),) #trim filetype off and add to sequence
-        print self.display_names
-        screen = pygame.display.get_surface()
-        self.file_combo = sgc.Combo(screen, pos=(100, 100), label ="choose file:", label_side="top", values=("rainbow", "test")) #self.display_names)
-        self.file_combo.add(1)
+                display_name = filename[:len(filename)-5] #trim filetype off
+                button_x = (button_index % 2) * 120 + 10
+                button_y = ((button_index - 1) % 2 + button_index) * 10
+                radio_button = sgc.Radio(group="file", label=display_name, pos=(button_x, button_y), col = (255,255,255))
+                self.file_radio_buttons.append(radio_button)
+                radio_button.add(button_index)
+                button_index += 1
+        self.file_radio_buttons[0]._activate()
 
     def display_values(self):
         pass
 
     def remove_combo_boxes(self):
         if self.processor.mode_number == 0:
-            self.file_combo.remove(0)
+            button_index = 0
+            for button in self.file_radio_buttons:
+                button.remove(button_index)
+                button_index += 1
 
     def run(self):
         # Startup sequence
