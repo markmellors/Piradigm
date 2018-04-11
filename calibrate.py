@@ -21,7 +21,6 @@ class StreamProcessor(threading.Thread):
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.FLOOR_LIMITS  =  ((100, 150, 80), (130, 255, 220))#<red, yellow>  ((85, 190, 80), (115, 255, 220))
         self.calibrating = False
         self.TIMEOUT = 30.0
         self.PARAM = 60
@@ -110,8 +109,8 @@ class StreamProcessor(threading.Thread):
             self.i += 1
 
 
-class PiNoon(BaseChallenge):
-    """Pi Noon challenge class"""
+class Calibrate(BaseChallenge):
+    """Colour calibration function, allows any json file storing colours to be tuned"""
 
     def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 160  # Camera image width
@@ -120,7 +119,7 @@ class PiNoon(BaseChallenge):
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
-        super(PiNoon, self).__init__(name='PiNoon', timeout=timeout, logger=logger)
+        super(Calibrate, self).__init__(name='Calibrate', timeout=timeout, logger=logger)
 
     def joystick_handler(self, button):
         if button['r1']:

@@ -29,6 +29,7 @@ from duckshoot import Duckshoot
 from marker_maze import Maze
 from straightline import StraightLineSpeed
 from pi_noon import PiNoon
+from calibrate import Calibrate
 from approxeng.input.selectbinder import ControllerResource
 import cv2.aruco as aruco
 from tendo.singleton import SingleInstance
@@ -107,7 +108,7 @@ class Menu():
             ("Shooting", 6, 198, BLUE, WHITE), #, 62, 100, WHITE),
             ("RC", 122, 198, BLUE, WHITE), #, 62, 100, WHITE),
             ("Exit", 6, 262, BLUE, WHITE), #, 40, 210, WHITE),
-            ("Stop", 122, 262, BLUE, WHITE),
+            ("Calibrate", 122, 262, BLUE, WHITE),
         ]
 
         # perform list comprehension on menu_config, wherein we call
@@ -154,6 +155,10 @@ class Menu():
             return new_challenge
         elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")
+            new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
+        elif event.label == "Calibrate":
+            logger.info("launching Calibration routine")
             new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
