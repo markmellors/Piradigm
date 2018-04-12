@@ -26,7 +26,6 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.retreated = False
         self.cycle = 0
-        self.menu = False
         self.last_a_error = 0
         self.last_t_error = 0
         self.AREA_P = 0.00015
@@ -93,11 +92,10 @@ class StreamProcessor(threading.Thread):
         # crop image to speed up processing and avoid false positives
         image = image[80:180, 0:320]
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
-            screen.fill([0, 0, 0])
-            font = pygame.font.Font(None, 24)
-            screen.blit(frame, (0, 0))
+        frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+        screen.fill([0, 0, 0])
+        font = pygame.font.Font(None, 24)
+        screen.blit(frame, (0, 0))
         image = cv2.medianBlur(image, 5)
         # Convert the image from 'BGR' to HSV colour space
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
@@ -113,10 +111,9 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_upper)
         )
         print self.get_ball_colour_and_position(image)
-        if not self.menu:
-            frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-            screen.blit(frame, (100, 0))
-            pygame.display.update()
+        frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
+        screen.blit(frame, (100, 0))
+        pygame.display.update()
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(
             imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
@@ -242,91 +239,30 @@ class Rainbow(BaseChallenge):
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
-        self.menu = False
         self.joystick=joystick
         super(Rainbow, self).__init__(name='Rainbow', timeout=timeout, logger=logger)
 
-    def setup_controls(self):
-        # colours
-        #why do these need repeating when theyre in menu.py? aren't they global?
-        BLUE = 26, 0, 255
-        SKY = 100, 50, 255
-        CREAM = 254, 255, 250
-        BLACK = 0, 0, 0
-        WHITE = 255, 255, 255
-        control_config = [
-           ("min hue", 5, 90, BLACK, WHITE),
-           ("max hue", 115, 90, BLACK, WHITE),
-           ("min saturation", 5, 165, BLACK, WHITE),
-           ("max saturation", 115, 165, BLACK, WHITE),
-           ("min value", 5, 240, BLACK, WHITE),
-           ("max value", 115, 240, WHITE, WHITE),
-        ]
-        return [
-            self.make_controls(index, *item)
-            for index, item
-            in enumerate(control_config)
-        ]
-
-
-    def make_controls(self, index, text, xpo, ypo, colour, text_colour):
-        """make a slider control at the specified position"""
-        logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
-        return dict(
-            index=index,
-            label=text,
-            ctrl = MyScale(label=text, pos=(xpo, ypo), col=colour, min=0, max=255, label_col=text_colour, label_side="top")
-        )
 
     def joystick_handler(self, button):
         #if left or right buttons on right side of joystick pressed, treat them like arrow buttons
         if button['circle']:
-            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
-                'mod': 0, 'scancode': 77, 'key': pygame.K_RIGHT, 'unicode': "u'\t'"}))
-        elif button['square']:
-            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
-                'mod': 0, 'scancode': 75, 'key': pygame.K_LEFT, 'unicode': "u'\t'"}))
-        elif button['start']:
-            #start button brings up or hides menu
-            self.menu = not self.menu
-            colour = self.processor.colour
-            if not self.menu:
-                #menu closing, store values in file
-                #first, get new values
-                for ctrl in self.controls:
-                    i = ctrl['index']
-                    self.processor.colour_bounds[colour][i % 2][int(i/2)] = ctrl['ctrl'].value
-                data = self.processor.colour_bounds
-                with open('rainbow.json', 'w') as f:
-                    json.dump(data, f)
-        elif button['dright']:
-            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
-                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-        elif button['dleft']:
-            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
-                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-        elif button['ddown']:
-            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
-                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
-                'mod': 0, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-        elif button['dup']:
-            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
-                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
-                'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
-        elif button['r1']:
+            #next colour
+            self.progress_colour()
+        if button['square']:
+            #previosu colour
+            pass
+        if button['r1']:
             self.stop()
-        elif button['r2']:
+        if button['r2']:
             self.processor.tracking = True
             print "Starting"
-        elif button['l1']:
+        if button['l1']:
             self.processor.tracking = False
             self.drive.move(0,0)
             print "Stopping"
         if button['l2']:
-            self.progress_colour()
-            print ("manually moved on to %s" % self.processor.colour)
+            #calibration mode
+            pass
 
     def progress_colour(self):
         if self.processor.colour is not "green":
@@ -357,7 +293,6 @@ class Rainbow(BaseChallenge):
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
-        self.controls = self.setup_controls()
         logger.info('Wait ...')
         time.sleep(2)
         logger.info('Setting up image capture thread')
@@ -372,21 +307,6 @@ class Rainbow(BaseChallenge):
                 # TODO: Tidy this
                 if self.joystick.connected:
                     self.joystick_handler(self.joystick.check_presses())
-                self.processor.menu = self.menu
-                if self.menu:
-                    screen.fill([0, 0, 0])
-                    colour = self.processor.colour
-                    colour_bounds = self.processor.colour_bounds[colour]
-                    #add the controls and give them their initial values
-                    for ctrl in self.controls:
-                        if not ctrl['ctrl'].active():
-                            ctrl['ctrl'].add(ctrl['index'], fade=False)
-                            i = ctrl['index']
-                            ctrl['ctrl'].value = colour_bounds[i % 2][int(i/2)]
-                else:
-                    for ctrl in self.controls:
-                        if ctrl['ctrl'].active():
-                            ctrl['ctrl'].remove(fade=False)
                 if self.processor.retreated:
                     self.progress_colour()
                 sgc.update(time)
@@ -401,9 +321,6 @@ class Rainbow(BaseChallenge):
             self.image_capture_thread.join()
             self.processor.terminated = True
             self.processor.join()
-            for ctrl in self.controls:
-                if ctrl['ctrl'].active():
-                    ctrl['ctrl'].remove(fade=False)
             #release camera
             self.camera.close()
             self.camera = None
