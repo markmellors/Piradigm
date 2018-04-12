@@ -15,7 +15,7 @@ class StreamProcessor(threading.Thread):
         self.image_centre_y = self.image_height / 2.0
         self.drive = drive
         self.drive.should_normalise_motor_speed = False
-        self.screen = screen
+        self.screen = pygame.display.get_surface()
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
@@ -54,29 +54,29 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
-    def file_selection(self, image, screen):
+    def file_selection(self, image):
         time = self.clock.tick(30)
         sgc.update(time)
 
-    def auto_calibrating(self, image, screen):
+    def auto_calibrating(self, image):
         screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
         frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
-        screen.blit(frame, (0, 0))
-        self.show_cal_label(screen)
+        self.screen.blit(frame, (0, 0))
+        self.show_cal_label()
         self.colour_value = self.get_limits(image, 1.5)
         h, w = image.shape[:2]
         # pygame screen, (colour tuple), (top left x, top left y, width, height), line thickness
-        pygame.draw.rect(screen, (255,0,0), (self.cal_y, self.cal_x, self.cal_height, self.cal_width), 2)
+        pygame.draw.rect(self.screen, (255,0,0), (self.cal_y, self.cal_x, self.cal_height, self.cal_width), 2)
 
-    def manual_calibrating(self, image, screen):
+    def manual_calibrating(self, image):
         time = self.clock.tick(30)
         sgc.update(time)
 
-    def thresholding(self, image, screen):
-        self.show_thresholding_label(screen)
+    def thresholding(self, image):
+        self.show_thresholding_label()
         obj_range = threshold_image(image, self.colour_value)
         frame = pygame.surfarray.make_surface(cv2.flip(obj_range, 1))
-        screen.blit(frame, (0, 0))
+        self.screen.blit(frame, (0, 0))
         obj_x, obj_y, obj_a, obj_contour = find_largest_contour(obj_range)
         if obj_contour is not None:
             pygame.mouse.set_pos(obj_y, self.image_width - obj_x)
@@ -103,24 +103,24 @@ class StreamProcessor(threading.Thread):
         mean, stddev = cv2.meanStdDev(image, mask=mask)
         lower = mean - sigmas * stddev
         upper = mean + sigmas * stddev
-        return ((lower[0][0], lower[1][0], lower[2][0]), (upper[0][0], upper[1][0], upper[2][0]))
+        return [[lower[0][0], lower[1][0], lower[2][0]], [upper[0][0], upper[1][0], upper[2][0]]]
    
-    def show_cal_label(self, screen):
+    def show_cal_label(self):
         font = pygame.font.Font(None, 60)
         label = font.render(str("Calibrating"), 1, (255,255,255))
-        screen.blit(label, (10, 240))
+        self.screen.blit(label, (10, 240))
 
-    def show_thresholding_label(self, screen):
+    def show_thresholding_label(self):
         font = pygame.font.Font(None, 60)
         label = font.render(str("Testing"), 1, (255,255,255))
-        screen.blit(label, (10, 240))
+        self.screen.blit(label, (10, 240))
 
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         screen.fill([0, 0, 0])
         image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        self.mode[self.mode_number](image, screen)
+        self.mode[self.mode_number](image)
         pygame.display.update()
 
 
@@ -188,18 +188,18 @@ class Calibrate(BaseChallenge):
 
     def joystick_handler(self, button):
         if button['home']:
-            self.processor.mode_number = 0
+            if self.processor.mode_number == 2: self.update_value()
             self.remove_controls()
+            self.processor.mode_number = 0
             self.logger.info("File selection mode")
             pygame.mouse.set_visible(False)
             self.display_files(index=self.file_index)
             if self.colour_index:
                 self.display_values(index=self.colour_index)
         if button['start']:
-            if self.processor.mode_number <> 0:
-                self.logger.info("colour value set to %s" %  self.processor.colour_value)
-                #TODO: add value save routine here 
-                self.logger.info("value saved")
+            if self.processor.mode_number == 0 or self.processor.mode_number == 2:
+                self.save_values()
+            self.logger.info("colour value saved as %s" %  self.processor.colour_value)
         if button['select']:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                 'mod': 0, 'scancode': 32, 'key': pygame.K_SPACE, 'unicode': u' '}))
@@ -210,18 +210,22 @@ class Calibrate(BaseChallenge):
         if button['r1']:
             self.processor.finished = True
         if button['r2']:
+            if self.processor.mode_number == 0: self.update_indexs()
+            if self.processor.mode_number == 2: self.update_value()
             self.remove_controls()
             self.remove_radio_buttons()
             self.processor.mode_number = 3
             self.logger.info("Entering thresholding mode")
             pygame.mouse.set_visible(True)
         if button['l1']:
+            if self.processor.mode_number == 0: self.update_indexs()
             self.remove_radio_buttons()
             self.processor.mode_number = 2
             self.logger.info("Manual calibration mode")
             self.display_controls()
             pygame.mouse.set_visible(False)
         if button['l2']:
+            if self.processor.mode_number == 0: self.update_indexs()
             self.remove_controls()
             self.remove_radio_buttons()
             self.processor.mode_number = 1
@@ -251,6 +255,30 @@ class Calibrate(BaseChallenge):
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                 'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
 
+    def update_value(self):
+        num_of_file_radio_btns = len(self.file_radio_buttons)
+        for ctrl in self.controls:
+            i = ctrl['index']
+            self.processor.colour_value[i % 2][int(i/2)] = ctrl['ctrl'].value
+            self.processor.colour_value[i % 2][int(i/2)] = int(self.processor.colour_value[i % 2][int(i/2)])
+
+    def save_values(self):
+        if self.colour_index:
+            num_of_file_radio_btns = len(self.file_radio_buttons)
+            colour = self.colour_radio_buttons[self.colour_index - num_of_file_radio_btns]['label']
+            self.colour_values[colour] = self.processor.colour_value
+            data = self.colour_values
+            filename = self.file_radio_buttons[self.file_index]['label'] + ".json"
+            with open(filename, 'w') as f:
+                json.dump(data, f)
+            save_label = sgc.Label(text="saved", pos=(15, 160), col=(255,255,255))
+            save_label.add(101)
+            self.clock = pygame.time.Clock()
+            timer = self.clock.tick(30)
+            sgc.update(timer)
+            time.sleep(1)
+            save_label.remove(fade=False) 
+
     def update_display(self):
         for radio in self.file_radio_buttons:
             if radio['btn'].has_focus():
@@ -265,7 +293,7 @@ class Calibrate(BaseChallenge):
                 if self.colour_label and self.colour_label.active():
                     self.colour_label.text = label_text
                 else:
-                    self.colour_label = sgc.Label(text=label_text, pos=(15, 120), col=(255,255,255))
+                    self.colour_label = sgc.Label(text=label_text, pos=(15, 150), col=(255,255,255))
                     self.colour_label.add(100)
                 self.logger.info("%s value selected for editing" % radio['label'])
 
@@ -302,18 +330,17 @@ class Calibrate(BaseChallenge):
             button_x = (button_index % 2) * 120 + 10
             button_y = ((button_index - 1) % 2 + button_index) * 12 + button_start_y
             radio_button = sgc.Radio(group="colour", label=colour, pos=(button_x, button_y), col = (255,255,255))
-            data = dict(btn=radio_button, label=colour, index=button_index+num_of_file_radio_btns)
-            self.colour_radio_buttons.append(data)
+            button_details = dict(btn=radio_button, label=colour, index=button_index+num_of_file_radio_btns)
+            self.colour_radio_buttons.append(button_details)
             radio_button.add(button_index+num_of_file_radio_btns)
             button_index += 1
         if index: self.colour_radio_buttons[index-num_of_file_radio_btns]['btn']._activate()
 
     def remove_radio_buttons(self):
-       self.update_indexs()
        for button in self.file_radio_buttons:
-            button['btn'].remove(button['index'])
+            button['btn'].remove(fade=False) #button['index'])
        for button in self.colour_radio_buttons:
-            button['btn'].remove(button['index'])
+            button['btn'].remove(fade=False) #button['index'])
        if self.colour_label:
            self.colour_label.remove(fade=False)
 
@@ -330,7 +357,7 @@ class Calibrate(BaseChallenge):
     def run(self):
         # Startup sequence
         logger.info('Setting up camera')
-        screen = pygame.display.get_surface()
+#        screen = pygame.display.get_surface()
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
