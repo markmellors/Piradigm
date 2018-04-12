@@ -140,6 +140,7 @@ class Menu():
         elif event.label is "Rainbow":
             logger.info("launching Rainbow challenge")
             new_challenge = Rainbow(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
         elif event.label is "Shooting":
             logger.info("launching Duck Shoot challenge")
             new_challenge = Duckshoot(timeout=self.timeout, screen=self.screen, joystick=self.joystick)

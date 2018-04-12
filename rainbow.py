@@ -76,7 +76,7 @@ class StreamProcessor(threading.Thread):
         largest_colour_x = None
         largest_colour_y = None
         largest_colour_area = None
-        for colour in self.colours
+        for colour in self.colours:
             colour_limits = self.colour_bounds.get(colour, default_colour_bounds)
             mask = threshold_image(image, colour_limits)
             x, y, a, ctr = find_largest_contour(mask)
@@ -112,7 +112,7 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
-        print get_ball_colour_and_position
+        print self.get_ball_colour_and_position(image)
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
             screen.blit(frame, (100, 0))
@@ -202,7 +202,7 @@ class StreamProcessor(threading.Thread):
             else:
                 self.drive.move(0, 0)
                 self.cycle += 1
-            logger.info('No %s ball' % (targetcolour))
+#            logger.info('No %s ball' % (targetcolour))
             # reset PID errors
             self.last_t_error = None
 
