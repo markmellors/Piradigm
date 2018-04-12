@@ -33,6 +33,7 @@ class StreamProcessor(threading.Thread):
         self.AREA_D = 0.0003
         self.TURN_P = 0.7
         self.TURN_D = 0.3
+        self.colours = ("red", "green", "yellow", "blue")
         self.colour_bounds = json.load(open('rainbow.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
@@ -69,6 +70,23 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
+    def get_ball_colour_and_position(self, image):
+        default_colour_bounds = ((40, 0, 0), (180, 255, 255))
+        largest_colour_name = None
+        largest_colour_x = None
+        largest_colour_y = None
+        largest_colour_area = None
+        for colour in self.colours
+            colour_limits = self.colour_bounds.get(colour, default_colour_bounds)
+            mask = threshold_image(image, colour_limits)
+            x, y, a, ctr = find_largest_contour(mask)
+            if a > self.MIN_CONTOUR_AREA and a > largest_colour_area:
+                largest_colour_name = colour
+                largest_colour_x = x
+                largest_colour_y = y
+                largest_colour_area = a
+        return largest_colour_name, largest_colour_x, largest_colour_y
+
     # Image processing function
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
@@ -94,6 +112,7 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
+        print get_ball_colour_and_position
         if not self.menu:
             frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
             screen.blit(frame, (100, 0))
