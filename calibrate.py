@@ -1,6 +1,7 @@
 from img_base_class import *
 import random
 import json
+import math
 import cv2.aruco as aruco
 from approxeng.input.selectbinder import ControllerResource
 from my_button import MyScale
@@ -141,6 +142,7 @@ class Calibrate(BaseChallenge):
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
+        self.exponential = 2
         self.colour_radio_buttons = []
         self.colour_label = None
         self.file_index = None
@@ -393,6 +395,11 @@ class Calibrate(BaseChallenge):
                 time.sleep(0.01)
                 if self.joystick.connected:
                     self.joystick_handler(self.joystick.check_presses())
+                    rx, ry = self.joystick['rx', 'ry']
+                    logger.debug("joystick L/R: %s, %s" % (rx, ry))
+                    rx = self.exp(rx, self.exponential)
+                    ry = self.exp(ry, self.exponential)
+                    self.drive.move(rx, ry)
                 if self.processor.finished:
                     self.stop()
 
@@ -418,3 +425,12 @@ class Calibrate(BaseChallenge):
             pygame.mouse.set_visible(False)
             self.logger.info("bye")
             pygame.event.post(pygame.event.Event(USEREVENT+1,message="challenge finished"))
+
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
+
+    def exp(self, demand, exp):
+        # function takes a demand speed from -1 to 1 and converts it to a response value
+        # with an exponential function. exponential is -inf to +inf, 0 is linear
+        exp = 1/(1 + abs(exp)) if exp < 0 else exp + 1
+        return math.copysign((abs(demand)**exp), demand)
