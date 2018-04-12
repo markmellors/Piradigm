@@ -59,8 +59,8 @@ class StreamProcessor(threading.Thread):
         sgc.update(time)
 
     def auto_calibrating(self, image):
-        screenimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
-        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
+        obj_range = threshold_image(image, self.colour_value)
+        frame = pygame.surfarray.make_surface(cv2.flip(obj_range, 1))
         self.screen.blit(frame, (0, 0))
         self.show_cal_label()
         self.colour_value = self.get_limits(image, 1.5)
@@ -95,6 +95,7 @@ class StreamProcessor(threading.Thread):
         returns a tuple of tuples ((low1, low2, low3),(upp1, upp2, upp3))"""
         h, w = image.shape[:2]
         mask = numpy.zeros(image.shape[:2], numpy.uint8)
+        #cv2.rectangle takes cooridnates of lower left and top right
         cal_x1 = self.cal_x
         cal_y1 = self.cal_y
         cal_x2 = self.cal_x + self.cal_width
@@ -194,7 +195,7 @@ class Calibrate(BaseChallenge):
             self.logger.info("File selection mode")
             pygame.mouse.set_visible(False)
             self.display_files(index=self.file_index)
-            if self.colour_index:
+            if self.colour_index is not None:
                 self.display_values(index=self.colour_index)
         if button['start']:
             if self.processor.mode_number == 0 or self.processor.mode_number == 2:
@@ -256,16 +257,14 @@ class Calibrate(BaseChallenge):
                 'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
 
     def update_value(self):
-        num_of_file_radio_btns = len(self.file_radio_buttons)
         for ctrl in self.controls:
             i = ctrl['index']
             self.processor.colour_value[i % 2][int(i/2)] = ctrl['ctrl'].value
             self.processor.colour_value[i % 2][int(i/2)] = int(self.processor.colour_value[i % 2][int(i/2)])
 
     def save_values(self):
-        if self.colour_index:
-            num_of_file_radio_btns = len(self.file_radio_buttons)
-            colour = self.colour_radio_buttons[self.colour_index - num_of_file_radio_btns]['label']
+        if self.colour_index is not None:
+            colour = self.colour_radio_buttons[self.colour_index]['label']
             self.colour_values[colour] = self.processor.colour_value
             data = self.colour_values
             filename = self.file_radio_buttons[self.file_index]['label'] + ".json"
@@ -312,7 +311,7 @@ class Calibrate(BaseChallenge):
                 self.file_radio_buttons.append(data)
                 radio_button.add(button_index)
                 button_index += 1
-        self.file_radio_buttons[index]['btn']._activate() if index else self.file_radio_buttons[0]['btn']._activate()
+        self.file_radio_buttons[index]['btn']._activate() if index is not None else self.file_radio_buttons[0]['btn']._activate()
 
     def display_values(self, index=None):
         for button in self.colour_radio_buttons:
@@ -334,7 +333,7 @@ class Calibrate(BaseChallenge):
             self.colour_radio_buttons.append(button_details)
             radio_button.add(button_index+num_of_file_radio_btns)
             button_index += 1
-        if index: self.colour_radio_buttons[index-num_of_file_radio_btns]['btn']._activate()
+        if index is not None: self.colour_radio_buttons[index]['btn']._activate()
 
     def remove_radio_buttons(self):
        for button in self.file_radio_buttons:
@@ -350,9 +349,10 @@ class Calibrate(BaseChallenge):
             if radio['btn'].selected:
                 self.file_index = radio['index']
         self.colour_index = None
+        num_of_file_radio_btns = len(self.file_radio_buttons)
         for radio in self.colour_radio_buttons:
             if radio['btn'].selected:
-                self.colour_index = radio['index']
+                self.colour_index = radio['index']-num_of_file_radio_btns
 
     def run(self):
         # Startup sequence
