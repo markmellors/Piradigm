@@ -22,8 +22,10 @@ class StreamProcessor(threading.Thread):
         self.terminated = False
         self.MAX_AREA = 4000  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
+        self.LEARNING_MIN_AREA = 50
         self._colour = colour
         self.found = False
+        self.tried_left = False
         self.retreated = False
         self.cycle = 0
         self.last_a_error = 0
@@ -32,10 +34,16 @@ class StreamProcessor(threading.Thread):
         self.AREA_D = 0.0003
         self.TURN_P = 0.7
         self.TURN_D = 0.3
-        self.colours = ("red", "green", "yellow", "blue")
+        self.colour_positions = {
+            "red": None,
+            "blue": None,
+            "yellow": None,
+            "green": None}
+        self.current_position = 0
         self.colour_bounds = json.load(open('rainbow.json'))
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
+        self.TURN_SPEED = 1
         self.BACK_OFF_AREA = 1000
         self.BACK_OFF_SPEED = -0.25
         self.FAST_SEARCH_TURN = 0.7
@@ -75,16 +83,45 @@ class StreamProcessor(threading.Thread):
         largest_colour_x = None
         largest_colour_y = None
         largest_colour_area = None
-        for colour in self.colours:
+        for colour in self.colour_positions.keys():
             colour_limits = self.colour_bounds.get(colour, default_colour_bounds)
             mask = threshold_image(image, colour_limits)
             x, y, a, ctr = find_largest_contour(mask)
-            if a > self.MIN_CONTOUR_AREA and a > largest_colour_area:
+            if a > self.LEARNING_MIN_AREA and a > largest_colour_area:
                 largest_colour_name = colour
                 largest_colour_x = x
                 largest_colour_y = y
                 largest_colour_area = a
-        return largest_colour_name, largest_colour_x, largest_colour_y
+        return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
+
+    def turn_to_next_ball(self, previous_ball_position):
+        nominal_move_time = 0.1
+        move_correction_factor = 20
+        move_time = nominal_move_time - previous_ball_position / self.image_centre_x / move_correction_factor
+        self.drive.move(self.TURN_SPEED, 0)
+        time.sleep(move_time)
+        self.drive.move(0, 0)
+
+    def learn(self, image):
+        image = image[35:65, 0:320]
+        x, y, colour = get_ball_colour_and_position(image)
+        if colour is not None:
+            self.colour_positions[colour] = self.current_position
+            self.turn_to_next_ball(x)
+            self.current_position += 1
+        else:
+            seek_time = 0.03
+            if self.tried_left:
+                self.drive.move(self.FAST_SEARCH_TURN, 0)
+                time.sleep(seek_time)
+                self.drive.move(0, 0)
+            else:
+                self.drive.move(-self.FAST_SEARCH_TURN, 0)
+                time.sleep(seek_time*2)
+                self.drive.move(0, 0)
+        if self.current_position == 4:
+            logger.info("ball order is %s" % self.colour_positions)
+            #leave learn mode, start seeking
 
     # Image processing function
     def process_image(self, image, screen):
