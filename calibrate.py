@@ -55,25 +55,35 @@ class StreamProcessor(threading.Thread):
                     self.event.clear()
 
     def file_selection(self, image):
+        """Mode to select colour value to adjust. file and value labels are
+        displayed on screen by calibrate object, so nothing needed from image"""
+        self.display_label("Colour selection")
         time = self.clock.tick(30)
         sgc.update(time)
 
     def auto_calibrating(self, image):
+        """mode to adjust current colour value based on Mean & stdDev of image
+        in central region, also displays accordingly thresholded image"""
         obj_range = threshold_image(image, self.colour_value)
         frame = pygame.surfarray.make_surface(cv2.flip(obj_range, 1))
         self.screen.blit(frame, (0, 0))
-        self.show_cal_label()
+        self.display_label("Auto-calibrating")
         self.colour_value = self.get_limits(image, 1.5)
         h, w = image.shape[:2]
         # pygame screen, (colour tuple), (top left x, top left y, width, height), line thickness
         pygame.draw.rect(self.screen, (255,0,0), (self.cal_y, self.cal_x, self.cal_height, self.cal_width), 2)
 
     def manual_calibrating(self, image):
+        """manual calibration mode. sliders are displayed on screen by
+        calibrate object, so nothing needed from image"""
+        self.display_label("Manual calibration")
         time = self.clock.tick(30)
         sgc.update(time)
 
     def thresholding(self, image):
-        self.show_thresholding_label()
+        """Image processing mode where image is converted to B&W based
+        on current colour value, and displayed on screen"""
+        self.display_label("Testing")
         obj_range = threshold_image(image, self.colour_value)
         frame = pygame.surfarray.make_surface(cv2.flip(obj_range, 1))
         self.screen.blit(frame, (0, 0))
@@ -106,16 +116,11 @@ class StreamProcessor(threading.Thread):
         upper = mean + sigmas * stddev
         return [[lower[0][0], lower[1][0], lower[2][0]], [upper[0][0], upper[1][0], upper[2][0]]]
    
-    def show_cal_label(self):
-        font = pygame.font.Font(None, 60)
-        label = font.render(str("Calibrating"), 1, (255,255,255))
-        self.screen.blit(label, (10, 240))
-
-    def show_thresholding_label(self):
-        font = pygame.font.Font(None, 60)
-        label = font.render(str("Testing"), 1, (255,255,255))
-        self.screen.blit(label, (10, 240))
-
+    def display_label(self, text):
+        font = pygame.font.Font(None, 36)
+        label = font.render(str(text), 1, (255,255,255))
+        label_offset = self.image_centre_y - len(str(text)) * 4.5 #for centring
+        self.screen.blit(label, (label_offset, 280))
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
@@ -144,6 +149,7 @@ class Calibrate(BaseChallenge):
         super(Calibrate, self).__init__(name='Calibrate', timeout=timeout, logger=logger)
 
     def display_controls(self):
+         """displays sliders for manual calibration"""
          colour_bounds = self.processor.colour_value
          for ctrl in self.controls:
              if not ctrl['ctrl'].active():
@@ -152,11 +158,13 @@ class Calibrate(BaseChallenge):
                  ctrl['ctrl'].value = colour_bounds[i % 2][int(i/2)]
 
     def remove_controls(self):
+         """removes manual calibration sliders"""
          for ctrl in self.controls:
              if ctrl['ctrl'].active():
                  ctrl['ctrl'].remove(fade=False)
 
     def setup_controls(self):
+        """returns a list of controls for HSV tuning"""
         # colours
         #why do these need repeating when theyre in menu.py? aren't they global?
         BLUE = 26, 0, 255
@@ -165,12 +173,12 @@ class Calibrate(BaseChallenge):
         BLACK = 0, 0, 0
         WHITE = 255, 255, 255
         control_config = [
-           ("min hue", 5, 90, BLACK, WHITE),
-           ("max hue", 115, 90, BLACK, WHITE),
-           ("min saturation", 5, 165, BLACK, WHITE),
-           ("max saturation", 115, 165, BLACK, WHITE),
-           ("min value", 5, 240, BLACK, WHITE),
-           ("max value", 115, 240, WHITE, WHITE),
+           ("min hue", 5, 50, BLACK, WHITE),
+           ("max hue", 115, 50, BLACK, WHITE),
+           ("min saturation", 5, 125, BLACK, WHITE),
+           ("max saturation", 115, 125, BLACK, WHITE),
+           ("min value", 5, 200, BLACK, WHITE),
+           ("max value", 115, 200, WHITE, WHITE),
         ]
         return [
             self.make_controls(index, *item)
@@ -179,7 +187,7 @@ class Calibrate(BaseChallenge):
         ]
 
     def make_controls(self, index, text, xpo, ypo, colour, text_colour):
-        """make a slider control at the specified position"""
+        """make a slider object for the specified position"""
         logger.debug("making button with text '%s' at (%d, %d)", text, xpo, ypo)
         return dict(
             index=index,
@@ -198,8 +206,7 @@ class Calibrate(BaseChallenge):
             if self.colour_index is not None:
                 self.display_values(index=self.colour_index)
         if button['start']:
-            if self.processor.mode_number == 0 or self.processor.mode_number == 2:
-                self.save_values()
+            self.save_values()
             self.logger.info("colour value saved as %s" %  self.processor.colour_value)
         if button['select']:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
@@ -233,6 +240,7 @@ class Calibrate(BaseChallenge):
             self.logger.info("Auto calibrating mode")
             pygame.mouse.set_visible(False)
         #if left or right buttons on right side of joystick pressed, treat them like arrow buttons
+        #if left D pad pressed, treat like tab, double tab or shift tab (tab backwards)
         if button['circle']:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN,{
                 'mod': 0, 'scancode': 77, 'key': pygame.K_RIGHT, 'unicode': "u'\t'"}))
