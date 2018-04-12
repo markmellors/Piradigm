@@ -329,7 +329,9 @@ class Calibrate(BaseChallenge):
         for button in self.file_radio_buttons:
             if button['btn'].selected:
                 filename = button['label'] + ".json"
-        with open(filename) as json_file:
+        file_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(file_dir, filename)
+        with open(file_path) as json_file:
             self.colour_values = json.load(json_file)
         self.colour_radio_buttons = []
         num_of_file_radio_btns = len(self.file_radio_buttons)
