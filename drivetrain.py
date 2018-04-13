@@ -57,6 +57,7 @@ class DriveTrain():
         self.safe_trigger = self.trigger_angle.get('safe')
         # Initialise self.average_batt_v with current_batt_v
         self.average_batt_v = self.current_batt_v
+        logging.info("Current battery voltage is %.2f" % self.current_batt_v)
 
     def move(self, forward, turn):
         steering_left, steering_right = self.steering(forward, turn)
