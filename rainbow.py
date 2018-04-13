@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#q7#!/usr/bin/env python
 # coding: Latin
 
 import json
@@ -40,7 +40,10 @@ class StreamProcessor(threading.Thread):
             "yellow": None,
             "green": None}
         self.current_position = 0
+        self.seek_attempts = 0
         self.colour_bounds = json.load(open('rainbow.json'))
+        self.mode = [self.learning, self.visiting]
+        self.mode_number = 0
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
@@ -50,7 +53,6 @@ class StreamProcessor(threading.Thread):
         self.DRIVING = True
         self.tracking = False
         # Why the one second sleep?
-        time.sleep(1)
         self.start()
 
     @property
@@ -95,49 +97,62 @@ class StreamProcessor(threading.Thread):
         return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
 
     def turn_to_next_ball(self, previous_ball_position):
-        nominal_move_time = 0.1
+        nominal_move_time = 0.2
         move_correction_factor = 20
         move_time = nominal_move_time - previous_ball_position / self.image_centre_x / move_correction_factor
+        print ("move time: %s" % move_time)
         self.drive.move(self.TURN_SPEED, 0)
         time.sleep(move_time)
         self.drive.move(0, 0)
 
-    def learn(self, image):
-        image = image[35:65, 0:320]
-        x, y, colour = get_ball_colour_and_position(image)
-        if colour is not None:
-            self.colour_positions[colour] = self.current_position
-            self.turn_to_next_ball(x)
-            self.current_position += 1
-        else:
-            seek_time = 0.03
+    def seek(self):
+        seek_time = 0.03 * self.seek_attempts
+        if self.tracking:
             if self.tried_left:
                 self.drive.move(self.FAST_SEARCH_TURN, 0)
                 time.sleep(seek_time)
                 self.drive.move(0, 0)
+                self.seek_attempts += 1
+                self.tried_left = True
             else:
                 self.drive.move(-self.FAST_SEARCH_TURN, 0)
-                time.sleep(seek_time*2)
+                time.sleep(seek_time)
                 self.drive.move(0, 0)
-        if self.current_position == 4:
-            logger.info("ball order is %s" % self.colour_positions)
-            #leave learn mode, start seeking
+                self.seek_attempts += 1
+                self.tried_left = False
 
-    # Image processing function
-    def process_image(self, image, screen):
+    def learning(self, image):
+        if self.current_position == 0:
+            if self.tracking:
+                logger.info("moving to first position")
+                turn_time = 0.15
+                self.drive.move(self.FAST_SEARCH_TURN, 0)
+                time.sleep(turn_time)
+                self.drive.move(0, 0)
+                self.current_position += 1
+        else:
+            image = image[35:65, 0:320]
+            colour, x, y, a = self.get_ball_colour_and_position(image)
+            if colour is not None:
+                if self.colour_positions[colour] <> (self.current_position - 1):
+                    self.colour_positions[colour] = self.current_position
+                    logger.info("ball %s found at position %i" % (colour, self.current_position))
+                    self.turn_to_next_ball(x)
+                    self.current_position += 1
+                else:
+                    #we're still on the same ball, try moving again
+                    logger.info("%s ball found again, this time at position %i" % (colour, self.current_position))
+                    self.turn_to_next_ball(x)
+            else:
+                #no balls found, go searching
+                self.seek()
+            if self.current_position == 4:
+                logger.info("ball order is %s" % self.colour_positions)
+                #leave learn mode, start seeking
+                self.mode_number = 1
+
+    def visiting(self, image):
         screen = pygame.display.get_surface()
-        # crop image to speed up processing and avoid false positives
-        image = image[80:180, 0:320]
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
-        screen.fill([0, 0, 0])
-        font = pygame.font.Font(None, 24)
-        screen.blit(frame, (0, 0))
-        image = cv2.medianBlur(image, 5)
-        # Convert the image from 'BGR' to HSV colour space
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        # method will extract the colour we are interested in (between 0 and 180)
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         hsv_lower, hsv_upper = self.colour_bounds.get(
             self.colour, default_colour_bounds
@@ -147,7 +162,6 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_lower),
             numpy.array(hsv_upper)
         )
-        print self.get_ball_colour_and_position(image)
         frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
         screen.blit(frame, (100, 0))
         pygame.display.update()
@@ -197,6 +211,21 @@ class StreamProcessor(threading.Thread):
         elif not self.retreated:
             self.drive_away_from_ball(ball, self.colour)
 
+    # Image processing function
+    def process_image(self, image, screen):
+        screen = pygame.display.get_surface()
+        # crop image to speed up processing and avoid false positives
+        image = image[80:180, 0:320]
+        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+        screen.fill([0, 0, 0])
+        font = pygame.font.Font(None, 24)
+        screen.blit(frame, (0, 0))
+        image = cv2.medianBlur(image, 5)
+        # Convert the image from 'BGR' to HSV colour space
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        self.mode[self.mode_number](image)
+        
 
     # TODO: Move this motor control logic out of the stream processor
     # as it is challenge logic, not stream processor logic
@@ -330,14 +359,13 @@ class Rainbow(BaseChallenge):
         )
         # To switch target colour" on the fly, use:
         # self.processor.colour = "blue"
-        logger.info('Wait ...')
-        time.sleep(2)
         logger.info('Setting up image capture thread')
         self.image_capture_thread = ImageCapture(
             camera=self.camera,
             processor=self.processor
         )
         pygame.mouse.set_visible(True)
+        logger.info("Initialised, starting")
         try:
             while not self.should_die:
                 time.sleep(0.01)
