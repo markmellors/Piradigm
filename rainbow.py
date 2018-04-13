@@ -20,7 +20,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MAX_AREA = 4000  # Largest target to move towards
+        self.MAX_AREA = 1500  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 50
         self._colour = colour
@@ -43,7 +43,7 @@ class StreamProcessor(threading.Thread):
         self.seek_attempts = 0
         self.colour_bounds = json.load(open('rainbow.json'))
         self.mode = [self.learning, self.visiting]
-        self.mode_number = 0
+        self.mode_number = 1
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
@@ -97,13 +97,14 @@ class StreamProcessor(threading.Thread):
         return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
 
     def turn_to_next_ball(self, previous_ball_position):
-        nominal_move_time = 0.2
-        move_correction_factor = 20
-        move_time = nominal_move_time - previous_ball_position / self.image_centre_x / move_correction_factor
+        nominal_move_time = 0.25
+        move_correction_factor = 0.1
+        move_time = nominal_move_time + previous_ball_position / self.image_centre_x * move_correction_factor
         print ("move time: %s" % move_time)
         self.drive.move(self.TURN_SPEED, 0)
         time.sleep(move_time)
         self.drive.move(0, 0)
+        time.sleep(move_time)
 
     def seek(self):
         seek_time = 0.03 * self.seek_attempts
@@ -125,26 +126,27 @@ class StreamProcessor(threading.Thread):
         if self.current_position == 0:
             if self.tracking:
                 logger.info("moving to first position")
-                turn_time = 0.15
+                turn_time = 0.1
                 self.drive.move(self.FAST_SEARCH_TURN, 0)
                 time.sleep(turn_time)
                 self.drive.move(0, 0)
                 self.current_position += 1
+                time.sleep(turn_time)
         else:
             image = image[35:65, 0:320]
             colour, x, y, a = self.get_ball_colour_and_position(image)
             if colour is not None:
                 if self.colour_positions[colour] <> (self.current_position - 1):
                     self.colour_positions[colour] = self.current_position
-                    logger.info("ball %s found at position %i" % (colour, self.current_position))
+                    logger.info("%s ball found at position %i, coordinate %d" % (colour, self.current_position, x))
                     self.turn_to_next_ball(x)
                     self.current_position += 1
                 else:
                     #we're still on the same ball, try moving again
-                    logger.info("%s ball found again, this time at position %i" % (colour, self.current_position))
+                    logger.info("%s ball found again, this time at position %i, coordinate %d" % (colour, self.current_position, x))
                     self.turn_to_next_ball(x)
             else:
-                #no balls found, go searching
+                logger.info("No balls found, seeking")
                 self.seek()
             if self.current_position == 4:
                 logger.info("ball order is %s" % self.colour_positions)
@@ -186,13 +188,9 @@ class StreamProcessor(threading.Thread):
                 found_x = cx
                 found_y = cy
                 biggest_contour = contour
-        if found_area > self.MIN_CONTOUR_AREA:
-            mask = numpy.zeros(image.shape[:2], dtype="uint8")
-            cv2.drawContours(mask, [biggest_contour], -1, 255, -1)
-            mask = cv2.erode(mask, None, iterations=2)
-            mean = cv2.mean(image, mask=mask)[:3]
-            #print mean
+        if biggest_contour is not None:
             ball = [found_x, found_y, found_area]
+            print colour_of_contour(image, biggest_contour)
         else:
             ball = None
         pygame.mouse.set_pos(found_y, 320 - found_x)
@@ -244,7 +242,7 @@ class StreamProcessor(threading.Thread):
             else:
                 # follow 0.2, /2 good
                 a_error = self.MAX_AREA - area
-                forward = self.AREA_P * a_error
+                forward = self.AREA_P * a_error + 0.1
                 t_error  = (self.image_centre_x - x) / self.image_centre_x
                 turn = self.TURN_P * t_error
                 if self.last_t_error is not None:
@@ -255,7 +253,7 @@ class StreamProcessor(threading.Thread):
                     self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 self.last_a_error = a_error
-                print ('%s ball, %s' % (targetcolour, t_error))
+                print ('%s ball found, error:, %s, area: %s' % (targetcolour, t_error, area))
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 5:
@@ -265,7 +263,7 @@ class StreamProcessor(threading.Thread):
             else:
                 self.drive.move(0, 0)
                 self.cycle += 1
-#            logger.info('No %s ball' % (targetcolour))
+            logger.info('No %s ball' % (targetcolour))
             # reset PID errors
             self.last_t_error = None
 
