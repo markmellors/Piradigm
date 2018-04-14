@@ -86,7 +86,7 @@ class StreamProcessor(threading.Thread):
         return mask
 
     def turn_around(self):
-#        print "turning around"
+        logger.info("turning around")
         if random.choice([True, False]):
             self.drive.move(self.TURN_AROUND_SPEED, 0)
         else:
@@ -161,7 +161,6 @@ class StreamProcessor(threading.Thread):
         if self.calibrating:
             self.show_cal_label(screen)
             self.colour_limits = self.get_limits(ball_image, 1.5)
-            print self.colour_limits
         if self.tracking:
             self.show_tracking_label(screen)
         ball_range = self.threshold_image(ball_image, self.colour_limits)
@@ -178,13 +177,13 @@ class StreamProcessor(threading.Thread):
             pygame.mouse.set_pos(balloon_y+self.FLOOR_CROP_HEIGHT-self.FLOOR_CROP_START, self.BALL_CROP_WIDTH - balloon_x)
         if balloon_a > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
-#                print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
+                logger.info("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
                 self.found = True
                 t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
                 if balloon_a > self.BACK_AWAY_START or (balloon_a > self.BACK_AWAY_STOP and self.back_away):
                     #we're probably close, back off
- #                   print "backing off"
+                    logger.info("backing off")
                     self.back_away = True
                     if self.DRIVING and self.tracking:
                         self.drive.move(turn/2, -self.STRAIGHT_SPEED/2)
@@ -199,12 +198,12 @@ class StreamProcessor(threading.Thread):
             floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
             if floor_y < self.TURN_HEIGHT:
                 self.edge = True
- #               print ("no opponent found and close to edge, turning %s" % (floor_y))
+                logger.info("no opponent found and close to edge, turning %s" % (floor_y))
                 if self.DRIVING and self.tracking:
                     self.seek()
             else:
                 self.edge = False
- #               print "no opponent found, ambling"
+                logger.info("no opponent found, ambling")
                 t_error = (self.image_centre_x - floor_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
                 if self.DRIVING and self.tracking:
