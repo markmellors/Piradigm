@@ -115,7 +115,7 @@ class StreamProcessor(threading.Thread):
         mean, stddev = cv2.meanStdDev(image, mask=mask)
         lower = mean - sigmas * stddev
         upper = mean + sigmas * stddev
-        return [[lower[0][0], lower[1][0], lower[2][0]], [upper[0][0], upper[1][0], upper[2][0]]]
+        return ((lower[0][0], lower[1][0], lower[2][0]), (upper[0][0], upper[1][0], upper[2][0]))
    
     def display_label(self, text):
         font = pygame.font.Font(None, 36)
@@ -142,6 +142,7 @@ class Calibrate(BaseChallenge):
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
+        self.file_dir = os.path.dirname(os.path.realpath(__file__))
         self.exponential = 2
         self.colour_radio_buttons = []
         self.colour_label = None
@@ -267,10 +268,13 @@ class Calibrate(BaseChallenge):
                 'mod': 1, 'scancode': 15, 'key': pygame.K_TAB, 'unicode': "u'\t'"}))
 
     def update_value(self):
+        # create list placeholder so individual elements can be added
+        colour_val = [[None,None,None],[None,None,None]]  
         for ctrl in self.controls:
             i = ctrl['index']
-            self.processor.colour_value[i % 2][int(i/2)] = ctrl['ctrl'].value
-            self.processor.colour_value[i % 2][int(i/2)] = int(self.processor.colour_value[i % 2][int(i/2)])
+            colour_val[i % 2][int(i/2)] = int(ctrl['ctrl'].value)
+        #assign list to tuple in one go
+        self.processor.colour_value = colour_val
 
     def save_values(self):
         if self.colour_index is not None:
@@ -278,7 +282,8 @@ class Calibrate(BaseChallenge):
             self.colour_values[colour] = self.processor.colour_value
             data = self.colour_values
             filename = self.file_radio_buttons[self.file_index]['label'] + ".json"
-            with open(filename, 'w') as f:
+            file_path = os.path.join(self.file_dir, filename)
+            with open(file_path, 'w') as f:
                 json.dump(data, f)
             save_label = sgc.Label(text="saved", pos=(15, 160), col=(255,255,255))
             save_label.add(101)
@@ -307,13 +312,12 @@ class Calibrate(BaseChallenge):
                 self.logger.info("%s value selected for editing" % radio['label'])
 
     def display_files(self, index=None):
-        file_path = os.path.dirname(os.path.realpath(__file__))
-        all_files = os.listdir(file_path)
+        all_files = os.listdir(self.file_dir)
         self.file_radio_buttons = []
         button_index = 0
         for filename in os.listdir(file_path):
-            if filename.endswith('.json') and filename <> 'calibration.json': 
-                display_name = filename[:len(filename)-5] #trim filetype off
+            display_name, extension = os.path.splitext(filename)
+            if extension == '.json' and filename <> 'calibration.json':
                 button_x = (button_index % 2) * 120 + 10
                 button_y = ((button_index - 1) % 2 + button_index) * 12
                 radio_button = sgc.Radio(group="file", label=display_name, pos=(button_x, button_y), col = (255,255,255))
@@ -329,8 +333,7 @@ class Calibrate(BaseChallenge):
         for button in self.file_radio_buttons:
             if button['btn'].selected:
                 filename = button['label'] + ".json"
-        file_dir = os.path.dirname(os.path.realpath(__file__))
-        file_path = os.path.join(file_dir, filename)
+        file_path = os.path.join(self.file_dir, filename)
         with open(file_path) as json_file:
             self.colour_values = json.load(json_file)
         self.colour_radio_buttons = []

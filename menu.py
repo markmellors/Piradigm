@@ -70,6 +70,7 @@ class Menu():
         self.challenge_thread = None
         self.timeout = kwargs.pop('timeout', 120)
         self.markers = aruco.Dictionary_create(6, 3)
+        self.running_challenge = None
 
     def launch_challenge(self, new_challenge):
         """launch requested challenge thread"""
@@ -133,7 +134,8 @@ class Menu():
     def button_handler(self, event):
         """Button action handler. Currently differentiates between
         exit, rc, rainbow and other buttons only"""
-        logger.debug("%s button pressed", event.label)
+        logger.debug("%s button pressed, stopping any running challenges", event.label)
+        self.stop_threads(self.running_challenge)
         if event.label is "RC":
             logger.info("launching RC challenge")
             new_challenge = RC(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
@@ -141,6 +143,7 @@ class Menu():
         elif event.label is "Rainbow":
             logger.info("launching Rainbow challenge")
             new_challenge = Rainbow(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
         elif event.label is "Shooting":
             logger.info("launching Duck Shoot challenge")
             new_challenge = Duckshoot(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
@@ -226,15 +229,9 @@ class Menu():
                             requested_challenge = self.button_handler(event)
                             for btn in self.buttons:
                                 btn['btn'].remove(btn['index'])
-                            pygame.display.update()
-                            if requested_challenge:
-                                logger.info("about to stop a thread if there's one running")
-                                if running_challenge:
-                                    logger.info("about to stop thread")
-                                    self.stop_threads(running_challenge)
                             if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
-                                running_challenge = self.launch_challenge(requested_challenge)
-                                logger.info("challenge %s launched", running_challenge.name)
+                                self.running_challenge = self.launch_challenge(requested_challenge)
+                                logger.info("challenge %s launched", self.running_challenge.name)
                             elif requested_challenge == "Exit":
                                 sys.exit()
                     # ensure there is always a safe way to end the program
