@@ -33,7 +33,10 @@ class StreamProcessor(threading.Thread):
         self.AREA_D = 0.0003
         self.TURN_P = 0.7
         self.TURN_D = 0.3
-        self.colour_bounds = json.load(open('rainbow.json'))
+        file_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(file_dir, 'rainbow.json')
+        with open(file_path) as json_file:
+            self.colour_bounds = json.load(json_file)
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.BACK_OFF_AREA = 1000
