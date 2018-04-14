@@ -28,6 +28,7 @@ class StreamProcessor(threading.Thread):
         self.tried_left = False
         self.retreated = False
         self.cycle = 0
+        self.just_moved = False
         self.last_a_error = 0
         self.last_w_error = 0
         self.last_t_error = 0
@@ -99,14 +100,13 @@ class StreamProcessor(threading.Thread):
         return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
 
     def turn_to_next_ball(self, previous_ball_position):
-        nominal_move_time = 0.25
-        move_correction_factor = 0.08
-        move_time = nominal_move_time + (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
-        print ("move time: %s" % move_time)
+        nominal_move_time = 0.255
+        move_correction_factor = 0.07
+        move_time = nominal_move_time - (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
         self.drive.move(self.TURN_SPEED, 0)
         time.sleep(move_time)
         self.drive.move(0, 0)
-        time.sleep(move_time)
+        self.just_moved = True
 
     def seek(self):
         seek_time = 0.02 * self.seek_attempts + 0.03
@@ -123,6 +123,7 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(0, 0)
                 self.seek_attempts += 1
                 self.tried_left = False
+        self.just_moved = True
 
     def learning(self, image):
         image = image[35:65, 0:320]
@@ -140,7 +141,7 @@ class StreamProcessor(threading.Thread):
                 time.sleep(turn_time)
                 self.drive.move(0, 0)
                 self.current_position += 1
-                time.sleep(0.3)
+                self.just_moved = True
         else:
             colour, x, y, a = self.get_ball_colour_and_position(image)
             if colour is not None:
@@ -153,12 +154,11 @@ class StreamProcessor(threading.Thread):
                     else:
                         logger.info("ball order is %s" % self.colour_positions)
                         #leave learn mode, start seeking
-                        self.mode_number = 1
+                        self.mode_number = 2
                 else:
                     #we're still on the same ball, try moving again
                     logger.info("%s ball found again, this time at position %i, coordinate %d" % (colour, self.current_position, x))
                     self.turn_to_next_ball(x)
-                time.sleep(0.3)
             else:
                 logger.info("No balls found, seeking")
                 self.seek()
@@ -223,18 +223,23 @@ class StreamProcessor(threading.Thread):
 
     # Image processing function
     def process_image(self, image, screen):
-        screen = pygame.display.get_surface()
-        # crop image to speed up processing and avoid false positives
-        image = image[80:180, 0:320]
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
-        screen.fill([0, 0, 0])
-        font = pygame.font.Font(None, 24)
-        screen.blit(frame, (0, 0))
-        image = cv2.medianBlur(image, 5)
-        # Convert the image from 'BGR' to HSV colour space
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        self.mode[self.mode_number](image)
+        if self.just_moved:
+            #if we've jsut done a fixed time move, ignore the next frame
+            logger.debug("frame flush")
+            self.just_moved = False
+        else:
+            screen = pygame.display.get_surface()
+            # crop image to speed up processing and avoid false positives
+            image = image[80:180, 0:320]
+            img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+            screen.fill([0, 0, 0])
+            font = pygame.font.Font(None, 24)
+            screen.blit(frame, (0, 0))
+            image = cv2.medianBlur(image, 5)
+            # Convert the image from 'BGR' to HSV colour space
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+            self.mode[self.mode_number](image)
 
 
     # TODO: Move this motor control logic out of the stream processor
@@ -333,11 +338,11 @@ class Rainbow(BaseChallenge):
             self.stop()
         if button['r2']:
             self.processor.tracking = True
-            print "Starting"
+            logger.info("Starting moving")
         if button['l1']:
             self.processor.tracking = False
             self.drive.move(0,0)
-            print "Stopping"
+            logger.info("Stopping moving")
         if button['l2']:
             #calibration mode
             pass
