@@ -20,8 +20,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MAX_AREA = 1200  # Largest target to move towards
-        self.MAX_WIDTH = 38 #as above
+        self.MAX_WIDTH = 70  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 30
         self._colour = colour
@@ -30,11 +29,10 @@ class StreamProcessor(threading.Thread):
         self.retreated = False
         self.cycle = 0
         self.last_a_error = 0
+        self.last_w_error = 0
         self.last_t_error = 0
-        self.AREA_P = 0.00015
-        self.AREA_D = 0.0003
-        self.WIDTH_P = 0.005
-        self.WIDTH_D = 0.001
+        self.WIDTH_P = 0.01
+        self.WIDTH_D = 0.01
         self.TURN_P = 0.7
         self.TURN_D = 0.3
         self.colour_positions = {
@@ -50,8 +48,8 @@ class StreamProcessor(threading.Thread):
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
-        self.BACK_OFF_AREA = 300
-        self.BACK_OFF_SPEED = -0.25
+        self.BACK_OFF_AREA = 700
+        self.BACK_OFF_SPEED = -0.6
         self.FAST_SEARCH_TURN = 1
         self.DRIVING = True
         self.tracking = False
@@ -254,6 +252,7 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(0, 0)
                 self.found = True
                 logger.info('Close enough to %s ball, stopping' % (targetcolour))
+                time.sleep(0.1)
             else:
                 # follow 0.2, /2 good
                 w_error = self.MAX_WIDTH - width
