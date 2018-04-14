@@ -84,9 +84,9 @@ def find_largest_contour(image):
             area = cv2.contourArea(contour)
             if found_area < area:
                 found_area = area
-                M = cv2.moments(contour)
-                found_x = int(M['m10']/M['m00'])
-                found_y = int(M['m01']/M['m00'])
+                m = cv2.moments(contour)
+                found_x = int(m['m10']/m['m00'])
+                found_y = int(m['m01']/m['m00'])
                 biggest_contour = contour
         return found_x, found_y, found_area, biggest_contour
 

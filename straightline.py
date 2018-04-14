@@ -167,17 +167,13 @@ class StreamProcessor(threading.Thread):
             logger.info ("ribbon spotted at %i" % (x))
             image_centre_x = (self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT)/2
             t_error  = float(image_centre_x - x) / image_centre_x
-            if self.aiming:
-                turn = self.AIM_P * t_error
-            else:
-                turn = self.LINE_TURN_P * t_error
+            turn_p = self.AIM_P if self.aiming else self.LINE_TURN_P
+            turn = turn_p * t_error
             turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
             if self.last_t_error is not None:
                 #if there was a real error last time then do some damping
-                if self.aiming:
-                    turn -= self.LINE_TURN_D *(self.last_t_error - t_error)
-                else:
-                    turn -= self.AIM_D *(self.last_t_error - t_error)
+                turn_d = self.AIM_D if self.aiming else self.LINE_TURN_D
+                turn = turn - (turn_d * (self.last_t_error - t_error))
             if self.driving:
                 self.drive.move(turn, self.STRAIGHT_SPEED)
             elif self.aiming:
