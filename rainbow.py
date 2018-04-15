@@ -21,7 +21,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MAX_WIDTH = 50 #70  # Largest target to move towards
+        self.MAX_WIDTH = 55 #70  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 30
         self._colour = colour
@@ -33,8 +33,8 @@ class StreamProcessor(threading.Thread):
         self.last_a_error = 0
         self.last_w_error = 0
         self.last_t_error = 0
-        self.WIDTH_P = 0.01
-        self.WIDTH_D = 0.01
+        self.WIDTH_P = 0.005
+        self.WIDTH_D = 0.008
         self.TURN_P = 0.7
         self.TURN_D = 0.3
         # define colour keys (lower case)
@@ -55,7 +55,7 @@ class StreamProcessor(threading.Thread):
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
-        self.BACK_OFF_AREA = 700
+        self.BACK_OFF_AREA = 1200
         self.BACK_OFF_SPEED = -0.6
         self.FAST_SEARCH_TURN = 1
         self.DRIVING = True
@@ -106,8 +106,8 @@ class StreamProcessor(threading.Thread):
         return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
 
     def turn_to_next_ball(self, previous_ball_position, direction ='right'):
-        nominal_move_time = 0.25
-        move_correction_factor = 0.07
+        nominal_move_time = 0.24
+        move_correction_factor = 0.03 #0.07
         move_time = nominal_move_time - (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
         turn = self.TURN_SPEED if direction == 'right' else -self.TURN_SPEED
         self.drive.move(turn, 0)
@@ -123,8 +123,8 @@ class StreamProcessor(threading.Thread):
     def get_turn_direction_by_colour(self, current_colour, target_colour):
         turn_dir = 'right'
         step_size = (
-            self.get_running_order_position_by_colour(target_colour)
-            - self.get_running_order_position_by_colour(current_colour)
+            self.colour_positions[target_colour]
+            - self.colour_positions[current_colour]
         )
         if step_size > len(self.running_order) / 2:
             turn_dir = 'left'
@@ -201,9 +201,11 @@ class StreamProcessor(threading.Thread):
         if colour is not None:
             self.seek_attempts = 0
             if colour == self.colour:
+                logger.info("orientated to %s ball, moving to visiting mode" % colour)
                 self.mode_number = 2
             else:
                 direction = self.get_turn_direction_by_colour(colour, self.colour)
+                logger.info("%s ball found, turning %s towards %s" % (colour, direction, self.colour))
                 self.turn_to_next_ball(x, direction=direction)
         else:
             logger.info("No balls found, seeking")
@@ -303,7 +305,7 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(0, 0)
                 self.found = True
                 logger.info('Close enough to %s ball, stopping' % (targetcolour))
-                time.sleep(0.1)
+                time.sleep(0.2)
             else:
                 # follow 0.2, /2 good
                 w_error = self.MAX_WIDTH - width
