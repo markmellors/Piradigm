@@ -126,7 +126,7 @@ class StreamProcessor(threading.Thread):
             self.colour_positions[target_colour]
             - self.colour_positions[current_colour]
         )
-        if step_size > len(self.running_order) / 2:
+        if step_size > len(self.running_order) / 2 or step_size < 0:
             turn_dir = 'left'
         
         return turn_dir
