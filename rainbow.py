@@ -2,6 +2,7 @@
 # coding: Latin
 
 import json
+from collections import OrderedDict
 from my_button import MyScale
 # Load all standard tools for image processing challenges
 from img_base_class import *
@@ -36,11 +37,15 @@ class StreamProcessor(threading.Thread):
         self.WIDTH_D = 0.01
         self.TURN_P = 0.7
         self.TURN_D = 0.3
-        self.colour_positions = {
-            "red": None,
-            "blue": None,
-            "yellow": None,
-            "green": None}
+        # define colour keys (lower case)
+        self.running_order = [
+            'yellow',
+            'red',
+            'green',
+            'blue'
+        ]
+        self.colour_positions = OrderedDict([(key, None) for key in self.running_order])
+        # Initialise the index of the current ball we're looking for
         self.current_position = 0
         self.seek_attempts = 0
         self.colour_bounds = json.load(open('rainbow.json'))
@@ -107,6 +112,21 @@ class StreamProcessor(threading.Thread):
         time.sleep(move_time)
         self.drive.move(0, 0)
         self.just_moved = True
+
+    def get_running_order_position_by_colour(self, colour):
+        '''Return the position in the running order of a given colour key'''
+        return self.running_order.index(colour.lower())
+    
+    def get_turn_direction_by_colour(self, current_colour, target_colour):
+        turn_dir = 'right'
+        step_size = (
+            self.get_running_order_position_by_colour(target_colour)
+            - self.get_running_order_position_by_colour(current_colour)
+        )
+        if step_size > len(self.running_order) / 2:
+            turn_dir = 'left'
+        
+        return turn_dir
 
     def seek(self):
         seek_time = 0.02 * self.seek_attempts + 0.03
