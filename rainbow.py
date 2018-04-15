@@ -21,7 +21,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MAX_WIDTH = 70  # Largest target to move towards
+        self.MAX_WIDTH = 50 #70  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 30
         self._colour = colour
@@ -47,9 +47,10 @@ class StreamProcessor(threading.Thread):
         self.colour_positions = OrderedDict([(key, None) for key in self.running_order])
         # Initialise the index of the current ball we're looking for
         self.current_position = 0
+        self.colour_seen = None
         self.seek_attempts = 0
         self.colour_bounds = json.load(open('rainbow.json'))
-        self.mode = [self.learning, self.visiting]
+        self.mode = [self.learning, self.orientating, self.visiting]
         self.mode_number = 0
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
@@ -104,13 +105,15 @@ class StreamProcessor(threading.Thread):
                 largest_colour_area = a
         return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
 
-    def turn_to_next_ball(self, previous_ball_position):
-        nominal_move_time = 0.255
+    def turn_to_next_ball(self, previous_ball_position, direction ='right'):
+        nominal_move_time = 0.25
         move_correction_factor = 0.07
         move_time = nominal_move_time - (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
-        self.drive.move(self.TURN_SPEED, 0)
+        turn = self.TURN_SPEED if direction == 'right' else -self.TURN_SPEED
+        self.drive.move(turn, 0)
         time.sleep(move_time)
         self.drive.move(0, 0)
+        time.sleep(move_time)
         self.just_moved = True
 
     def get_running_order_position_by_colour(self, colour):
@@ -165,6 +168,7 @@ class StreamProcessor(threading.Thread):
         else:
             colour, x, y, a = self.get_ball_colour_and_position(image)
             if colour is not None:
+                self.seek_attempts = 0
                 if self.colour_positions[colour] <> (self.current_position - 1):
                     self.colour_positions[colour] = self.current_position
                     logger.info("%s ball found at position %i, coordinate %d" % (colour, self.current_position, x))
@@ -173,8 +177,17 @@ class StreamProcessor(threading.Thread):
                         self.current_position += 1
                     else:
                         logger.info("ball order is %s" % self.colour_positions)
+                        self.colour_seen = colour
                         #leave learn mode, start seeking
-                        self.mode_number = 2
+                        learnt = 0
+                        for colour in self.colour_positions:
+                            if self.colour_positions[colour] is not None:
+                                learnt += 1
+                        if learnt < 4:
+                            logger.info("lost a ball, learning failed")
+                            self.mode_number = 3
+                        else:
+                            self.mode_number = 1 
                 else:
                     #we're still on the same ball, try moving again
                     logger.info("%s ball found again, this time at position %i, coordinate %d" % (colour, self.current_position, x))
@@ -182,6 +195,19 @@ class StreamProcessor(threading.Thread):
             else:
                 logger.info("No balls found, seeking")
                 self.seek()
+
+    def orientating(self, image):
+        colour, x, y, a = self.get_ball_colour_and_position(image)
+        if colour is not None:
+            self.seek_attempts = 0
+            if colour == self.colour:
+                self.mode_number = 2
+            else:
+                direction = self.get_turn_direction_by_colour(colour, self.colour)
+                self.turn_to_next_ball(x, direction=direction)
+        else:
+            logger.info("No balls found, seeking")
+            self.seek()
 
     def visiting(self, image):
         screen = pygame.display.get_surface()
@@ -316,6 +342,7 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(0, 0)
                 self.retreated = True
                 logger.info('far enough away from %s, stopping' % (targetcolour))
+                self.mode_number = 1
             else:
                 forward = self.BACK_OFF_SPEED
                 t_error = (self.image_centre_x - x) / self.image_centre_x
