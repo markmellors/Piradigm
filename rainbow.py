@@ -21,7 +21,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MAX_WIDTH = 55 #70  # Largest target to move towards
+        self.MAX_WIDTH = 60 #70  # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 30
         self._colour = colour
@@ -48,6 +48,7 @@ class StreamProcessor(threading.Thread):
         # Initialise the index of the current ball we're looking for
         self.current_position = 0
         self.colour_seen = None
+        self.first_seek_direction = 'right'  #not used yet
         self.seek_attempts = 0
         self.colour_bounds = json.load(open('rainbow.json'))
         self.mode = [self.learning, self.orientating, self.visiting]
@@ -55,6 +56,7 @@ class StreamProcessor(threading.Thread):
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
+        self.BRAKING = 0.2
         self.BACK_OFF_AREA = 1200
         self.BACK_OFF_SPEED = -0.6
         self.FAST_SEARCH_TURN = 1
@@ -126,26 +128,24 @@ class StreamProcessor(threading.Thread):
             self.colour_positions[target_colour]
             - self.colour_positions[current_colour]
         )
-        if step_size > len(self.running_order) / 2 or step_size < 0:
+        if step_size > len(self.running_order) / 2 or (step_size < 0 and step_size > -len(self.running_order) / 2):
             turn_dir = 'left'
         
         return turn_dir
 
     def seek(self):
-        seek_time = 0.02 * self.seek_attempts + 0.03
+        seek_time = 0.04 * self.seek_attempts + 0.03
         if self.tracking:
             if self.tried_left:
-                self.drive.move(self.FAST_SEARCH_TURN, 0)
-                time.sleep(seek_time)
-                self.drive.move(0, 0)
-                self.seek_attempts += 1
+                seek_turn = self.FAST_SEARCH_TURN
                 self.tried_left = True
             else:
-                self.drive.move(-self.FAST_SEARCH_TURN, 0)
-                time.sleep(seek_time)
-                self.drive.move(0, 0)
-                self.seek_attempts += 1
+                seek_turn = -self.FAST_SEARCH_TURN
                 self.tried_left = False
+            self.drive.move(seek_turn, 0)
+            time.sleep(seek_time)
+            self.drive.move(0, 0)
+            self.seek_attempts += 1
         self.just_moved = True
 
     def learning(self, image):
@@ -250,7 +250,6 @@ class StreamProcessor(threading.Thread):
                 biggest_contour = contour
         if biggest_contour is not None:
             ball = [found_x, found_y, found_area, found_w]
- #           print colour_of_contour(image, biggest_contour)
         else:
             ball = None
         pygame.mouse.set_pos(found_y, 320 - found_x)
@@ -302,10 +301,10 @@ class StreamProcessor(threading.Thread):
             area = ball[2]
             width = ball[3]
             if width > self.MAX_WIDTH:
-                self.drive.move(0, 0)
+                self.drive.move(0, -self.BRAKING)
                 self.found = True
                 logger.info('Close enough to %s ball, stopping' % (targetcolour))
-                time.sleep(0.2)
+                time.sleep(0.3)
             else:
                 # follow 0.2, /2 good
                 w_error = self.MAX_WIDTH - width
@@ -336,12 +335,13 @@ class StreamProcessor(threading.Thread):
 
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball, targetcolour):
+        BACK_OFF_TIMEOUT = 0.2
         turn = 0.0
         if ball:
             x = ball[0]
             area = ball[2]
             if area < self.BACK_OFF_AREA:
-                self.drive.move(0, 0)
+                self.drive.move(0, self.BRAKING)
                 self.retreated = True
                 logger.info('far enough away from %s, stopping' % (targetcolour))
                 self.mode_number = 1
@@ -357,7 +357,8 @@ class StreamProcessor(threading.Thread):
         else:
             # ball lost, stop
             self.found = False
-            self.drive.move(0, 0)
+            self.lost_time = time.clock()
+            self.drive.move(0, self.BACK_OFF_SPEED)
             logger.info('%s ball lost' % (targetcolour))
 
 
