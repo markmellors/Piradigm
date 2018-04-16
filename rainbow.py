@@ -62,6 +62,7 @@ class StreamProcessor(threading.Thread):
         self.BACK_OFF_AREA = 1200
         self.BACK_OFF_SPEED = -0.6
         self.FAST_SEARCH_TURN = 1
+        self.time_out = None
         self.DRIVING = True
         self.tracking = False
         # Why the one second sleep?
@@ -320,6 +321,9 @@ class StreamProcessor(threading.Thread):
                 self.found = True
                 logger.info('Close enough to %s ball, stopping' % (targetcolour))
                 time.sleep(0.3)
+                BACK_OFF_TIME = 0.2
+                print ("setting timeout to: %s at %s" % (self.time_out, time.clock()))
+                self.time_out = time.clock() + BACK_OFF_TIME
             else:
                 # follow 0.2, /2 good
                 w_error = self.MAX_WIDTH - width
@@ -350,13 +354,12 @@ class StreamProcessor(threading.Thread):
 
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball, targetcolour):
-        BACK_OFF_TIME = 1
-        time_out = time.clock() + BACK_OFF_TIME
         turn = 0.0
         if ball:
             x = ball[0]
             area = ball[2]
-            if area < self.BACK_OFF_AREA or time.clock() > time_out:
+            if area < self.BACK_OFF_AREA and time.clock() > self.time_out:
+                print self.time_out, time.clock()
                 self.drive.move(0, self.BRAKING)
                 self.retreated = True
                 logger.info('far enough away from %s, stopping' % (targetcolour))
@@ -372,7 +375,8 @@ class StreamProcessor(threading.Thread):
                 self.last_t_error = t_error
         else:
             # ball lost
-            if time.clock > time_out:
+            if time.clock() > self.time_out:
+                print self.time_out, time.clock()
                 self.drive.move(0, self.BRAKING)
                 self.retreated = True
                 logger.info('far enough away from %s, stopping' % (targetcolour))
