@@ -49,6 +49,7 @@ class StreamProcessor(threading.Thread):
         # Initialise the index of the current ball we're looking for
         self.current_position = 0
         self.colour_seen = None
+        self.learning_failed = False
         self.first_seek_direction = 'right'  #not used yet
         self.seek_attempts = 0
         self.colour_bounds = json.load(open('rainbow.json'))
@@ -130,12 +131,11 @@ class StreamProcessor(threading.Thread):
             - self.colour_positions[current_colour]
         )
         if step_size > len(self.running_order) / 2 or (step_size < 0 and step_size > -len(self.running_order) / 2):
-            turn_dir = 'left'
-        
+            turn_dir = 'left'        
         return turn_dir
 
     def seek(self, direction=None):
-        seek_time = 0.04 * self.seek_attempts + 0.02
+        seek_time = 0.02 * self.seek_attempts + 0.02
         if self.tracking:
             if (self.tried_left and not direction=='left') or direction=='right':
                 seek_turn = self.FAST_SEARCH_TURN
@@ -177,7 +177,7 @@ class StreamProcessor(threading.Thread):
                         self.turn_to_next_ball(x)
                         self.current_position += 1
                     else:
-                        logger.info("ball order is %s" % self.colour_positions)
+                        logger.info("found ball order is %s" % self.colour_positions)
                         self.colour_seen = colour
                         #leave learn mode, start seeking
                         learnt = 0
@@ -186,9 +186,8 @@ class StreamProcessor(threading.Thread):
                                 learnt += 1
                         if learnt < 4:
                             logger.info("lost a ball, learning failed")
-                            self.mode_number = 3
-                        else:
-                            self.mode_number = 1 
+                            self.learning_failed = True
+                        self.mode_number = 1 
                 else:
                     #we're still on the same ball, try moving again
                     logger.info("%s ball found again, this time at position %i, coordinate %d" % (colour, self.current_position, x))
@@ -198,6 +197,20 @@ class StreamProcessor(threading.Thread):
                 self.seek(direction='right')
 
     def orientating(self, image):
+        if self.learning_failed:
+            colour, x, y, a = self.get_ball_colour_and_position(image)
+            if colour is not None and colour == self.colour:
+                logger.info("%s ball found, moving to visiting mode" % colour)
+                self.mode_number = 2
+            else:
+                logger.info("%s ball not found, seeking" % colour)
+                self.seek_attempts = 1
+                self.seek(direction='right')
+        else:
+            orientating_with_learning(image)
+
+
+    def orientating_with_learning(self, image):
         colour, x, y, a = self.get_ball_colour_and_position(image)
         if colour is not None:
             self.seek_attempts = 0
