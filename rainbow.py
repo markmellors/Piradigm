@@ -37,6 +37,7 @@ class StreamProcessor(threading.Thread):
         self.WIDTH_D = 0.008
         self.TURN_P = 0.7
         self.TURN_D = 0.3
+        slef.last_direction = None
         # define colour keys (lower case)
         self.running_order = [
             'yellow',
@@ -108,8 +109,8 @@ class StreamProcessor(threading.Thread):
         return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
 
     def turn_to_next_ball(self, previous_ball_position, direction ='right'):
-        nominal_move_time = 0.24
-        move_correction_factor = 0.03 #0.07
+        nominal_move_time = 0.22
+        move_correction_factor = 0.05 #0.07
         move_time = nominal_move_time - (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
         turn = self.TURN_SPEED if direction == 'right' else -self.TURN_SPEED
         self.drive.move(turn, 0)
@@ -133,10 +134,10 @@ class StreamProcessor(threading.Thread):
         
         return turn_dir
 
-    def seek(self):
-        seek_time = 0.04 * self.seek_attempts + 0.03
+    def seek(self, direction=None):
+        seek_time = 0.04 * self.seek_attempts + 0.02
         if self.tracking:
-            if self.tried_left:
+            if (self.tried_left and not direction=='left') or direction=='right':
                 seek_turn = self.FAST_SEARCH_TURN
                 self.tried_left = True
             else:
@@ -194,7 +195,7 @@ class StreamProcessor(threading.Thread):
                     self.turn_to_next_ball(x)
             else:
                 logger.info("No balls found, seeking")
-                self.seek()
+                self.seek(direction='right')
 
     def orientating(self, image):
         colour, x, y, a = self.get_ball_colour_and_position(image)
@@ -207,9 +208,10 @@ class StreamProcessor(threading.Thread):
                 direction = self.get_turn_direction_by_colour(colour, self.colour)
                 logger.info("%s ball found, turning %s towards %s" % (colour, direction, self.colour))
                 self.turn_to_next_ball(x, direction=direction)
+                self.last_direction = direction
         else:
             logger.info("No balls found, seeking")
-            self.seek()
+            self.seek(direction=self.last_direction)
 
     def visiting(self, image):
         screen = pygame.display.get_surface()
