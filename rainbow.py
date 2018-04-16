@@ -60,7 +60,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_SPEED = 1
         self.BRAKING = 0.3
         self.BACK_OFF_AREA = 1200
-        self.BACK_OFF_SPEED = -0.6
+        self.BACK_OFF_SPEED = -0.8
         self.FAST_SEARCH_TURN = 1
         self.time_out = None
         self.DRIVING = True
@@ -320,10 +320,10 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(0, -self.BRAKING)
                 self.found = True
                 logger.info('Close enough to %s ball, stopping' % (targetcolour))
-                time.sleep(0.3)
-                BACK_OFF_TIME = 0.2
-                print ("setting timeout to: %s at %s" % (self.time_out, time.clock()))
+                time.sleep(0.2)
+                BACK_OFF_TIME = 0.3
                 self.time_out = time.clock() + BACK_OFF_TIME
+                print ("setting timeout to: %s at %s" % (self.time_out, time.clock()))
             else:
                 # follow 0.2, /2 good
                 w_error = self.MAX_WIDTH - width
@@ -338,7 +338,7 @@ class StreamProcessor(threading.Thread):
                     self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 self.last_w_error = w_error
-                logger.info ('%s ball found, error:, %s, area: %s' % (targetcolour, t_error, area))
+                logger.info ('%s ball found, error:, %s, width: %s, height: %s' % (targetcolour, t_error, width, ball[1]))
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 1:
@@ -382,7 +382,6 @@ class StreamProcessor(threading.Thread):
                 logger.info('far enough away from %s, stopping' % (targetcolour))
                 self.mode_number = 1
             else:
-                self.found = False
                 self.lost_time = time.clock()
                 self.drive.move(0, self.BACK_OFF_SPEED)
                 logger.info('%s ball lost' % (targetcolour))
