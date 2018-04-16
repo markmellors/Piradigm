@@ -55,6 +55,7 @@ class StreamProcessor(threading.Thread):
         self.colour_bounds = json.load(open('rainbow.json'))
         self.mode = [self.learning, self.orientating, self.visiting]
         self.mode_number = 0
+        self.restart = False
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
@@ -111,7 +112,7 @@ class StreamProcessor(threading.Thread):
         return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
 
     def turn_to_next_ball(self, previous_ball_position, direction ='right'):
-        nominal_move_time = 0.22
+        nominal_move_time = 0.22 if not self.restart else 0.13
         move_correction_factor = 0.05 #0.07
         move_time = nominal_move_time - (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
         turn = self.TURN_SPEED if direction == 'right' else -self.TURN_SPEED
@@ -430,8 +431,19 @@ class Rainbow(BaseChallenge):
             self.processor.found = False
             self.processor.retreated = False
         else:
-            print "finished"
-            self.stop()
+            logger.info("finished, resetting parameters to run again")
+            self.processor.found = False
+            self.processor.retreated = False
+            self.processor.tracking = False
+            self.processor.colour = "red"
+            self.processor.current_position = 0
+            self.processor.colour_seen = None
+            if self.processor.learning_failed:
+                self.processor.mode_number = 0
+            else:
+                self.processor.mode_number = 1
+                self.processor.restart = True
+            
 
     def run(self):
         # Startup sequence
