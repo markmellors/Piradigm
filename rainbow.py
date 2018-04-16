@@ -37,7 +37,7 @@ class StreamProcessor(threading.Thread):
         self.WIDTH_D = 0.008
         self.TURN_P = 0.7
         self.TURN_D = 0.3
-        slef.last_direction = None
+        self.last_direction = None
         # define colour keys (lower case)
         self.running_order = [
             'yellow',
@@ -58,7 +58,7 @@ class StreamProcessor(threading.Thread):
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
-        self.BRAKING = 1
+        self.BRAKING = 0.3
         self.BACK_OFF_AREA = 1200
         self.BACK_OFF_SPEED = -0.6
         self.FAST_SEARCH_TURN = 1
@@ -207,7 +207,7 @@ class StreamProcessor(threading.Thread):
                 self.seek_attempts = 1
                 self.seek(direction='right')
         else:
-            orientating_with_learning(image)
+            self.orientating_with_learning(image)
 
 
     def orientating_with_learning(self, image):
@@ -350,7 +350,7 @@ class StreamProcessor(threading.Thread):
 
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball, targetcolour):
-        BACK_OFF_TIME = 0.6
+        BACK_OFF_TIME = 1
         time_out = time.clock() + BACK_OFF_TIME
         turn = 0.0
         if ball:
