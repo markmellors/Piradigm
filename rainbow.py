@@ -56,7 +56,7 @@ class StreamProcessor(threading.Thread):
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
-        self.BRAKING = 0.2
+        self.BRAKING = 1
         self.BACK_OFF_AREA = 1200
         self.BACK_OFF_SPEED = -0.6
         self.FAST_SEARCH_TURN = 1
@@ -335,12 +335,13 @@ class StreamProcessor(threading.Thread):
 
  # drive away from the ball, back to the middle
     def drive_away_from_ball(self, ball, targetcolour):
-        BACK_OFF_TIMEOUT = 0.2
+        BACK_OFF_TIME = 0.6
+        time_out = time.clock() + BACK_OFF_TIME
         turn = 0.0
         if ball:
             x = ball[0]
             area = ball[2]
-            if area < self.BACK_OFF_AREA:
+            if area < self.BACK_OFF_AREA or time.clock() > time_out:
                 self.drive.move(0, self.BRAKING)
                 self.retreated = True
                 logger.info('far enough away from %s, stopping' % (targetcolour))
@@ -355,11 +356,17 @@ class StreamProcessor(threading.Thread):
                     self.drive.move(turn, forward)
                 self.last_t_error = t_error
         else:
-            # ball lost, stop
-            self.found = False
-            self.lost_time = time.clock()
-            self.drive.move(0, self.BACK_OFF_SPEED)
-            logger.info('%s ball lost' % (targetcolour))
+            # ball lost
+            if time.clock > time_out:
+                self.drive.move(0, self.BRAKING)
+                self.retreated = True
+                logger.info('far enough away from %s, stopping' % (targetcolour))
+                self.mode_number = 1
+            else:
+                self.found = False
+                self.lost_time = time.clock()
+                self.drive.move(0, self.BACK_OFF_SPEED)
+                logger.info('%s ball lost' % (targetcolour))
 
 
 
