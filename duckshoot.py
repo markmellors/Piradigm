@@ -31,8 +31,8 @@ class StreamProcessor(threading.Thread):
         self.menu = False
         self.last_t_error = 0
         self.TURN_I = 0.05
-        self.TURN_P = 0.8
-        self.TURN_D = 0.4
+        self.TURN_P = 2
+        self.TURN_D = 0.8
         self.integrated_error = 0
         self.CROP_WIDTH = 320
         self.CROP_HEIGHT = 60
@@ -168,7 +168,7 @@ class StreamProcessor(threading.Thread):
 
     def turn_toward_target(self, target):
         turn = 0.0
-        AIM_TOL = 0.015
+        AIM_TOL = 0.025
         if target:
             x = target[0]
             t_error = (self.image_centre_x - self.AIM_OFFSET - x) / self.image_centre_x
@@ -177,14 +177,14 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(0, 0)
                 self.found = True
                 logger.info('target found %s, %s', self.last_t_error, t_error)
-                self.last_t_error = 0.02
+                self.last_t_error = AIM_TOL + 0.02
                 
             else:
-                forward = -0.01
-                turn = self.TURN_P * t_error
+                forward = -0.02
+                turn = (self.TURN_P * t_error
                     - self.TURN_D *(self.last_t_error - t_error)
-                    + self.TURN_I * self.integrated_error
-                turn = min(max(-0.25, turn), 0.25)
+                    + self.TURN_I * self.integrated_error)
+                turn = min(max(-0.4, turn), 0.4)
                 self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 logger.info('hunting %s', t_error)
