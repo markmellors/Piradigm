@@ -23,6 +23,7 @@ class StreamProcessor(threading.Thread):
         self.event = threading.Event()
         self.terminated = False
         self.MAX_WIDTH = 70 # Largest target to move towards
+        self.MAX_HEIGHT = 75
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 30
         self._colour = colour
@@ -315,13 +316,11 @@ class StreamProcessor(threading.Thread):
     def drive_toward_ball(self, ball, targetcolour):
         turn = 0.0
         if ball:
-            x = ball[0]
-            area = ball[2]
-            width = ball[3]
-            if width > self.MAX_WIDTH:
+            x, y, area, width  = ball
+            if width > self.MAX_WIDTH or y > self.MAX_HEIGHT:
                 self.drive.move(0, -self.BRAKING)
                 self.found = True
-                logger.info('Close enough to %s ball, stopping' % (targetcolour))
+                logger.info('Close enough to %s ball, stopping. width: %s, height: %s' % (targetcolour, width, y))
                 time.sleep(0.2)
                 BACK_OFF_TIME = 0.25
                 self.time_out = time.clock() + BACK_OFF_TIME
@@ -339,7 +338,7 @@ class StreamProcessor(threading.Thread):
                     self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 self.last_w_error = w_error
-                logger.info ('%s ball found, error:, %s, width: %s, height: %s' % (targetcolour, t_error, width, ball[1]))
+                logger.info ('%s ball found, error:, %s, width: %s, height: %s' % (targetcolour, t_error, width, y))
         else:
             # no ball, turn right 0.25, 0.12 ok but a bit sluggish and can get stuck in corner 0.3, -0.12 too fast, 0.3, 0 very slow. 0.25, 0.15 good
             if self.cycle > 1:
