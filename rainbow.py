@@ -515,7 +515,6 @@ class Rainbow(BaseChallenge):
                     self.joystick_handler(self.joystick.check_presses())
                 if self.processor.retreated:
                     self.progress_colour()
-                sgc.update(time)
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
