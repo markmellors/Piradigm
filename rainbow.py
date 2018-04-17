@@ -13,6 +13,7 @@ from img_base_class import *
 class StreamProcessor(threading.Thread):
     def __init__(self, screen=None, camera=None, drive=None, colour="any"):
         super(StreamProcessor, self).__init__()
+        self.saving_images = False
         self.camera = camera
         image_width, image_height = self.camera.resolution
         self.image_centre_x = image_width / 2.0
@@ -116,8 +117,8 @@ class StreamProcessor(threading.Thread):
                 largest_colour_area = a
         return largest_colour_name, largest_colour_x, largest_colour_y, largest_colour_area
 
-    def turn_to_next_ball(self, previous_ball_position, direction ='right'):
-        nominal_move_time = 0.21 if not self.restart else 0.13
+    def turn_to_next_ball(self, previous_ball_position, direction='right'):
+        nominal_move_time = 0.22
         move_correction_factor = 0.09 #0.07
         move_time = nominal_move_time - (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
         turn = self.TURN_SPEED if direction == 'right' else -self.TURN_SPEED
@@ -138,18 +139,20 @@ class StreamProcessor(threading.Thread):
             - self.colour_positions[current_colour]
         )
         if step_size > len(self.running_order) / 2 or (step_size < 0 and step_size > -len(self.running_order) / 2):
-            turn_dir = 'left'        
+            turn_dir = 'left'
         return turn_dir, abs(step_size)
 
     def seek(self, direction=None):
         seek_time = 0.02 * self.seek_attempts + 0.02
         if self.tracking:
             if (self.tried_left and not direction=='left') or direction=='right':
+                logger.info( "seeking right, requested %s" % direction)
                 seek_turn = self.FAST_SEARCH_TURN
-                self.tried_left = True
-            else:
-                seek_turn = -self.FAST_SEARCH_TURN
                 self.tried_left = False
+            else:
+                logger.info( "seeking left, request: %s" % direction)
+                seek_turn = -self.FAST_SEARCH_TURN
+                self.tried_left = True
             self.drive.move(seek_turn, 0)
             time.sleep(seek_time)
             self.drive.move(0, 0)
@@ -159,7 +162,7 @@ class StreamProcessor(threading.Thread):
 
     def learning(self, image):
         image = image[30:69, 0:320]
-        if self.tracking:
+        if self.tracking and self.saving_images:
             img = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
             img_name = "%dlearningimg.jpg" % (self.i)
             # filesave for debugging: 
@@ -212,7 +215,7 @@ class StreamProcessor(threading.Thread):
                 logger.info("%s ball found, moving to visiting mode" % colour)
                 self.mode_number = 2
             else:
-                logger.info("%s ball not found, seeking" % colour)
+                logger.info("%s ball found, seeking %s" % (colour, self.colour))
                 self.seek_attempts = 1
                 self.seek(direction='right')
         else:
@@ -220,20 +223,32 @@ class StreamProcessor(threading.Thread):
 
 
     def orientating_with_learning(self, image):
-        colour, x, y, a = self.get_ball_colour_and_position(image)
-        if colour is not None:
-            self.seek_attempts = 0
-            if colour == self.colour:
-                logger.info("orientated to %s ball, moving to visiting mode" % colour)
-                self.mode_number = 2
+       if self.current_position == 0:
+            if self.tracking:
+                logger.info("moving to first position")
+                turn_time = 0.13
+                turn_factor = 1 if self.colour_positions[self.colour] <= 2 else -1
+                self.drive.move(turn_factor * self.FAST_SEARCH_TURN, 0)
+                time.sleep(turn_time)
+                self.drive.move(0, 0)
+                time.sleep(turn_time)
+                self.current_position += 1
+                self.just_moved = True
+       else:
+            colour, x, y, a = self.get_ball_colour_and_position(image)
+            if colour is not None:
+                self.seek_attempts = 0
+                if colour == self.colour:
+                    logger.info("orientated to %s ball, moving to visiting mode" % colour)
+                    self.mode_number = 2
+                else:
+                    direction, steps = self.get_turn_direction_by_colour(colour, self.colour)
+                    logger.info("%s ball found, turning %s towards %s. steps = %s" % (colour, direction, self.colour, steps))
+                    self.turn_to_next_ball(x, direction=direction)
+                    self.seek_direction = direction if steps == 2 else None
             else:
-                direction, steps = self.get_turn_direction_by_colour(colour, self.colour)
-                logger.info("%s ball found, turning %s towards %s" % (colour, direction, self.colour))
-                self.turn_to_next_ball(x, direction=direction)
-                self.seek_direction = direction if steps == 1 else None
-        else:
-            logger.info("No balls found, seeking")
-            self.seek(direction=self.seek_direction)
+                logger.info("No balls found, seeking")
+                self.seek(direction=self.seek_direction)
 
     def visiting(self, image):
         screen = pygame.display.get_surface()
@@ -247,17 +262,16 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_upper)
         )
         frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
-        img = cv2.cvtColor(imrange, cv2.COLOR_GRAY2BGR)
-        img_name = "%dvisitingmask.jpg" % (self.i)
-        # filesave for debugging: 
-        cv2.imwrite(img_name, img)
-        img = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-        img_name = "%dvisitingimg.jpg" % (self.i)
-        # filesave for debugging: 
-        cv2.imwrite(img_name, img)
-        self.i += 1
         screen.blit(frame, (100, 0))
         pygame.display.update()
+        if self.saving_images:
+            img = cv2.cvtColor(imrange, cv2.COLOR_GRAY2BGR)
+            img_name = "%dvisitingmask.jpg" % (self.i)
+            cv2.imwrite(img_name, img)
+            img = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
+            img_name = "%dvisitingimg.jpg" % (self.i)
+            cv2.imwrite(img_name, img)
+            self.i += 1
         # Find the contours
         contourimage, contours, hierarchy = cv2.findContours(
             imrange, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
@@ -457,14 +471,12 @@ class Rainbow(BaseChallenge):
             self.processor.colour = "red"
             self.processor.current_position = 0
             self.processor.colour_seen = None
+
             if self.processor.learning_failed:
+                self.processor.learning_failed = False
                 self.restart = False
                 self.processor.mode_number = 0
-                print self.processor.running_order
-                print self.processor.colour_positions
                 self.processor.colour_positions = OrderedDict([(key, None) for key in self.processor.running_order])
-                print self.processor.running_order
-                print self.processor.colour_positions
             else:
                 self.processor.mode_number = 1
                 self.processor.restart = True
