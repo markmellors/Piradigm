@@ -54,10 +54,13 @@ class StreamProcessor(threading.Thread):
         self.learning_failed = False
         self.first_seek_direction = 'right'  #not used yet
         self.seek_attempts = 0
-        self.colour_bounds = json.load(open('rainbow.json'))
         self.mode = [self.learning, self.orientating, self.visiting]
         self.mode_number = 0
         self.restart = False
+        file_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(file_dir, 'rainbow.json')
+        with open(file_path) as json_file:
+            self.colour_bounds = json.load(json_file)
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
