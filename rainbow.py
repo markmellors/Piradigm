@@ -100,6 +100,14 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
+    @property
+    def learned_colour_count(self):
+        return  sum(1 for k,v in self.colour_positions.items() if v is not None)
+
+    @property
+    def all_colours_learned(self):
+        return self.learned_colour_count == len(self.running_order)
+
     def get_ball_colour_and_position(self, image):
         default_colour_bounds = ((40, 0, 0), (180, 255, 255))
         largest_colour_name = None
@@ -193,10 +201,7 @@ class StreamProcessor(threading.Thread):
                         self.colour_seen = colour
                         #leave learn mode, start seeking
                         learnt = 0
-                        for colour in self.colour_positions:
-                            if self.colour_positions[colour] is not None:
-                                learnt += 1
-                        if learnt < 4:
+                        if not self.all_colours_learned:
                             logger.info("lost a ball, learning failed")
                             self.learning_failed = True
                         self.mode_number = 1 
