@@ -160,9 +160,9 @@ class StreamProcessor(threading.Thread):
         image = image[35:69, 0:320]
         if self.tracking:
             img = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-            img_name = "%dimg.jpg" % (self.i)
+            img_name = "%dlearningimg.jpg" % (self.i)
             # filesave for debugging: 
-            #cv2.imwrite(img_name, img)
+            cv2.imwrite(img_name, img)
             self.i += 1
         if self.current_position == 0:
             if self.tracking:
@@ -245,6 +245,15 @@ class StreamProcessor(threading.Thread):
             numpy.array(hsv_upper)
         )
         frame = pygame.surfarray.make_surface(cv2.flip(imrange, 1))
+        img = cv2.cvtColor(imrange, cv2.COLOR_GRAY2BGR)
+        img_name = "%dvisitingmask.jpg" % (self.i)
+        # filesave for debugging: 
+        cv2.imwrite(img_name, img)
+        img = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
+        img_name = "%dvisitingimg.jpg" % (self.i)
+        # filesave for debugging: 
+        cv2.imwrite(img_name, img)
+        self.i += 1
         screen.blit(frame, (100, 0))
         pygame.display.update()
         # Find the contours
