@@ -37,7 +37,7 @@ class StreamProcessor(threading.Thread):
         self.WIDTH_D = 0.008
         self.TURN_P = 0.7
         self.TURN_D = 0.3
-        self.last_direction = None
+        self.seek_direction = None
         # define colour keys (lower case)
         self.running_order = [
             'yellow',
@@ -134,7 +134,7 @@ class StreamProcessor(threading.Thread):
         )
         if step_size > len(self.running_order) / 2 or (step_size < 0 and step_size > -len(self.running_order) / 2):
             turn_dir = 'left'        
-        return turn_dir
+        return turn_dir, abs(step_size)
 
     def seek(self, direction=None):
         seek_time = 0.02 * self.seek_attempts + 0.02
@@ -220,13 +220,13 @@ class StreamProcessor(threading.Thread):
                 logger.info("orientated to %s ball, moving to visiting mode" % colour)
                 self.mode_number = 2
             else:
-                direction = self.get_turn_direction_by_colour(colour, self.colour)
+                direction, steps = self.get_turn_direction_by_colour(colour, self.colour)
                 logger.info("%s ball found, turning %s towards %s" % (colour, direction, self.colour))
                 self.turn_to_next_ball(x, direction=direction)
-                self.last_direction = direction
+                self.seek_direction = direction if steps == 1 else None
         else:
             logger.info("No balls found, seeking")
-            self.seek(direction=self.last_direction)
+            self.seek(direction=self.seek_direction)
 
     def visiting(self, image):
         screen = pygame.display.get_surface()
@@ -324,7 +324,6 @@ class StreamProcessor(threading.Thread):
                 time.sleep(0.2)
                 BACK_OFF_TIME = 0.3
                 self.time_out = time.clock() + BACK_OFF_TIME
-                print ("setting timeout to: %s at %s" % (self.time_out, time.clock()))
             else:
                 # follow 0.2, /2 good
                 w_error = self.MAX_WIDTH - width
@@ -360,7 +359,6 @@ class StreamProcessor(threading.Thread):
             x = ball[0]
             area = ball[2]
             if area < self.BACK_OFF_AREA and time.clock() > self.time_out:
-                print self.time_out, time.clock()
                 self.drive.move(0, self.BRAKING)
                 self.retreated = True
                 logger.info('far enough away from %s, stopping' % (targetcolour))
@@ -377,10 +375,9 @@ class StreamProcessor(threading.Thread):
         else:
             # ball lost
             if time.clock() > self.time_out:
-                print self.time_out, time.clock()
                 self.drive.move(0, self.BRAKING)
                 self.retreated = True
-                logger.info('far enough away from %s, stopping' % (targetcolour))
+                logger.info('far enough away from %s (timed_out), stopping' % (targetcolour))
                 self.mode_number = 1
             else:
                 self.lost_time = time.clock()
@@ -434,6 +431,7 @@ class Rainbow(BaseChallenge):
             logger.info("finished, resetting parameters to run again")
             self.processor.found = False
             self.processor.retreated = False
+            self.drive.move(0,0)
             self.processor.tracking = False
             self.processor.colour = "red"
             self.processor.current_position = 0
