@@ -42,10 +42,10 @@ class StreamProcessor(threading.Thread):
         self.seek_direction = None
         # define colour keys (lower case)
         self.running_order = [
-            'yellow',
             'red',
-            'green',
-            'blue'
+            'blue',
+            'yellow',
+            'green'
         ]
         self.colour_positions = OrderedDict([(key, None) for key in self.running_order])
         # Initialise the index of the current ball we're looking for
@@ -153,11 +153,12 @@ class StreamProcessor(threading.Thread):
             self.drive.move(seek_turn, 0)
             time.sleep(seek_time)
             self.drive.move(0, 0)
+            time.sleep(seek_time)
             self.seek_attempts += 1
         self.just_moved = True
 
     def learning(self, image):
-        image = image[35:69, 0:320]
+        image = image[30:69, 0:320]
         if self.tracking:
             img = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
             img_name = "%dlearningimg.jpg" % (self.i)
@@ -171,6 +172,7 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(self.FAST_SEARCH_TURN, 0)
                 time.sleep(turn_time)
                 self.drive.move(0, 0)
+                time.sleep(turn_time)
                 self.current_position += 1
                 self.just_moved = True
         else:
@@ -305,7 +307,7 @@ class StreamProcessor(threading.Thread):
             #if we've jsut done a fixed time move, ignore the next frame
             logger.debug("frame flush")
             self.just_moved = False
-        elif self.tracking:
+        else:
             screen = pygame.display.get_surface()
             # crop image to speed up processing and avoid false positives
             image = image[80:180, 0:320]
@@ -317,7 +319,10 @@ class StreamProcessor(threading.Thread):
             image = cv2.medianBlur(image, 5)
             # Convert the image from 'BGR' to HSV colour space
             image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-            self.mode[self.mode_number](image)
+            if self.tracking:
+                self.mode[self.mode_number](image)
+            else:
+                pygame.display.update()
 
 
     # TODO: Move this motor control logic out of the stream processor
@@ -371,9 +376,11 @@ class StreamProcessor(threading.Thread):
             x = ball[0]
             area = ball[2]
             if area < self.BACK_OFF_AREA and time.clock() > self.time_out:
-                self.drive.move(0, self.BRAKING)
+                if self.tracking: self.drive.move(0, self.BRAKING)
+                time.sleep(0.1)
+                self.drive.move(0, 0)
                 self.retreated = True
-                logger.info('far enough away from %s, stopping' % (targetcolour))
+                logger.info('far enough away from %s, stopping. area: %s' % (targetcolour, area))
                 self.mode_number = 1
             else:
                 forward = self.BACK_OFF_SPEED
@@ -388,6 +395,8 @@ class StreamProcessor(threading.Thread):
             # ball lost
             if time.clock() > self.time_out:
                 if self.tracking: self.drive.move(0, self.BRAKING)
+                time.sleep(0.1)
+                self.drive.move(0, 0)
                 self.retreated = True
                 logger.info('far enough away from %s (timed_out), stopping' % (targetcolour))
                 self.mode_number = 1
@@ -449,8 +458,13 @@ class Rainbow(BaseChallenge):
             self.processor.current_position = 0
             self.processor.colour_seen = None
             if self.processor.learning_failed:
+                self.restart = False
                 self.processor.mode_number = 0
+                print self.processor.running_order
+                print self.processor.colour_positions
                 self.processor.colour_positions = OrderedDict([(key, None) for key in self.processor.running_order])
+                print self.processor.running_order
+                print self.processor.colour_positions
             else:
                 self.processor.mode_number = 1
                 self.processor.restart = True
