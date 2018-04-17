@@ -1,3 +1,4 @@
+
 #q7#!/usr/bin/env python
 # coding: Latin
 
@@ -21,7 +22,7 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MAX_WIDTH = 60 #70  # Largest target to move towards
+        self.MAX_WIDTH = 70 # Largest target to move towards
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 30
         self._colour = colour
@@ -34,7 +35,7 @@ class StreamProcessor(threading.Thread):
         self.last_w_error = 0
         self.last_t_error = 0
         self.WIDTH_P = 0.005
-        self.WIDTH_D = 0.008
+        self.WIDTH_D = 0.015
         self.TURN_P = 0.7
         self.TURN_D = 0.3
         self.seek_direction = None
@@ -322,7 +323,7 @@ class StreamProcessor(threading.Thread):
                 self.found = True
                 logger.info('Close enough to %s ball, stopping' % (targetcolour))
                 time.sleep(0.2)
-                BACK_OFF_TIME = 0.3
+                BACK_OFF_TIME = 0.25
                 self.time_out = time.clock() + BACK_OFF_TIME
             else:
                 # follow 0.2, /2 good
