@@ -439,6 +439,7 @@ class Rainbow(BaseChallenge):
             self.processor.colour_seen = None
             if self.processor.learning_failed:
                 self.processor.mode_number = 0
+                self.processor.colour_positions = OrderedDict([(key, None) for key in self.processor.running_order])
             else:
                 self.processor.mode_number = 1
                 self.processor.restart = True
