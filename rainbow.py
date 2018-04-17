@@ -114,7 +114,7 @@ class StreamProcessor(threading.Thread):
 
     def turn_to_next_ball(self, previous_ball_position, direction ='right'):
         nominal_move_time = 0.22 if not self.restart else 0.13
-        move_correction_factor = 0.05 #0.07
+        move_correction_factor = 0.09 #0.07
         move_time = nominal_move_time - (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
         turn = self.TURN_SPEED if direction == 'right' else -self.TURN_SPEED
         self.drive.move(turn, 0)
@@ -153,7 +153,7 @@ class StreamProcessor(threading.Thread):
         self.just_moved = True
 
     def learning(self, image):
-        image = image[35:65, 0:320]
+        image = image[35:69, 0:320]
         if self.tracking:
             img = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
             img_name = "%dimg.jpg" % (self.i)
