@@ -23,8 +23,9 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MAX_WIDTH = 70 # Largest target to move towards
-        self.MAX_HEIGHT = 75
+        self.MAX_WIDTH = 90 # Largest target to move towards
+        self.MAX_AREA = 1000 #area requirement for backing off
+        self.MAX_HEIGHT = 95
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 30
         self._colour = colour
@@ -37,10 +38,11 @@ class StreamProcessor(threading.Thread):
         self.last_w_error = 0
         self.last_t_error = 0
         self.WIDTH_P = 0.005
-        self.WIDTH_D = 0.015
+        self.WIDTH_D = 0.035
         self.TURN_P = 0.7
         self.TURN_D = 0.3
         self.seek_direction = None
+        self.AIM_OFFSET = 0.13
         # define colour keys (lower case)
         self.running_order = [
             'red',
@@ -65,8 +67,9 @@ class StreamProcessor(threading.Thread):
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
         self.TURN_SPEED = 1
-        self.BRAKING = 0.3
-        self.BACK_OFF_AREA = 1200
+        self.BACK_OFF_BRAKING = 0.3 #power when stopping the backoff move
+        self.AT_BALL_BRAKING = 0.6 #power when stopping the drive towards move
+        self.BACK_OFF_AREA = 2000
         self.BACK_OFF_SPEED = -0.8
         self.FAST_SEARCH_TURN = 1
         self.time_out = None
@@ -127,7 +130,7 @@ class StreamProcessor(threading.Thread):
 
     def turn_to_next_ball(self, previous_ball_position, direction='right'):
         nominal_move_time = 0.22
-        move_correction_factor = 0.09 #0.07
+        move_correction_factor = 0.09
         move_time = nominal_move_time - (previous_ball_position - self.image_centre_x)/ self.image_centre_x * move_correction_factor
         turn = self.TURN_SPEED if direction == 'right' else -self.TURN_SPEED
         if self.tracking: self.drive.move(turn, 0)
@@ -329,7 +332,7 @@ class StreamProcessor(threading.Thread):
         else:
             screen = pygame.display.get_surface()
             # crop image to speed up processing and avoid false positives
-            image = image[80:180, 0:320]
+            image = image[80:205, 0:320]
             img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
             screen.fill([0, 0, 0])
@@ -353,20 +356,20 @@ class StreamProcessor(threading.Thread):
         turn = 0.0
         if ball:
             x, y, area, width  = ball
-            if width > self.MAX_WIDTH or y > self.MAX_HEIGHT:
-                self.drive.move(0, -self.BRAKING)
+            if (width > self.MAX_WIDTH or y > self.MAX_HEIGHT) and area > self.MAX_AREA:
+                self.drive.move(0, -self.AT_BALL_BRAKING)
                 self.found = True
-                logger.info('Close enough to %s ball, stopping. width: %s, height: %s' % (targetcolour, width, y))
-                time.sleep(0.2)
-                BACK_OFF_TIME = 0.25
+                logger.info('Close enough to %s ball, stopping. width: %s, height: %s, area: %s' % (targetcolour, width, y, area))
+                time.sleep(0.3)
+                BACK_OFF_TIME = 0.2
                 self.time_out = time.clock() + BACK_OFF_TIME
             else:
                 # follow 0.2, /2 good
                 w_error = self.MAX_WIDTH - width
-                forward = self.WIDTH_P * w_error + 0.2
+                forward = self.WIDTH_P * w_error + 0.18
                 t_error  = (self.image_centre_x - x) / self.image_centre_x
-                turn = self.TURN_P * t_error
-                if self.last_t_error is not None:
+                turn = self.TURN_P * t_error + self.AIM_OFFSET
+                if self.last_t_error is not None and area > self.MAX_AREA:
                     #if there was a real error last time then do some damping
                     turn -= self.TURN_D *(self.last_t_error - t_error)
                     forward -= self.WIDTH_D * (self.last_w_error - w_error)
@@ -395,7 +398,7 @@ class StreamProcessor(threading.Thread):
             x = ball[0]
             area = ball[2]
             if area < self.BACK_OFF_AREA and time.clock() > self.time_out:
-                if self.tracking: self.drive.move(0, self.BRAKING)
+                if self.tracking: self.drive.move(0, self.BACK_OFF_BRAKING)
                 time.sleep(0.1)
                 self.drive.move(0, 0)
                 self.retreated = True
@@ -404,7 +407,7 @@ class StreamProcessor(threading.Thread):
             else:
                 forward = self.BACK_OFF_SPEED
                 t_error = (self.image_centre_x - x) / self.image_centre_x
-                turn = self.TURN_P * t_error
+                turn = self.TURN_P * t_error + self.AIM_OFFSET
                 if self.last_t_error is not None:
                     turn -= self.TURN_D *(self.last_t_error - t_error)
                 if self.DRIVING and self.tracking:
@@ -413,7 +416,7 @@ class StreamProcessor(threading.Thread):
         else:
             # ball lost
             if time.clock() > self.time_out:
-                if self.tracking: self.drive.move(0, self.BRAKING)
+                if self.tracking: self.drive.move(0, self.BACK_OFF_BRAKING)
                 time.sleep(0.1)
                 self.drive.move(0, 0)
                 self.retreated = True
