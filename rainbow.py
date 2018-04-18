@@ -24,8 +24,8 @@ class StreamProcessor(threading.Thread):
         self.event = threading.Event()
         self.terminated = False
         self.MAX_WIDTH = 90 # Largest target to move towards
-        self.MAX_AREA = 1000 #area requirement for backing off
-        self.MAX_HEIGHT = 95
+        self.MAX_AREA = 1000 #area requirement for bahaviour transition
+        self.MAX_HEIGHT = 100
         self.MIN_CONTOUR_AREA = 3
         self.LEARNING_MIN_AREA = 30
         self._colour = colour
@@ -38,7 +38,7 @@ class StreamProcessor(threading.Thread):
         self.last_w_error = 0
         self.last_t_error = 0
         self.WIDTH_P = 0.005
-        self.WIDTH_D = 0.035
+        self.WIDTH_D = 0.03
         self.TURN_P = 0.7
         self.TURN_D = 0.3
         self.seek_direction = None
@@ -369,10 +369,10 @@ class StreamProcessor(threading.Thread):
                 forward = self.WIDTH_P * w_error + 0.18
                 t_error  = (self.image_centre_x - x) / self.image_centre_x
                 turn = self.TURN_P * t_error + self.AIM_OFFSET
-                if self.last_t_error is not None and area > self.MAX_AREA:
+                if self.last_t_error is not None:
                     #if there was a real error last time then do some damping
                     turn -= self.TURN_D *(self.last_t_error - t_error)
-                    forward -= self.WIDTH_D * (self.last_w_error - w_error)
+                    if area > self.MAX_AREA: forward -= self.WIDTH_D * (self.last_w_error - w_error)
                 if self.DRIVING and self.tracking:
                     self.drive.move(turn, forward)
                 self.last_t_error = t_error
@@ -435,7 +435,7 @@ class Rainbow(BaseChallenge):
     def __init__(self, timeout=120, screen=None, joystick=None):
         self.image_width = 320  # Camera image width
         self.image_height = 240  # Camera image height
-        self.frame_rate = Fraction(20)  # Camera image capture frame rate
+        self.frame_rate = Fraction(20)  # Camera image capture frame rate        
         self.screen = screen
         time.sleep(0.01)
         self.joystick=joystick
@@ -497,7 +497,6 @@ class Rainbow(BaseChallenge):
         self.camera = picamera.PiCamera()
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
-
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
