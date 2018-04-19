@@ -57,8 +57,15 @@ class StreamProcessor(threading.Thread):
         self.learning_failed = False
         self.first_seek_direction = 'right'  #not used yet
         self.seek_attempts = 0
-        self.mode = [self.learning, self.orientating, self.visiting]
-        self.mode_number = 0
+        self.MODE_LEARNING = 'learning'
+        self.MODE_ORIENTATING = 'orientating'
+        self.MODE_VISITING = 'visiting'
+        self.mode_map = {
+            self.MODE_LEARNING: self.learning,
+            self.MODE_ORIENTATING: self.orientating,
+            self.MODE_VISITING: self.visiting
+            }
+        self.current_mode = MODE_VISITING
         self.restart = False
         file_dir = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.join(file_dir, 'rainbow.json')
@@ -207,7 +214,7 @@ class StreamProcessor(threading.Thread):
                         if not self.all_colours_learned:
                             logger.info("lost a ball, learning failed")
                             self.learning_failed = True
-                        self.mode_number = 1 
+                        self.current_mode = self.MODE_ORIENTATING 
                 else:
                     #we're still on the same ball, try moving again
                     logger.info("%s ball found again, this time at position %i, coordinate %d" % (colour, self.current_position, x))
@@ -221,7 +228,7 @@ class StreamProcessor(threading.Thread):
             colour, x, y, a = self.get_ball_colour_and_position(image)
             if colour is not None and colour == self.colour:
                 logger.info("%s ball found, moving to visiting mode" % colour)
-                self.mode_number = 2
+                self.current_mode = self.MODE_VISITING
             else:
                 logger.info("%s ball found, seeking %s" % (colour, self.colour))
                 self.seek_attempts = 1
@@ -248,7 +255,7 @@ class StreamProcessor(threading.Thread):
                 self.seek_attempts = 0
                 if colour == self.colour:
                     logger.info("orientated to %s ball, moving to visiting mode" % colour)
-                    self.mode_number = 2
+                    self.current_mode = self.MODE_VISITING
                 else:
                     direction, steps = self.get_turn_direction_by_colour(colour, self.colour)
                     logger.info("%s ball found, turning %s towards %s. steps = %s" % (colour, direction, self.colour, steps))
@@ -342,7 +349,7 @@ class StreamProcessor(threading.Thread):
             # Convert the image from 'BGR' to HSV colour space
             image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
             if self.tracking:
-                self.mode[self.mode_number](image)
+                self.mode_map[self.current_mode](image)
             else:
                 pygame.display.update()
 
@@ -403,7 +410,7 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(0, 0)
                 self.retreated = True
                 logger.info('far enough away from %s, stopping. area: %s' % (targetcolour, area))
-                self.mode_number = 1
+                self.current_mode = self.orientating
             else:
                 forward = self.BACK_OFF_SPEED
                 t_error = (self.image_centre_x - x) / self.image_centre_x
@@ -421,7 +428,7 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(0, 0)
                 self.retreated = True
                 logger.info('far enough away from %s (timed_out), stopping' % (targetcolour))
-                self.mode_number = 1
+                self.current_mode = self.MODE_ORIENTATING
             else:
                 self.lost_time = time.clock()
                 if self.tracking: self.drive.move(0, self.BACK_OFF_SPEED)
@@ -483,10 +490,10 @@ class Rainbow(BaseChallenge):
             if self.processor.learning_failed:
                 self.processor.learning_failed = False
                 self.restart = False
-                self.processor.mode_number = 0
+                self.processor.mode = 'learning'
                 self.processor.colour_positions = OrderedDict([(key, None) for key in self.processor.running_order])
             else:
-                self.processor.mode_number = 1
+                self.processor.mode = 'orientating'
                 self.processor.restart = True
             
 
