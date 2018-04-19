@@ -20,19 +20,19 @@ class StreamProcessor(threading.Thread):
         self.event = threading.Event()
         self.terminated = False
         self.MAX_AREA = 2000  # Largest target to shoot at
-        self.MIN_CONTOUR_AREA = 400
+        self.MIN_CONTOUR_AREA = 300
         self.MAX_TARGET_SIZE = 2000
         self.MAX_TARGET_WIDTH = 80
-        self.AIM_OFFSET = 45
+        self.AIM_OFFSET = 30 # 45
         self._colour = colour
         self.found = False
         self.cycle = 0
         self.target_number = 0
         self.menu = False
         self.last_t_error = 0
-        self.TURN_I = 0.05
-        self.TURN_P = 2
-        self.TURN_D = 0.8
+        self.TURN_I = 0.0001
+        self.TURN_P = 0.4
+        self.TURN_D = 0.4
         self.integrated_error = 0
         self.CROP_WIDTH = 320
         self.CROP_HEIGHT = 60
@@ -168,7 +168,7 @@ class StreamProcessor(threading.Thread):
 
     def turn_toward_target(self, target):
         turn = 0.0
-        AIM_TOL = 0.025
+        AIM_TOL = 0.015
         if target:
             x = target[0]
             t_error = (self.image_centre_x - self.AIM_OFFSET - x) / self.image_centre_x
@@ -180,7 +180,7 @@ class StreamProcessor(threading.Thread):
                 self.last_t_error = AIM_TOL + 0.02
                 
             else:
-                forward = -0.02
+                forward = -0.01
                 turn = (self.TURN_P * t_error
                     - self.TURN_D *(self.last_t_error - t_error)
                     + self.TURN_I * self.integrated_error)
