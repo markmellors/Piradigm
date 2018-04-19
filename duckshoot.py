@@ -20,19 +20,19 @@ class StreamProcessor(threading.Thread):
         self.event = threading.Event()
         self.terminated = False
         self.MAX_AREA = 2000  # Largest target to shoot at
-        self.MIN_CONTOUR_AREA = 300
+        self.MIN_CONTOUR_AREA = 200
         self.MAX_TARGET_SIZE = 2000
         self.MAX_TARGET_WIDTH = 80
-        self.AIM_OFFSET = 30 # 45
+        self.AIM_OFFSET = 22 # 45
         self._colour = colour
         self.found = False
         self.cycle = 0
         self.target_number = 0
         self.menu = False
         self.last_t_error = 0
-        self.TURN_I = 0.0001
+        self.TURN_I = 0.01
         self.TURN_P = 0.4
-        self.TURN_D = 0.4
+        self.TURN_D = 0.2 #was 0.2
         self.integrated_error = 0
         self.CROP_WIDTH = 320
         self.CROP_HEIGHT = 60
@@ -156,7 +156,7 @@ class StreamProcessor(threading.Thread):
     def fire(self):
         logger.info('firing')
         self.drive.trigger('fire')
-        time.sleep(0.4)
+        time.sleep(0.7)
         self.drive.trigger('cock')
         time.sleep(0.5)
         self.found = False
@@ -164,11 +164,12 @@ class StreamProcessor(threading.Thread):
         logger.info('target %s fired at', self.target_number)
         if self.target_number > 5:
             self.running = False
+            slef.tracking = False
             logger.info('last target found')
 
     def turn_toward_target(self, target):
         turn = 0.0
-        AIM_TOL = 0.015
+        AIM_TOL = 0.05
         if target:
             x = target[0]
             t_error = (self.image_centre_x - self.AIM_OFFSET - x) / self.image_centre_x
@@ -180,12 +181,12 @@ class StreamProcessor(threading.Thread):
                 self.last_t_error = AIM_TOL + 0.02
                 
             else:
-                forward = -0.01
+                forward = -0.02
                 turn = (self.TURN_P * t_error
                     - self.TURN_D *(self.last_t_error - t_error)
                     + self.TURN_I * self.integrated_error)
                 turn = min(max(-0.4, turn), 0.4)
-                self.drive.move(turn, forward)
+                self.drive.move(turn, forward) if self.tracking else self.drive.move(turn, 0)
                 self.last_t_error = t_error
                 logger.info('hunting %s', t_error)
         else:

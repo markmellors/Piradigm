@@ -50,8 +50,8 @@ class DriveTrain():
         self.left_counter = 0
         self.right_counter = 0
         self.trigger_angle = {
-            'fire': 100,
-            'cock': 140,
+            'fire': 95,
+            'cock': 145,
             'safe': 150,
         }
         self.safe_trigger = self.trigger_angle.get('safe')
