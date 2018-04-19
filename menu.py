@@ -217,8 +217,8 @@ class Menu():
         # While loop to manage touch screen inputs
         with ControllerResource() as self.joystick:
             while True:
-                time = clock.tick(30)
-                sgc.update(time)
+                timer = clock.tick(30)
+                sgc.update(timer)
                 if self.joystick.connected and (self.challenge_thread is None or not self.challenge_thread.is_alive()):
                     self.joystick_handler(self.joystick.check_presses())
                     pygame.display.update()
