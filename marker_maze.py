@@ -21,7 +21,7 @@ class StreamProcessor(threading.Thread):
         self.last_width = 25
         self.TURN_P = 2  #0.9
         self.TURN_D = 0.6 #0.5
-        self.WIDTH_D = 0.07
+        self.WIDTH_D = 0.04
         self.AIM_P = 1
         self.AIM_D = 0.5
         self.WALL_TURN_P = 4
@@ -43,8 +43,8 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [40, 44, 40, 48, 34, 24] #<for standard lens [44, 31, 38, 45, 34, 24] #<for wide angle lens
-        self.SLOW_WIDTH = [25, 30, 35, 39, 34, 24]
+        self.TURN_WIDTH = [45, 44, 40, 48, 34, 24] #<for standard lens [44, 31, 38, 45, 34, 24] #<for wide angle lens
+        self.SLOW_WIDTH = [30, 30, 35, 39, 34, 24]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.07 #was 0.04
@@ -54,7 +54,7 @@ class StreamProcessor(threading.Thread):
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
-        self.ENTRY_SPEED = 0.8
+        self.ENTRY_SPEED = 0.6
         self.EXIT_SPEED = 0.5
         self.COLOURS = {
             "red": ((105, 90, 80), (130, 255, 255)),
@@ -93,13 +93,13 @@ class StreamProcessor(threading.Thread):
             pass
 
     def ninety(self, direction):
-        turn_speed = 0.75
+        turn_speed = 0.65
         turn = turn_speed if direction == 'right' else -turn_speed
         count = 0
-        MOVE_TIME = 0.06
+        MOVE_TIME = 0.03
         TURN_TIME = 0.03
         NINTY_CYCLES = 5
-        EXIT_TIME = 0.3
+        EXIT_TIME = 0.1
         while count < NINTY_CYCLES:
             self.drive.move(0, self.STRAIGHT_SPEED)
             self.busy_wait(MOVE_TIME)
@@ -111,7 +111,7 @@ class StreamProcessor(threading.Thread):
         self.just_moved = True
 
     def s_turn(self, direction):
-        S_TURN = 0.6
+        S_TURN = 0.63
         turn = S_TURN if direction == 'right' else -S_TURN
         count = 0
         S_CYCLES = 6
