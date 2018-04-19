@@ -18,8 +18,10 @@ class StreamProcessor(threading.Thread):
         #create small cust dictionary
         self.small_dict = dict #aruco.Dictionary_create(6, 3)
         self.last_t_error = 0
+        self.last_width = 25
         self.TURN_P = 2  #0.9
         self.TURN_D = 0.6 #0.5
+        self.WIDTH_D = 0.07
         self.AIM_P = 1
         self.AIM_D = 0.5
         self.WALL_TURN_P = 4
@@ -41,7 +43,8 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [44, 31, 38, 45, 34, 24] # [32, 27, 34, 33, 27, 24]
+        self.TURN_WIDTH = [40, 44, 40, 48, 34, 24] #<for standard lens [44, 31, 38, 45, 34, 24] #<for wide angle lens
+        self.SLOW_WIDTH = [25, 30, 35, 39, 34, 24]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
         self.TURN_TIME = 0.07 #was 0.04
@@ -51,14 +54,16 @@ class StreamProcessor(threading.Thread):
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
+        self.ENTRY_SPEED = 0.8
+        self.EXIT_SPEED = 0.5
         self.COLOURS = {
             "red": ((105, 90, 80), (130, 255, 255)),
-            "blue": ((0, 60, 60), (25, 255, 255)),
+            "blue": ((0, 60, 30), (35, 255, 255)),
             "yellow": ((75, 100, 90), (100, 255, 255)),
             "white": ((0, 0, 90), (180, 60, 255)),
             "green": ((35, 100, 100), (75, 255, 230)),
             "black": ((0, 0, 0), (180, 80, 170))}
-        self.WALL_COLOUR = ["white", "red", "blue", "red", "black"]
+        self.WALL_COLOUR = ["white", "red", "blue", "red", "white", "white"]
         self.driving = False
         self.aiming = False
         self.finished = False
@@ -82,20 +87,60 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
+    def busy_wait(self, sleep_time):
+        time_out = time.clock() + sleep_time
+        while time_out > time.clock():
+            pass
+
+    def ninety(self, direction):
+        turn_speed = 0.75
+        turn = turn_speed if direction == 'right' else -turn_speed
+        count = 0
+        MOVE_TIME = 0.06
+        TURN_TIME = 0.03
+        NINTY_CYCLES = 5
+        EXIT_TIME = 0.3
+        while count < NINTY_CYCLES:
+            self.drive.move(0, self.STRAIGHT_SPEED)
+            self.busy_wait(MOVE_TIME)
+            self.drive.move(turn, 0)
+            self.busy_wait(TURN_TIME)
+            count += 1
+        self.drive.move(0, self.EXIT_SPEED)
+        self.busy_wait(EXIT_TIME)
+        self.just_moved = True
+
+    def s_turn(self, direction):
+        S_TURN = 0.6
+        turn = S_TURN if direction == 'right' else -S_TURN
+        count = 0
+        S_CYCLES = 6
+        MOVE_TIME = 0.05
+        TURN_TIME = 0.04
+        EXIT_TIME = 0.05
+        while count < S_CYCLES:
+            self.drive.move(0, self.STRAIGHT_SPEED)
+            self.busy_wait(MOVE_TIME)
+            self.drive.move(turn, 0)
+            self.busy_wait(TURN_TIME)
+            count += 1
+        self.drive.move(0, 0)
+        self.just_moved = True
+
     def turn_right(self):
         if self.driving:
             self.drive.move(self.NINTY_TURN, 0)
-            time.sleep(self.TURN_TIME)
+            self.busy_wait(self.TURN_TIME)
             self.drive.move(0,0)
-            time.sleep(self.SETTLE_TIME)
+            self.busy_wait(self.SETTLE_TIME)
             self.just_moved = True
                 
     def turn_left(self):
         if self.driving:
             self.drive.move(-self.NINTY_TURN, 0)
-            time.sleep(self.TURN_TIME)
+            self.busy_wait(self.TURN_TIME)
             self.drive.move(0,0)
-            time.sleep(self.SETTLE_TIME)
+            self.busy_wait(self.SETTLE_TIME)
             self.just_moved = True
 
     def brake(self):
@@ -137,38 +182,47 @@ class StreamProcessor(threading.Thread):
                     found_y = sum([arr[0] for arr in corners[m][0]]) / 4
                     found_x = sum([arr[1] for arr in corners[m][0]]) / 4
                     width = abs(corners[m][0][0][0]-corners[m][0][1][0]+corners[m][0][3][0]-corners[m][0][2][0])/2
-                    logger.info('marker width %s' % width)
+                    logger.info('marker width %s' % width) 
+                    # Display the frame
+                    frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
+                    screen.blit(frame, (0,0))
+                    pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
                     if width > self.TURN_WIDTH[self.turn_number]:
                         self.turn_number += 1
                         self.found = False
                         logger.info('Close to marker making turn %s' % self.turn_number)
                         if self.turn_number <= 2:
                             if self.turn_number == 1:
-                                self.brake()
-                            self.turn_right()
+                                self.ninety('right')
+                            else:
+                                self.s_turn('right')
                         elif self.turn_number == 5:
                             logger.info('finished!')
                             self.drive.move(0,0)
                             self.finished = True
                         else:
                             if self.turn_number == 4:
-                                self.brake()
-                            self.turn_left()
-                    # Display the frame
-                    frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
-                    screen.blit(frame, (0,0))
-                    pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
-                    self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
-                    turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
-                    if self.last_t_error is not 0:
-                        #if there was a real error last time then do some damping
-                        turn -= self.TURN_D *(self.last_t_error - self.t_error)
-                    turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
-                    if self.driving:
-                        self.drive.move(turn, self.STRAIGHT_SPEED)
-                    elif self.aiming:
-                        self.drive.move(turn, 0)
-                    self.last_t_error = self.t_error
+                                self.ninety('left')
+                                self.drive.move(0, 0)
+                            else:
+                                self.s_turn('left')
+                    else:
+                        if width > self.SLOW_WIDTH[self.turn_number]:
+                            speed = self.ENTRY_SPEED - self.WIDTH_D * (width - self.last_width)
+                        else:
+                            speed = self.STRAIGHT_SPEED                       
+                        self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
+                        turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
+                        if self.last_t_error is not 0:
+                            #if there was a real error last time then do some damping
+                            turn -= self.TURN_D *(self.last_t_error - self.t_error)
+                        turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+                        if self.driving:
+                            self.drive.move(turn, speed)
+                        elif self.aiming:
+                            self.drive.move(turn, 0)
+                        self.last_t_error = self.t_error
+                        self.last_width = width
                 else:
                     logger.info("wrong marker found, looking for %d" % self.turn_number)
                     if self.turn_number <> 4:
