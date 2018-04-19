@@ -21,7 +21,7 @@ class StreamProcessor(threading.Thread):
         self.TURN_TIME = 0.025
         self.TURN_SPEED = 0.8
         self.SETTLE_TIME = 0.05
-        self.MIN_BALL_SIZE = 200
+        self.MIN_BALL_SIZE = 100
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
         self.TURN_HEIGHT = 16
         self.BACK_AWAY_START = 2000
@@ -35,17 +35,17 @@ class StreamProcessor(threading.Thread):
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
-        self.ACQUIRE_SPEED = 0.35
+        self.ACQUIRE_SPEED = 0.25
         self.STRAIGHT_SPEED = 0.4
         self.STEADY_SPEED =0.4
         self.BALL_S_P = 0.1 * self.STRAIGHT_SPEED
         self.BALL_T_P = 0.02 * self.STRAIGHT_SPEED
         self.BALL_D = 0.002 * self.STRAIGHT_SPEED
-        self.BALL_POS_TOL = 5
+        self.BALL_POS_TOL = 8
         self.TARGET_BALL_POS_X = 100
-        self.TARGET_BALL_POS_Y = 20
+        self.TARGET_BALL_POS_Y = 9
         self.recent_ball_error = None
-        self.MAX_CAPTURED_BALL_ERROR = 6
+        self.MAX_CAPTURED_BALL_ERROR = 8
         self.TURN_P = 2 * self.STRAIGHT_SPEED
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
@@ -62,11 +62,12 @@ class StreamProcessor(threading.Thread):
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.BALL_CROP_START = 0
         self.BALL_CROP_WIDTH = 200
-        self.BALL_CROP_HEIGHT = 90
+        self.BALL_CROP_HEIGHT = 50
         self.FLOOR_CROP_WIDTH = 320
         self.FLOOR_CROP_START = 0
         self.FLOOR_CROP_HEIGHT = 140
         self.acquiring_ball = True
+        self.first_acquired = None
         self.moving_to_corner_one= False
         self.moving_to_corner_two= False
         self.moving_to_windmill = False
@@ -80,7 +81,6 @@ class StreamProcessor(threading.Thread):
         self.finished = False
         self.i = 0
         logger.info("setup complete, looking")
-        time.sleep(1)
         self.endtime=time.time()
         self.start()
 
@@ -161,6 +161,7 @@ class StreamProcessor(threading.Thread):
         return found_x, found_y, found_area
 
     def acquire_ball(self, ball_range):
+        ACQUIRING_TIMEOUT = 1
         ball_x, ball_y, ball_a = self.find_largest_contour(ball_range)
         if ball_a is not None:
             pygame.mouse.set_pos(ball_y, 0.5 * self.BALL_CROP_WIDTH + 0.5 * self.FLOOR_CROP_WIDTH - ball_x)
@@ -170,13 +171,13 @@ class StreamProcessor(threading.Thread):
             t_error = self.TARGET_BALL_POS_X - ball_x
             turn = self.BALL_T_P * t_error
             s_error = ball_y - self.TARGET_BALL_POS_Y
-            print s_error
             speed = self.BALL_S_P * s_error
             #constrain speeds
             speed = max(-self.ACQUIRE_SPEED, min(self.ACQUIRE_SPEED, speed))
             turn = max(-self.ACQUIRE_SPEED, min(self.ACQUIRE_SPEED, turn))
             if max(abs(s_error),abs(t_error)) < self.BALL_POS_TOL:
                 print "stopping, ball found and within tolerance, making ring drop"
+                if self.first_acquired is None: self.first_acquired = time.clock()
                 self.drive.move(0,-self.ACQUIRE_SPEED/2)
             else:
                 print ("found ball: position %d, %d, area %d" % (ball_x, ball_y, ball_a))
@@ -186,15 +187,15 @@ class StreamProcessor(threading.Thread):
             if self.recent_ball_error==None:
                 self.recent_ball_error=s_error
             else:
-                self.recent_ball_error = 0.9 * self.recent_ball_error + 0.1 * abs(s_error)
-            if self.recent_ball_error < self.MAX_CAPTURED_BALL_ERROR:
+                self.recent_ball_error = 0.95 * self.recent_ball_error + 0.05 * abs(s_error)
+            if (self.recent_ball_error < self.MAX_CAPTURED_BALL_ERROR) and ((self.first_acquired + ACQUIRING_TIMEOUT) < time.clock()):
                 #we've probably capture the ball, stop and move to next segment
                 print "ball captured"
                 self.drive.move(0,0)
                 self.acquiring_ball = False
                 self.moving_to_windmill = True
         else:
-            self.drive.move(0,0)
+            self.drive.move(0,-self.ACQUIRE_SPEED/2)
             print "nothing large enough to be a ball found"     
 
     def drive_to_windmill(self, image):
@@ -398,8 +399,6 @@ class Golf(BaseChallenge):
             drive=self.drive,
             dict=self.markers
         )
-        logger.info('Wait ...')
-        time.sleep(2)
         logger.info('Setting up image capture thread')
         self.image_capture_thread = ImageCapture(
             camera=self.camera,

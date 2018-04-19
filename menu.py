@@ -25,13 +25,17 @@ from sgc.locals import *
 from my_button import MyButton
 from remote_control import RC
 from rainbow import Rainbow
+from duckshoot import Duckshoot
 from marker_maze import Maze
+from straightline import StraightLineSpeed
 from pi_noon import PiNoon
 from golf import Golf
+from calibrate import Calibrate
 from approxeng.input.selectbinder import ControllerResource
 import cv2.aruco as aruco
+from tendo.singleton import SingleInstance
 
-VERSION = '0.4Golf'
+VERSION = '0.3Mazing'
 
 arguments = docopt(__doc__, version=VERSION)
 
@@ -64,8 +68,10 @@ class Menu():
         ]
         for var_name, val in env_vars:
             os.environ[var_name] = val
+        self.challenge_thread = None
         self.timeout = kwargs.pop('timeout', 120)
         self.markers = aruco.Dictionary_create(6, 3)
+        self.running_challenge = None
 
     def launch_challenge(self, new_challenge):
         """launch requested challenge thread"""
@@ -104,7 +110,7 @@ class Menu():
             ("Shooting", 6, 198, BLUE, WHITE), #, 62, 100, WHITE),
             ("RC", 122, 198, BLUE, WHITE), #, 62, 100, WHITE),
             ("Exit", 6, 262, BLUE, WHITE), #, 40, 210, WHITE),
-            ("Stop", 122, 262, BLUE, WHITE),
+            ("Calibrate", 122, 262, BLUE, WHITE),
         ]
 
         # perform list comprehension on menu_config, wherein we call
@@ -129,7 +135,8 @@ class Menu():
     def button_handler(self, event):
         """Button action handler. Currently differentiates between
         exit, rc, rainbow and other buttons only"""
-        logger.debug("%s button pressed", event.label)
+        logger.debug("%s button pressed, stopping any running challenges", event.label)
+        self.stop_threads(self.running_challenge)
         if event.label is "RC":
             logger.info("launching RC challenge")
             new_challenge = RC(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
@@ -138,9 +145,17 @@ class Menu():
             logger.info("launching Rainbow challenge")
             new_challenge = Rainbow(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
+        elif event.label is "Shooting":
+            logger.info("launching Duck Shoot challenge")
+            new_challenge = Duckshoot(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
         elif event.label is "Maze":
             logger.info("launching Maze challenge")
             new_challenge = Maze(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
+            return new_challenge
+        elif event.label is "Speed":
+            logger.info("launching Speed challenge")
+            new_challenge = StraightLineSpeed(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers = self.markers)
             return new_challenge
         elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")
@@ -149,6 +164,10 @@ class Menu():
         elif event.label == "Golf":
             logger.info("launching Golf challenge")
             new_challenge = Golf(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers=self.markers)
+            return new_challenge
+        elif event.label == "Calibrate":
+            logger.info("launching Calibration routine")
+            new_challenge = Calibrate(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
             return new_challenge
         elif event.label is "Exit":
             logger.info("Exit button pressed. Exiting now.")
@@ -197,16 +216,17 @@ class Menu():
         self.buttons = self.setup_menu(self.screen)
         for btn in self.buttons:
            btn['btn'].add(btn['index'])
+        pygame.display.update()
         running_challenge = None
         
         # While loop to manage touch screen inputs
         with ControllerResource() as self.joystick:
             while True:
                 time = clock.tick(30)
-                pygame.display.update()
                 sgc.update(time)
-                if self.joystick.connected:
+                if self.joystick.connected and (self.challenge_thread is None or not self.challenge_thread.is_alive()):
                     self.joystick_handler(self.joystick.check_presses())
+                    pygame.display.update()
                 for event in pygame.event.get():
                     sgc.event(event)
                     if event.type== GUI:
@@ -214,14 +234,9 @@ class Menu():
                             requested_challenge = self.button_handler(event)
                             for btn in self.buttons:
                                 btn['btn'].remove(btn['index'])
-                            if requested_challenge:
-                                logger.info("about to stop a thread if there's one running")
-                                if running_challenge:
-                                    logger.info("about to stop thread")
-                                    self.stop_threads(running_challenge)
                             if requested_challenge is not None and requested_challenge is not "Exit" and requested_challenge is not "Other":
-                                running_challenge = self.launch_challenge(requested_challenge)
-                                logger.info("challenge %s launched", running_challenge.name)
+                                self.running_challenge = self.launch_challenge(requested_challenge)
+                                logger.info("challenge %s launched", self.running_challenge.name)
                             elif requested_challenge == "Exit":
                                 sys.exit()
                     # ensure there is always a safe way to end the program
@@ -234,8 +249,13 @@ class Menu():
                         self.screen.fill(BLACK)
                         for btn in self.buttons:
                             btn['btn'].add(btn['index'])
+                        pygame.display.update()
 
 
 if __name__ == "__main__":
+    # Prevent the script from running in parallel by instantiatinh SingleInstance() class.
+    # If is there another instance already running it will throw a `SingleInstanceException`.
+
+    me = SingleInstance()
     menu = Menu(timeout=int(arguments['--timeout']))
     menu.run()
