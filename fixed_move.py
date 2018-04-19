@@ -1,7 +1,7 @@
 import time
 from drivetrain import DriveTrain
 
-MOVE_TIME = float(2)
+MOVE_TIME = float(1.5)
 
 #straight line: 0.01 correction if at all is needed at 0.5 fwd
 #straight line: 4s at speed = 1 gives about 7m on smooth floor
@@ -17,12 +17,12 @@ MOVE_TIME = float(2)
 #arc: 0.2s of speed=1, turn=1 gives Xturn @ R
 
 
-TURN_CORRECTION = 0.15 #positive turns more right
+TURN_CORRECTION = 0.1 #positive turns more right
 MAX_SPEED = 1
 STOP_TIME = 1
 drive = DriveTrain(timeout=120)
 MOVE_CYCLES = 1
-
+drive.should_normalise_motor_speed = True
 count = 0
 try:
     while count < MOVE_CYCLES:
