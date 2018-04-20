@@ -50,6 +50,10 @@ class StreamProcessor(threading.Thread):
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
         self.MAX_TURN_SPEED = 0.25
+        self.CORNER_ONE_ID = 1
+        self.CORNER_ONE_STOP_WIDTH = 30
+        self.CORNER_TWO_ID = 2
+        self.CORNER_TWO_STOP_WIDTH = 30
         self.WINDMILL_CENTRE_ID = 3
         self.CENTRE_STOP_WIDTH = 30
         self.WINDMILL_BLADE_ID = 4
@@ -66,11 +70,11 @@ class StreamProcessor(threading.Thread):
         self.FLOOR_CROP_WIDTH = 320
         self.FLOOR_CROP_START = 0
         self.FLOOR_CROP_HEIGHT = 140
-        self.acquiring_ball = True
+        self.acquiring_ball = False
         self.first_acquired = None
         self.moving_to_corner_one= False
         self.moving_to_corner_two= False
-        self.moving_to_windmill = False
+        self.moving_to_windmill = True
         self.moving_to_entrance = False
         self.putting = False
         self.TIMEOUT = 30.0
@@ -198,8 +202,21 @@ class StreamProcessor(threading.Thread):
             self.drive.move(0,-self.ACQUIRE_SPEED/2)
             print "nothing large enough to be a ball found"     
 
+    def drive_to_corner_one(self, image):
+        if self.drive_to_marker(image, self.CORNER_ONE_ID, self.CORNER_ONE_STOP_WIDTH):
+            logger.info("at marker one")
+            self.moving_to_corner_one = False
+            self.moving_to_corner_two = True
+
+    def drive_to_corner_two(self, image):
+        if self.drive_to_marker(image, self.CORNER_TWO_ID, self.CORNER_TWO_STOP_WIDTH):
+            logger.info("at marker two")
+            self.moving_to_corner_two = False
+            self.moving_to_windmill = True
+
     def drive_to_windmill(self, image):
         if self.drive_to_marker(image, self.WINDMILL_CENTRE_ID, self.CENTRE_STOP_WIDTH):
+            logger.info("at windmill")
             self.moving_to_windmill = False
             self.moving_to_entrance = True
 
@@ -341,6 +358,8 @@ class StreamProcessor(threading.Thread):
         pygame.display.update()
         #todo: move all ball only related stuff into acquire ball
         if self.acquiring_ball: self.acquire_ball(ball_range)
+        if self.moving_to_corner_one: self.drive_to_corner_one(image)
+        if self.moving_to_corner_two: self.drive_to_corner_two(image)
         if self.moving_to_windmill: self.drive_to_windmill(image)
         if self.moving_to_entrance: self.move_to_entrance(image)
         if self.putting: self.putt(image)
