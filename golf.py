@@ -199,6 +199,12 @@ class StreamProcessor(threading.Thread):
             print "nothing large enough to be a ball found"     
 
     def drive_to_windmill(self, image):
+        if self.drive_to_marker(image, self.WINDMILL_CENTRE_ID, self.CENTRE_STOP_WIDTH):
+            self.moving_to_windmill = False
+            self.moving_to_entrance = True
+
+    def drive_to_marker(self, image, marker_number, stop_width):
+        appraoched = False
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         parameters =  aruco.DetectorParameters_create()
         corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
@@ -209,10 +215,10 @@ class StreamProcessor(threading.Thread):
                 marker_index = 0
                 for marker_number in range(0, len(ids)):
                     # test the found aruco object is equivalent to the id of the one we're looking for
-                    if ids[marker_number] == self.WINDMILL_CENTRE_ID:
+                    if ids[marker_number] == marker_number:
                         marker_index = marker_number
             #if found, comptue the centre and move the cursor there
-            if ids[marker_index] == self.WINDMILL_CENTRE_ID:
+            if ids[marker_index] == marker_number:
                 m = marker_index
                 found_y = sum([arr[0] for arr in corners[m][0]])  / 4
                 found_x = sum([arr[1] for arr in corners[m][0]])  / 4
@@ -220,24 +226,27 @@ class StreamProcessor(threading.Thread):
                 pygame.mouse.set_pos(int(found_x), int(found_y))
                 t_error = (self.image_width/2 - found_x) / (self.image_width / 2)
                 turn =  - self.TURN_P * t_error
-                print ("approaching windmill %d" % width)
+                print ("approaching marker %d" % width)
                 pygame.mouse.set_pos(int(found_x), int(self.image_width-found_y))
-                if width > self.CENTRE_STOP_WIDTH:
-                    print 'at windmill!'
+                if width > stop_width:
+                    print 'at marker'
                     self.drive.move(0,0)
-                    self.moving_to_windmill = False
-                    self.moving_to_entrance = True
+                    approached= True
                 else:
                     self.t_error = (self.image_width/2 - found_y) / (self.image_width / 2)
                     turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
                     turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
-                    if self.tracking: self.drive.move (turn_amount, self.STRAIGHT_SPEED)
+                    if self.tracking: self.drive.move(turn_amount, self.STRAIGHT_SPEED)
+                    approached = False
             else:
-                self.drive.move(0,0)
+                self.drive.move(self.MAX_TURN_SPEED,0)
                 last_t_error = 0
+                approached = False
         else:
-            self.drive.move(0,0)
+            self.drive.move(self.MAX_TURN_SPEED,0)
             last_t_error = 0 
+            approached = False
+        return approached
 
     def move_to_entrance(self,image):
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
