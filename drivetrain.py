@@ -146,7 +146,7 @@ class DriveTrain():
 
 
     def lights(self, on):
-        rgb_values = self.FULL_WHITE if on else self.OFF
+        rgb_values = self.colours.get('YELLOWISH') if on else self.OFF
         self.pz.setAllPixels(*rgb_values)
 
     def dither(self, counter, speed):

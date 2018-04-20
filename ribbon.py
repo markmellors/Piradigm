@@ -331,6 +331,7 @@ class StreamProcessor(threading.Thread):
         # filesave for debugging: 
 #        cv2.imwrite(img_name, image)
         self.i += 1
+        pygame.display.update()
 
 
 
