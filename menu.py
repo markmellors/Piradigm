@@ -29,6 +29,7 @@ from duckshoot import Duckshoot
 from marker_maze import Maze
 from straightline import StraightLineSpeed
 from pi_noon import PiNoon
+from golf import Golf
 from calibrate import Calibrate
 from approxeng.input.selectbinder import ControllerResource
 import cv2.aruco as aruco
@@ -159,6 +160,10 @@ class Menu():
         elif event.label == "Pi Noon":
             logger.info("launching Pi Noon challenge")
             new_challenge = PiNoon(timeout=self.timeout, screen=self.screen, joystick=self.joystick)
+            return new_challenge
+        elif event.label == "Golf":
+            logger.info("launching Golf challenge")
+            new_challenge = Golf(timeout=self.timeout, screen=self.screen, joystick=self.joystick, markers=self.markers)
             return new_challenge
         elif event.label == "Calibrate":
             logger.info("launching Calibration routine")
