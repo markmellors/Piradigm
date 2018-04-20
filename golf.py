@@ -36,7 +36,7 @@ class StreamProcessor(threading.Thread):
         self.tracking = False
         self.last_t_error = 0
         self.ACQUIRE_SPEED = 0.25
-        self.STRAIGHT_SPEED = 0.4
+        self.STRAIGHT_SPEED = 0.5
         self.STEADY_SPEED =0.4
         self.BALL_S_P = 0.1 * self.STRAIGHT_SPEED
         self.BALL_T_P = 0.02 * self.STRAIGHT_SPEED
@@ -49,11 +49,12 @@ class StreamProcessor(threading.Thread):
         self.TURN_P = 2 * self.STRAIGHT_SPEED
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
-        self.MAX_TURN_SPEED = 0.7
+        self.MAX_TURN_SPEED = 0.6
+        self.SEEK_TURN_SPEED = 1
         self.CORNER_ONE_ID = 1
-        self.CORNER_ONE_STOP_WIDTH = 45
+        self.CORNER_ONE_STOP_WIDTH = 35
         self.CORNER_TWO_ID = 2
-        self.CORNER_TWO_STOP_WIDTH = 45
+        self.CORNER_TWO_STOP_WIDTH = 47
         self.WINDMILL_CENTRE_ID = 3
         self.CENTRE_STOP_WIDTH = 30
         self.WINDMILL_BLADE_ID = 4
@@ -70,9 +71,9 @@ class StreamProcessor(threading.Thread):
         self.FLOOR_CROP_WIDTH = 320
         self.FLOOR_CROP_START = 0
         self.FLOOR_CROP_HEIGHT = 140
-        self.acquiring_ball = False
+        self.acquiring_ball = True
         self.first_acquired = None
-        self.moving_to_corner_one= True
+        self.moving_to_corner_one= False
         self.moving_to_corner_two= False
         self.moving_to_windmill = False
         self.moving_to_entrance = False
@@ -193,12 +194,12 @@ class StreamProcessor(threading.Thread):
                 self.recent_ball_error=s_error
             else:
                 self.recent_ball_error = 0.95 * self.recent_ball_error + 0.05 * abs(s_error)
-            if (self.recent_ball_error < self.MAX_CAPTURED_BALL_ERROR) and ((self.first_acquired + ACQUIRING_TIMEOUT) < time.clock()):
+            if (self.recent_ball_error < self.MAX_CAPTURED_BALL_ERROR) and self.first_acquired and ((self.first_acquired + ACQUIRING_TIMEOUT) < time.clock()):
                 #we've probably capture the ball, stop and move to next segment
                 print "ball captured"
                 self.drive.move(0,0)
                 self.acquiring_ball = False
-                self.moving_to_windmill = True
+                self.moving_to_corner_one = True
         else:
             self.drive.move(0,-self.ACQUIRE_SPEED/2)
             print "nothing large enough to be a ball found"     
@@ -259,13 +260,15 @@ class StreamProcessor(threading.Thread):
                 self.just_turned = False
             else:
                 print ("markers found but not the right one (%s)", marker_number)
-                self.drive.move(self.MAX_TURN_SPEED,0)
+                self.drive.move(self.SEEK_TURN_SPEED,0)
+                time.sleep(0.05)
                 self.just_turned = True
                 last_t_error = 0
                 approached = False
         else:
             print ("no markers found, looking for %s", marker_number)
-            self.drive.move(self.MAX_TURN_SPEED,0)
+            self.drive.move(self.SEEK_TURN_SPEED,0)
+            time.sleep(0.05)
             self.just_turned = True
             last_t_error = 0 
             approached = False
