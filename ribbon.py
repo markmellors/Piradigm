@@ -7,6 +7,7 @@ from my_button import MyScale
 from img_base_class import *
 import random
 import cv2.aruco as aruco
+import math
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -374,6 +375,7 @@ class Ribbon(BaseChallenge):
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
+        self.exponential = 2
         self.menu = False
         self.joystick=joystick
         self.dict=markers
@@ -444,6 +446,15 @@ class Ribbon(BaseChallenge):
             self.drive.move(0,0)
             print "Stopping"
 
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
+
+    def exp(self, demand, exp):
+        # function takes a demand speed from -1 to 1 and converts it to a response value
+        # with an exponential function. exponential is -inf to +inf, 0 is linear
+        exp = 1/(1 + abs(exp)) if exp < 0 else exp + 1
+        return math.copysign((abs(demand)**exp), demand)
+
     def run(self):
         # Startup sequence
         logger.info('Setup camera')
@@ -500,6 +511,12 @@ class Ribbon(BaseChallenge):
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
                             ctrl['ctrl'].remove(fade=False)
+                if not self.processor.tracking:
+                    rx, ry = self.joystick['rx', 'ry']
+                    logger.debug("joystick L/R: %s, %s" % (rx, ry))
+                    rx = self.exp(rx, self.exponential)
+                    ry = self.exp(ry, self.exponential)
+                    self.drive.move(rx, ry)
                 sgc.update(time)
 
         except KeyboardInterrupt:
