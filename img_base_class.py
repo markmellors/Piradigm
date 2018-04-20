@@ -18,9 +18,12 @@ from sgc.locals import *
 import picamera
 import picamera.array
 import cv2
+import cv2.aruco as aruco
 import numpy
 from fractions import Fraction
 from base_challenge import BaseChallenge
+CAMERA_MATRIX = numpy.array([[196.00378048362913, 0.0, 158.09985439215194], [0.0, 196.41940209255708, 123.28529641686711], [0.0, 0.0, 1.0]])
+DIST_COEFFS = numpy.array([[-0.11909172334947736, -0.21275527201365405, -0.007049376606519501, -0.006678295495295815, 0.15384307954113818]])
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 logging.config.fileConfig(os.path.join(file_path, 'logging.ini'))
@@ -84,9 +87,9 @@ def find_largest_contour(image):
             area = cv2.contourArea(contour)
             if found_area < area:
                 found_area = area
-                M = cv2.moments(contour)
-                found_x = int(M['m10']/M['m00'])
-                found_y = int(M['m01']/M['m00'])
+                m = cv2.moments(contour)
+                found_x = int(m['m10']/m['m00'])
+                found_y = int(m['m01']/m['m00'])
                 biggest_contour = contour
         return found_x, found_y, found_area, biggest_contour
 
@@ -154,3 +157,17 @@ def wrapping_inRange(image, lower_limit, upper_limit):
             numpy.array(upper_limit)
         )
     return imrange
+
+def marker_angle(corners, marker_length, marker=0):
+    ''' takes just the x&y coordinates of the corners of the marker, the marker size and returns the roll angle in radians'''
+    rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, marker_length, CAMERA_MATRIX, DIST_COEFFS)
+    return rvecs[marker][0][1]
+
+def marker_vector(corners):
+    x_mid_bottom = (corners[0][0]+corners[1][0])/2
+    y_mid_bottom = (corners[0][1]+corners[1][1])/2
+    x_mid_top = (corners[2][0]+corners[3][0])/2
+    y_mid_top = (corners[2][1]+corners[3][1])/2
+    x_diff = x_mid_top - x_mid_bottom
+    y_diff = y_mid_top - y_mid_bottom
+    return x_diff, y_diff

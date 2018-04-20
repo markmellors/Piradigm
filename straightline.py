@@ -10,6 +10,8 @@ class StreamProcessor(threading.Thread):
         self.image_centre_x = image_width / 2.0
         self.image_centre_y = image_height / 2.0
         self.drive = drive
+        self.drive.__init__()
+        self.drive.should_normalise_motor_speed = False
         self.screen = screen
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
@@ -17,26 +19,39 @@ class StreamProcessor(threading.Thread):
         self.small_dict = dict 
         self.last_t_error = 0
         self.TURN_P = 4
-        self.TURN_D = 1
+        self.TURN_D = 2
+        self.AIM_P = 1
+        self.AIM_D = 0.5
+        self.LINE_TURN_P = 4
+        self.LINE_TURN_D = 2
         self.STRAIGHT_SPEED = 1
-        self.MAX_TURN_SPEED = 0.5
+        self.MAX_TURN_SPEED = 0.6
         self.STEERING_OFFSET = -0.2  #more positive make it turn left
         self.CROP_WIDTH = 200
+        self.CROP_BOTTOM = 170
+        self.CROP_TOP = 300
+        self.LINE_CROP_LEFT = 0
+        self.LINE_CROP_RIGHT = 320
+        self.LINE_CROP_BOTTOM = 30
+        self.LINE_CROP_TOP = 55
+        self.ribbon_pos = 0
         self.i = 0
-        self.TIMEOUT = 8 #was 30
+        self.TIMEOUT = 8
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
-        self.found = False
+        self.m_found = False
+        self.l_found = False
         self.TURN_TARGET = 5
         self.MARKER_STOP_WIDTH = 70
         self.loop_start_time=0
         self.target_aruco_marker_id = 3
         self.marker_to_track=0
+        self.ribbon_colour = ((0, 0, 100), (180, 55, 255))
+        self.MIN_CONTOUR_AREA = 30
         self.driving = False
         self.aiming = False
         self.finished = False
         logger.info("setup complete, looking")
-        time.sleep(1)
         self.start()
 
     def run(self):
@@ -56,10 +71,11 @@ class StreamProcessor(threading.Thread):
 
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
+        screen.fill([0,0,0])
         if self.target_aruco_marker_id >= self.TURN_TARGET:
            logger.info("finished!")
            self.finished = True
-        frame = image[170:300, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+        frame = image[self.CROP_BOTTOM:self.CROP_TOP, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
         # Our operations on the frame come here
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         parameters =  aruco.DetectorParameters_create()
@@ -78,7 +94,7 @@ class StreamProcessor(threading.Thread):
                 self.marker_to_track = 0
             if ids[self.marker_to_track][0] == self.target_aruco_marker_id:
                 m = self.marker_to_track
-                self.found = True
+                self.m_found = True
                 #if found, compute the centre and move the cursor there
                 found_y = sum([arr[0] for arr in corners[m][0]])  / 4
                 found_x = sum([arr[1] for arr in corners[m][0]])  / 4
@@ -88,15 +104,13 @@ class StreamProcessor(threading.Thread):
                     logger.info('finished!')
                     self.drive.move(0,0)
                     self.finished = True
-                pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
+                pygame.mouse.set_pos(int(found_x)+self.LINE_CROP_TOP, int(self.CROP_WIDTH-found_y))
                 self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
-                turn_amount = self.STEERING_OFFSET + self.TURN_P * self.t_error
+                turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
                 if self.last_t_error is not 0:
                     #if there was a real error last time then do some damping
-                    turn_amount -= self.TURN_D *(self.last_t_error - self.t_error)
-
-                turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
-
+                    turn -= self.TURN_D *(self.last_t_error - self.t_error)
+                turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
                 #if we're rate limiting the turn_amount, go slow
                 # TODO Rate limit the speed change
                 if self.driving:
@@ -105,26 +119,77 @@ class StreamProcessor(threading.Thread):
                     self.drive.move(turn, 0)
                 self.last_t_error = self.t_error
             else:
-                self.stop_and_wait()
+                if self.driving:
+                    self.stop_and_wait()
         else:
-            # No markers found
-            self.stop_and_wait()
+            logger.info("no marker, looking for ribbon")
+            self.m_found = False
+            cropped_image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x), int(self.image_centre_y)))
+            cropped_image = cropped_image[self.LINE_CROP_BOTTOM:self.LINE_CROP_TOP, self.LINE_CROP_LEFT:self.LINE_CROP_RIGHT]
+            img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
+            ribbon_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+            screen.blit(ribbon_frame, (0, 0))
+            blur_image = cv2.medianBlur(cropped_image, 3)
+            blur_image = cv2.cvtColor(blur_image, cv2.COLOR_RGB2HSV)
+            ribbon_mask = threshold_image(blur_image, self.ribbon_colour)
+            self.ribbon_following(ribbon_mask)
+            
         # Display the resulting frame
         frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
-        screen.fill([0,0,0])
-        screen.blit(frame, (0,0))
+        screen.blit(frame, (self.LINE_CROP_TOP,0))
         pygame.display.update()
-        found_identifier = "F" if self.found else "NF"
-        img_name = "%d%simg.jpg" % (self.i, found_identifier)
+        m_found_identifier = "mF" if self.m_found else "NmF"
+        l_found_identifier = "lF" if self.l_found else "NlF"
+        img_name = "%d%s%s%dimg.jpg" % (self.i, m_found_identifier, l_found_identifier, self.ribbon_pos)
         # filesave for debugging: 
-        # cv2.imwrite(img_name, gray)
+#        if self.driving:
+#            cv2.imwrite(img_name, image)
         self.i += 1
 
+    def ribbon_following(self, ribbon_image):
+        ribbon_x, ribbon_y, ribbon_area, ribbon_contour = find_largest_contour(ribbon_image)
+        if ribbon_area > self.MIN_CONTOUR_AREA:
+            ribbon = [ribbon_x, ribbon_y, ribbon_area, ribbon_contour]
+            self.l_found = True
+            self.ribbon_pos = ribbon_x
+        else:
+            ribbon = None
+            self.l_found = False
+            self.ribbon_pos = 0
+        crop_width = self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT
+        pygame.mouse.set_pos(int(ribbon_y), int(crop_width - ribbon_x))
+        self.follow_ribbon(ribbon, self.STRAIGHT_SPEED)
+
+    def follow_ribbon(self, ribbon, speed):
+        turn = 0.0
+        if ribbon is not None:
+            x = ribbon[0]
+            logger.info ("ribbon spotted at %i" % (x))
+            image_centre_x = (self.LINE_CROP_RIGHT - self.LINE_CROP_LEFT)/2
+            t_error  = float(image_centre_x - x) / image_centre_x
+            turn_p = self.AIM_P if self.aiming else self.LINE_TURN_P
+            turn = turn_p * t_error
+            turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+            if self.last_t_error is not None:
+                #if there was a real error last time then do some damping
+                turn_d = self.AIM_D if self.aiming else self.LINE_TURN_D
+                turn = turn - (turn_d * (self.last_t_error - t_error))
+            if self.driving:
+                self.drive.move(turn, self.STRAIGHT_SPEED)
+            elif self.aiming:
+                self.drive.move(turn, 0)
+            self.last_t_error = t_error
+        else:
+            self.last_t_error = None
+            logger.info('No ribbon either')
+            if self.driving:
+                self.stop_and_wait()
+
+
     def stop_and_wait(self):
-        logger.info("looking for marker %d" % self.target_aruco_marker_id)
         self.drive.move(0, self.STRAIGHT_SPEED)
         self.found = False
-        self.last_t_error = 0
+        self.last_t_error = None
 
 
 class StraightLineSpeed(BaseChallenge):
@@ -165,7 +230,8 @@ class StraightLineSpeed(BaseChallenge):
         self.camera.resolution = (self.image_width, self.image_height)
         self.camera.framerate = self.frame_rate
         self.camera.iso = 800
-        self.camera.shutter_speed = 12000
+        self.camera.shutter_speed = 8000
+        time.sleep(0.2)
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
@@ -174,21 +240,19 @@ class StraightLineSpeed(BaseChallenge):
             drive=self.drive,
             dict=self.dict
         )
-        logger.info('Wait ...')
-        time.sleep(2)
         logger.info('Setting up image capture thread')
         self.image_capture_thread = ImageCapture(
             camera=self.camera,
             processor=self.processor
         )
-        pygame.mouse.set_visible(False)
+        pygame.mouse.set_visible(True)
         try:
             while not self.should_die:
                 time.sleep(0.1)
                 if self.joystick.connected:
                     self.joystick_handler(self.joystick.check_presses())
                 if self.processor.finished:
-                    self.timeout = 0
+                    self.stop()
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
