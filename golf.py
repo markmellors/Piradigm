@@ -49,11 +49,11 @@ class StreamProcessor(threading.Thread):
         self.TURN_P = 2 * self.STRAIGHT_SPEED
         self.TURN_D = 1 * self.STRAIGHT_SPEED
         self.SLIGHT_TURN = 0.1
-        self.MAX_TURN_SPEED = 0.25
+        self.MAX_TURN_SPEED = 0.7
         self.CORNER_ONE_ID = 1
-        self.CORNER_ONE_STOP_WIDTH = 30
+        self.CORNER_ONE_STOP_WIDTH = 45
         self.CORNER_TWO_ID = 2
-        self.CORNER_TWO_STOP_WIDTH = 30
+        self.CORNER_TWO_STOP_WIDTH = 45
         self.WINDMILL_CENTRE_ID = 3
         self.CENTRE_STOP_WIDTH = 30
         self.WINDMILL_BLADE_ID = 4
@@ -72,9 +72,9 @@ class StreamProcessor(threading.Thread):
         self.FLOOR_CROP_HEIGHT = 140
         self.acquiring_ball = False
         self.first_acquired = None
-        self.moving_to_corner_one= False
+        self.moving_to_corner_one= True
         self.moving_to_corner_two= False
-        self.moving_to_windmill = True
+        self.moving_to_windmill = False
         self.moving_to_entrance = False
         self.putting = False
         self.TIMEOUT = 30.0
@@ -82,6 +82,7 @@ class StreamProcessor(threading.Thread):
         self.START_TIME = time.clock()
         self.END_TIME = self.START_TIME + self.TIMEOUT
         self.found = False
+        self.just_turned = False
         self.finished = False
         self.i = 0
         logger.info("setup complete, looking")
@@ -246,7 +247,7 @@ class StreamProcessor(threading.Thread):
                 print ("approaching marker %d" % width)
                 pygame.mouse.set_pos(int(found_x), int(self.image_width-found_y))
                 if width > stop_width:
-                    print 'at marker'
+                    print ("at marker %s", marker_number)
                     self.drive.move(0,0)
                     approached= True
                 else:
@@ -255,12 +256,17 @@ class StreamProcessor(threading.Thread):
                     turn_amount = min(max(turn_amount,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
                     if self.tracking: self.drive.move(turn_amount, self.STRAIGHT_SPEED)
                     approached = False
+                self.just_turned = False
             else:
+                print ("markers found but not the right one (%s)", marker_number)
                 self.drive.move(self.MAX_TURN_SPEED,0)
+                self.just_turned = True
                 last_t_error = 0
                 approached = False
         else:
+            print ("no markers found, looking for %s", marker_number)
             self.drive.move(self.MAX_TURN_SPEED,0)
+            self.just_turned = True
             last_t_error = 0 
             approached = False
         return approached
@@ -330,51 +336,55 @@ class StreamProcessor(threading.Thread):
             
 
     def process_image(self, image, screen):
-        screen = pygame.display.get_surface()
-        HSVimage = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        ball_image = HSVimage[self.BALL_CROP_START:self.BALL_CROP_HEIGHT, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
-        floor_image = HSVimage[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
-        HSVimage=HSVimage[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
-        #for floor calibration:        print cv2.meanStdDev(floor_image)
-        # Our operations on the frame come here
-        screenimage = cv2.cvtColor(HSVimage, cv2.COLOR_HSV2BGR)
-        frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
-        screen.fill([0, 0, 0])
-        screen.blit(frame, (0, 0))
-        if self.calibrating:
-            print "calibrating"
-            self.show_cal_label(screen)
-            self.colour_limits = self.get_limits(ball_image, 1.5)
-            print self.colour_limits
-        if self.tracking:
-            self.show_tracking_label(screen)
-        ball_range = self.threshold_image(ball_image, self.colour_limits)
-        floor_range =  self.threshold_image(floor_image, self.FLOOR_LIMITS)
-        # We want to extract the 'Hue', or colour, from the image. The 'inRange'
-        frame = pygame.surfarray.make_surface(cv2.flip(floor_range, 1))
-        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START, 0))
-        frame = pygame.surfarray.make_surface(cv2.flip(ball_range, 1))
-        screen.blit(frame, (self.image_height-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
-        pygame.display.update()
-        #todo: move all ball only related stuff into acquire ball
-        if self.acquiring_ball: self.acquire_ball(ball_range)
-        if self.moving_to_corner_one: self.drive_to_corner_one(image)
-        if self.moving_to_corner_two: self.drive_to_corner_two(image)
-        if self.moving_to_windmill: self.drive_to_windmill(image)
-        if self.moving_to_entrance: self.move_to_entrance(image)
-        if self.putting: self.putt(image)
-        #rodo: add other move functions
-        if self.tracking:
-            image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-            if self.found:
-                img_name = str(self.i) + "Fimg.jpg"
-            else:
-                img_name = str(self.i) + "NFimg.jpg"
-            #filesave for debugging: 
-            #cv2.imwrite(img_name, image)
-            self.i += 1
-        #print 1/(time.time()-self.endtime)
-        #self.endtime=time.time()
+        if self.just_turned:
+            self.just_turned = False
+            self.drive.move(0,0)
+        else:
+            screen = pygame.display.get_surface()
+            HSVimage = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+            ball_image = HSVimage[self.BALL_CROP_START:self.BALL_CROP_HEIGHT, (self.image_centre_x - self.BALL_CROP_WIDTH/2):(self.image_centre_x + self.BALL_CROP_WIDTH/2)]
+            floor_image = HSVimage[self.FLOOR_CROP_START:self.FLOOR_CROP_HEIGHT, (self.image_centre_x - self.FLOOR_CROP_WIDTH/2):(self.image_centre_x + self.FLOOR_CROP_WIDTH/2)]
+            HSVimage=HSVimage[self.FLOOR_CROP_START:self.image_height, 0:self.image_width]
+            #for floor calibration:        print cv2.meanStdDev(floor_image)
+            # Our operations on the frame come here
+            screenimage = cv2.cvtColor(HSVimage, cv2.COLOR_HSV2BGR)
+            frame = pygame.surfarray.make_surface(cv2.flip(screenimage, 1))
+            screen.fill([0, 0, 0])
+            screen.blit(frame, (0, 0))
+            if self.calibrating:
+                print "calibrating"
+                self.show_cal_label(screen)
+                self.colour_limits = self.get_limits(ball_image, 1.5)
+                print self.colour_limits
+            if self.tracking:
+                self.show_tracking_label(screen)
+            ball_range = self.threshold_image(ball_image, self.colour_limits)
+            floor_range =  self.threshold_image(floor_image, self.FLOOR_LIMITS)
+            # We want to extract the 'Hue', or colour, from the image. The 'inRange'
+            frame = pygame.surfarray.make_surface(cv2.flip(floor_range, 1))
+            screen.blit(frame, (self.image_height-self.FLOOR_CROP_START, 0))
+            frame = pygame.surfarray.make_surface(cv2.flip(ball_range, 1))
+            screen.blit(frame, (self.image_height-self.FLOOR_CROP_START + self.FLOOR_CROP_HEIGHT, 0))
+            pygame.display.update()
+            #todo: move all ball only related stuff into acquire ball
+            if self.acquiring_ball: self.acquire_ball(ball_range)
+            if self.moving_to_corner_one: self.drive_to_corner_one(image)
+            if self.moving_to_corner_two: self.drive_to_corner_two(image)
+            if self.moving_to_windmill: self.drive_to_windmill(image)
+            if self.moving_to_entrance: self.move_to_entrance(image)
+            if self.putting: self.putt(image)
+            #rodo: add other move functions
+            if self.tracking:
+                image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
+                if self.found:
+                    img_name = str(self.i) + "Fimg.jpg"
+                else:
+                    img_name = str(self.i) + "NFimg.jpg"
+                #filesave for debugging: 
+                #cv2.imwrite(img_name, image)
+                self.i += 1
+            #print 1/(time.time()-self.endtime)
+            #self.endtime=time.time()
 
 
 
@@ -418,7 +428,7 @@ class Golf(BaseChallenge):
         self.camera.iso = 800
         self.camera.awb_mode = 'off'
         self.camera.awb_gains = (1.149, 2.193)
-        self.camera.shutter_speed = 12000
+        self.camera.shutter_speed = 2000
         logger.info('Setup the stream processing thread')
         # TODO: Remove dependency on drivetrain from StreamProcessor
         self.processor = StreamProcessor(
