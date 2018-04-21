@@ -250,7 +250,7 @@ class StreamProcessor(threading.Thread):
             self.isstuck = True
         else:
             self.isstuck = False
-        return False #self.isstuck
+        return self.isstuck
 
     def escape(self):
         print "escaping"
