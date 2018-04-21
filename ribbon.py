@@ -298,7 +298,7 @@ class StreamProcessor(threading.Thread):
     def process_image(self, image, screen):
         screen = pygame.display.get_surface()
         # scale down and crop image to speed up processing and avoid false positives
-        #scale down used instead of jsut capturing at lower resolution, so maximum hue resolution captured
+        #scale down used instead of just capturing at lower resolution, so maximum hue resolution captured
         image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x * 2), int(self.image_centre_y * 2)))
         cropped_image = image[0:self.CROP_HEIGHT, 0:320]
         if not self.menu:
@@ -322,10 +322,10 @@ class StreamProcessor(threading.Thread):
             self.MARKER_COLOUR, default_colour_bounds
         )
         marker_mask = threshold_image(marker_image, limits)
-#        if not self.menu:
-#            frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
-#            screen.blit(frame, (self.CROP_HEIGHT, 0))
-#            pygame.display.update()
+        if not self.menu:
+            frame = pygame.surfarray.make_surface(cv2.flip(ribbon_mask, 1))
+            screen.blit(frame, (self.CROP_HEIGHT, 0))
+            pygame.display.update()
         self.mode[self.mode_number](marker_mask, ribbon_mask, image)
         img_name = "%dimg.jpg" % (self.i)
         # filesave for debugging: 
@@ -362,8 +362,8 @@ class StreamProcessor(threading.Thread):
                 self.drive.move(self.SEEK_SPEED, 0)
             logger.info('No ribbon')
             # reset PID errors
-            #self.last_t_error = None
-            #self.last_before_that_t_error = None
+            self.last_t_error = None
+            self.last_before_that_t_error = None
 
 
 
