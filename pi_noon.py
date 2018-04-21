@@ -34,7 +34,7 @@ class StreamProcessor(threading.Thread):
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
-        self.STRAIGHT_SPEED = 0.4
+        self.STRAIGHT_SPEED = 1
         self.TURN_AROUND_SPEED = 1
         self.TURN_AROUND_TIME = 0.4
         self.TURN_P = 2 * self.STRAIGHT_SPEED
@@ -208,7 +208,7 @@ class StreamProcessor(threading.Thread):
                 turn = self.TURN_P * t_error
                 if self.DRIVING and self.tracking:
                     #turn around one time in 5. is there a better way to do this?
-                    if random.choice([True, False, False, False, False]):
+                    if random.choice([True, False, False, False, False, False, False, False, False]):
                         self.turn_around()
                     else:
                         self.drive.move(turn, self.STRAIGHT_SPEED)
