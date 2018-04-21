@@ -30,7 +30,7 @@ class StreamProcessor(threading.Thread):
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.FLOOR_LIMITS  =  ((100, 150, 80), (130, 255, 220))#<red, yellow>  ((85, 190, 80), (115, 255, 220))
+        self.FLOOR_LIMITS  =  ((98, 69, 100), (180, 250, 255)) #indoor lighting, my arena> ((100, 150, 80), (130, 255, 220)), yellow>  ((85, 190, 80), (115, 255, 220))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
