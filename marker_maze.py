@@ -18,11 +18,24 @@ class StreamProcessor(threading.Thread):
         #create small cust dictionary
         self.small_dict = dict #aruco.Dictionary_create(6, 3)
         self.last_t_error = 0
-        self.TURN_P = 0.9
-        self.TURN_D = 0.5
-        self.STRAIGHT_SPEED = 0.6 #was 0.5
+        self.last_width = 25
+        self.TURN_P = 2  #0.9
+        self.TURN_D = 0.6 #0.5
+        self.WIDTH_D = 0.04
+        self.AIM_P = 1
+        self.AIM_D = 0.5
+        self.WALL_TURN_P = 4
+        self.WALL_TURN_D = 2
+        self.drive.__init__()
+        self.STRAIGHT_SPEED = 1 #was 0.8
         self.STEERING_OFFSET = 0.0  #more positive make it turn left
         self.CROP_WIDTH = 480
+        self.CROP_BOTTOM = 75
+        self.CROP_TOP = 255
+        self.WALL_CROP_LEFT = 0
+        self.WALL_CROP_RIGHT = 240
+        self.WALL_CROP_BOTTOM = 68
+        self.WALL_CROP_TOP = 90
         self.i = 0
         self.TIMEOUT = 30.0
         self.START_TIME = time.clock()
@@ -30,20 +43,33 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.turn_number = 0
         self.TURN_TARGET = 5
-        self.TURN_WIDTH = [32, 27, 34, 33, 27, 24]
+        self.TURN_WIDTH = [45, 44, 40, 48, 34, 24] #<for standard lens [44, 31, 38, 45, 34, 24] #<for wide angle lens
+        self.SLOW_WIDTH = [30, 30, 35, 39, 34, 24]
         self.NINTY_TURN = 0.8  #0.8 works if going slowly
         self.SETTLE_TIME = 0.05
-        self.TURN_TIME = 0.04
-        self.MAX_TURN_SPEED = 0.5 #was 0.25
+        self.TURN_TIME = 0.07 #was 0.04
+        self.MAX_TURN_SPEED = 0.8 #was 0.25
+        self.MIN_CONTOUR_AREA = 30
         self.loop_start_time=0
         self.marker_to_track=0
         self.BRAKING_FORCE = 0.1
         self.BRAKE_TIME = 0.05
+        self.ENTRY_SPEED = 0.6
+        self.EXIT_SPEED = 0.5
+        self.COLOURS = {
+            "red": ((105, 90, 80), (130, 255, 255)),
+            "blue": ((0, 60, 30), (35, 255, 255)),
+            "yellow": ((75, 100, 90), (100, 255, 255)),
+            "white": ((0, 0, 90), (180, 60, 255)),
+            "green": ((35, 100, 100), (75, 255, 230)),
+            "black": ((0, 0, 0), (180, 80, 170))}
+        self.WALL_COLOUR = ["white", "red", "blue", "red", "white", "white"]
         self.driving = False
         self.aiming = False
         self.finished = False
+        self.just_moved = False
         logger.info("setup complete, looking")
-        time.sleep(1)
+        time.sleep(0.1)
         self.start()
 
     def run(self):
@@ -61,19 +87,61 @@ class StreamProcessor(threading.Thread):
                     self.stream.truncate()
                     self.event.clear()
 
+    def busy_wait(self, sleep_time):
+        time_out = time.clock() + sleep_time
+        while time_out > time.clock():
+            pass
+
+    def ninety(self, direction):
+        turn_speed = 0.65
+        turn = turn_speed if direction == 'right' else -turn_speed
+        count = 0
+        MOVE_TIME = 0.03
+        TURN_TIME = 0.03
+        NINTY_CYCLES = 5
+        EXIT_TIME = 0.1
+        while count < NINTY_CYCLES:
+            self.drive.move(0, self.STRAIGHT_SPEED)
+            self.busy_wait(MOVE_TIME)
+            self.drive.move(turn, 0)
+            self.busy_wait(TURN_TIME)
+            count += 1
+        self.drive.move(0, self.EXIT_SPEED)
+        self.busy_wait(EXIT_TIME)
+        self.just_moved = True
+
+    def s_turn(self, direction):
+        S_TURN = 0.63
+        turn = S_TURN if direction == 'right' else -S_TURN
+        count = 0
+        S_CYCLES = 6
+        MOVE_TIME = 0.05
+        TURN_TIME = 0.04
+        EXIT_TIME = 0.05
+        while count < S_CYCLES:
+            self.drive.move(0, self.STRAIGHT_SPEED)
+            self.busy_wait(MOVE_TIME)
+            self.drive.move(turn, 0)
+            self.busy_wait(TURN_TIME)
+            count += 1
+        self.drive.move(0, 0)
+        self.just_moved = True
+
     def turn_right(self):
         if self.driving:
             self.drive.move(self.NINTY_TURN, 0)
-            time.sleep(self.TURN_TIME)
+            self.busy_wait(self.TURN_TIME)
             self.drive.move(0,0)
-            time.sleep(self.SETTLE_TIME)
+            self.busy_wait(self.SETTLE_TIME)
+            self.just_moved = True
                 
     def turn_left(self):
         if self.driving:
             self.drive.move(-self.NINTY_TURN, 0)
-            time.sleep(self.TURN_TIME)
+            self.busy_wait(self.TURN_TIME)
             self.drive.move(0,0)
-            time.sleep(self.SETTLE_TIME)
+            self.busy_wait(self.SETTLE_TIME)
+            self.just_moved = True
 
     def brake(self):
         self.drive.move(0,-self.BRAKING_FORCE)
@@ -81,99 +149,149 @@ class StreamProcessor(threading.Thread):
         self.drive.move(0,0)
     
     def process_image(self, image, screen):
-        screen = pygame.display.get_surface()
-        if self.turn_number >= self.TURN_TARGET:
-           logger.info("finished!")
-           self.finished = True
-        frame = image[75:255, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
-        # Our operations on the frame come here
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        parameters =  aruco.DetectorParameters_create()
-        #lists of ids and the corners beloning to each id
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
-        if ids != None:
-            if len(ids)>1:
-                logger.info( "found %d markers" % len(ids))
-                self.marker_to_track = 0
-                for marker_number in range(0, len(ids)):
-                    if ids[marker_number] == self.turn_number:
-                        self.marker_to_track = marker_number
-                logger.info ("marker I'm looking for, is number %d" % self.marker_to_track)
-            else:
-                self.marker_to_track = 0
-            if ids[self.marker_to_track][0] == self.turn_number:
-                m = self.marker_to_track
-                self.found = True
-                #if found, comptue the centre and move the cursor there
-                found_y = sum([arr[0] for arr in corners[m][0]])  / 4
-                found_x = sum([arr[1] for arr in corners[m][0]])  / 4
-                width = abs(corners[m][0][0][0]-corners[m][0][1][0]+corners[m][0][3][0]-corners[m][0][2][0])/2
-                logger.info('marker width %s' % width)
-                if width > self.TURN_WIDTH[self.turn_number]:
-                    self.turn_number += 1
-                    self.found = False
-                    logger.info('Close to marker making turn %s' % self.turn_number)
-                    if self.turn_number == 5:
-                        logger.info('finished!')
-                        self.drive.move(0,0)
-                        self.finished = True
-                pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
-                self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
-                turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
-                if self.last_t_error is not 0:
-                    #if there was a real error last time then do some damping
-                    turn -= self.TURN_D *(self.last_t_error - self.t_error)
-                turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
-                if self.driving:
-                    self.drive.move(turn, self.STRAIGHT_SPEED)
-                elif self.aiming:
-                    self.drive.move(turn, 0)
-                self.last_t_error = self.t_error
-            else:
-                logger.info("looking for marker %d" % self.turn_number)
-                if self.found:
-                    self.drive.move(0,0)
-                else:
-                    if self.turn_number <= 2:
-                        if self.turn_number == 1:
-                            self.brake()
-                        self.turn_right()
-                    else:
-                        if self.turn_number == 4:
-                            self.brake()
-                        self.turn_left()
-                self.found = False
-                self.last_t_error = 0 
+        if self.just_moved:
+            #if we've jsut done a fixed time move, ignore the next frame
+            logger.debug("frame flush")
+            self.just_moved = False
         else:
-            logger.info("looking for marker %d" % self.turn_number)
-            #if marker was found, then probably best to stop and look
-            if self.found:
-                if self.driving:
-                    self.drive.move(0, self.STRAIGHT_SPEED/2)
+            screen = pygame.display.get_surface()
+            screen.fill([0,0,0])
+            if self.turn_number >= self.TURN_TARGET:
+               logger.info("finished!")
+               self.finished = True
+            frame = image[self.CROP_BOTTOM:self.CROP_TOP, (self.image_centre_x - self.CROP_WIDTH/2):(self.image_centre_x + self.CROP_WIDTH/2)]
+            # Our operations on the frame come here
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            parameters =  aruco.DetectorParameters_create()
+            #lists of ids and the corners beloning to each id
+            corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.small_dict, parameters=parameters)
+            if ids != None:
+                if len(ids)>1:
+                    logger.info( "found %d markers" % len(ids))
+                    self.marker_to_track = 0
+                    for marker_number in range(0, len(ids)):
+                        if ids[marker_number] == self.turn_number:
+                            self.marker_to_track = marker_number
+                    logger.info ("marker I'm looking for, is number %d" % self.marker_to_track)
+                else:
+                    self.marker_to_track = 0
+                if ids[self.marker_to_track][0] == self.turn_number:
+                    m = self.marker_to_track
+                    self.found = True
+                    #if found, comptue the centre and move the cursor there
+                    found_y = sum([arr[0] for arr in corners[m][0]]) / 4
+                    found_x = sum([arr[1] for arr in corners[m][0]]) / 4
+                    width = abs(corners[m][0][0][0]-corners[m][0][1][0]+corners[m][0][3][0]-corners[m][0][2][0])/2
+                    logger.info('marker width %s' % width) 
+                    # Display the frame
+                    frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
+                    screen.blit(frame, (0,0))
+                    pygame.mouse.set_pos(int(found_x), int(self.CROP_WIDTH-found_y))
+                    if width > self.TURN_WIDTH[self.turn_number]:
+                        self.turn_number += 1
+                        self.found = False
+                        logger.info('Close to marker making turn %s' % self.turn_number)
+                        if self.turn_number <= 2:
+                            if self.turn_number == 1:
+                                self.ninety('right')
+                            else:
+                                self.s_turn('right')
+                        elif self.turn_number == 5:
+                            logger.info('finished!')
+                            self.drive.move(0,0)
+                            self.finished = True
+                        else:
+                            if self.turn_number == 4:
+                                self.ninety('left')
+                                self.drive.move(0, 0)
+                            else:
+                                self.s_turn('left')
+                    else:
+                        if width > self.SLOW_WIDTH[self.turn_number]:
+                            speed = self.ENTRY_SPEED - self.WIDTH_D * (width - self.last_width)
+                        else:
+                            speed = self.STRAIGHT_SPEED                       
+                        self.t_error = (self.CROP_WIDTH/2 - found_y) / (self.CROP_WIDTH / 2)
+                        turn = self.STEERING_OFFSET + self.TURN_P * self.t_error
+                        if self.last_t_error is not 0:
+                            #if there was a real error last time then do some damping
+                            turn -= self.TURN_D *(self.last_t_error - self.t_error)
+                        turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+                        if self.driving:
+                            self.drive.move(turn, speed)
+                        elif self.aiming:
+                            self.drive.move(turn, 0)
+                        self.last_t_error = self.t_error
+                        self.last_width = width
+                else:
+                    logger.info("wrong marker found, looking for %d" % self.turn_number)
+                    if self.turn_number <> 4:
+                        self.follow_wall(image)
+                    else:
+                        self.turn_left()
             else:
-                #otherwise, go looking
+                logger.info("looking for marker %d, none found" % self.turn_number)
+                if self.turn_number <> 4:
+                    self.follow_wall(image)
+                else:
+                    self.turn_left()
+            pygame.display.update()
+            found_identifier = "F" if self.found else "NF"
+            img_name = "%d%simg.jpg" % (self.i, found_identifier)
+            # filesave for debugging: 
+            #cv2.imwrite(img_name, gray)
+            self.i += 1
+
+    def follow_wall(self, image):
+        self.m_found = False
+        cropped_image = cv2.pyrDown(image, dstsize=(int(self.image_centre_x), int(self.image_centre_y)))
+        cropped_image = cropped_image[self.WALL_CROP_BOTTOM:self.WALL_CROP_TOP, self.WALL_CROP_LEFT:self.WALL_CROP_RIGHT]
+        img = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
+        screen = pygame.display.get_surface()
+        colour_frame = pygame.surfarray.make_surface(cv2.flip(img, 1))
+        screen.blit(colour_frame, ((self.CROP_TOP-self.CROP_BOTTOM), 0))
+        cropped_image = cv2.cvtColor(cropped_image, cv2.COLOR_RGB2HSV)
+        wall_mask = threshold_image(cropped_image, self.COLOURS.get(self.WALL_COLOUR[self.turn_number]))
+        self.found = False
+        self.last_t_error = 0 
+        wall_x, wall_y, wall_area, wall_contour = find_largest_contour(wall_mask)
+        wall_crop_width = self.WALL_CROP_RIGHT - self.WALL_CROP_LEFT
+        pygame.mouse.set_pos(int(wall_y+(self.CROP_TOP-self.CROP_BOTTOM)), int(wall_crop_width - wall_x))
+        turn = 0.0
+        if wall_area > self.MIN_CONTOUR_AREA:
+            print colour_of_contour(cropped_image, wall_contour)
+            self.w_found = True
+            self.wall_pos = wall_x
+            x = wall_x
+            logger.info ("wall spotted at %i" % (x))
+            image_centre_x = (self.WALL_CROP_RIGHT - self.WALL_CROP_LEFT)/2
+            t_error  = float(image_centre_x - x) / image_centre_x
+            if self.aiming:
+                turn = self.AIM_P * t_error
+            else:
+                turn = self.WALL_TURN_P * t_error
+            turn = min(max(turn,-self.MAX_TURN_SPEED), self.MAX_TURN_SPEED)
+            if self.last_t_error is not None:
+                #if there was a real error last time then do some damping
+                if self.aiming:
+                    turn -= self.WALL_TURN_D *(self.last_t_error - t_error)
+                else:
+                    turn -= self.AIM_D *(self.last_t_error - t_error)
+            if self.driving:
+                self.drive.move(turn, self.STRAIGHT_SPEED)
+            elif self.aiming:
+                self.drive.move(turn, 0)
+            self.last_t_error = t_error
+        else:
+            self.m_found = False
+            self.wall_pos = 0
+            if self.found:
+                self.drive.move(0,0)
+            else:
                 if self.turn_number <= 2:
-                    if self.turn_number == 1:
-                        self.brake()
                     self.turn_right()
                 else:
-                    if self.turn_number == 4:
-                        self.brake()
                     self.turn_left()
-            self.found = False
-            self.last_t_error = 0
-        # Display the resulting frame
-        frame = pygame.surfarray.make_surface(cv2.flip(frame,1))
-        screen.fill([0,0,0])
-        screen.blit(frame, (0,0))
-        pygame.display.update()
-        found_identifier = "F" if self.found else "NF"
-        img_name = "%d%simg.jpg" % (self.i, found_identifier)
-        # filesave for debugging: 
-        #cv2.imwrite(img_name, gray)
-        self.i += 1
-
-
 
 class Maze(BaseChallenge):
     """Minimal Maze challenge class"""
@@ -223,13 +341,13 @@ class Maze(BaseChallenge):
             dict=self.dict
         )
         logger.info('Wait ...')
-        time.sleep(2)
+        time.sleep(0.2)
         logger.info('Setting up image capture thread')
         self.image_capture_thread = ImageCapture(
             camera=self.camera,
             processor=self.processor
         )
-        pygame.mouse.set_visible(False)
+        pygame.mouse.set_visible(True)
         try:
             while not self.should_die:
                 time.sleep(0.1)
