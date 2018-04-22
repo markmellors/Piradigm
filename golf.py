@@ -201,7 +201,7 @@ class StreamProcessor(threading.Thread):
                 self.acquiring_ball = False
                 self.moving_to_corner_one = True
         else:
-            self.drive.move(0,-self.ACQUIRE_SPEED/2)
+            if self.tracking: self.drive.move(0,-self.ACQUIRE_SPEED/2)
             print "nothing large enough to be a ball found"     
 
     def drive_to_corner_one(self, image):
@@ -400,9 +400,19 @@ class Golf(BaseChallenge):
         self.frame_rate = 40  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
+        self.exponential = 2
         self.joystick=joystick
         self.markers=markers
         super(Golf, self).__init__(name='Golf', timeout=timeout, logger=logger)
+
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
+
+    def exp(self, demand, exp):
+        # function takes a demand speed from -1 to 1 and converts it to a response value
+        # with an exponential function. exponential is -inf to +inf, 0 is linear
+        exp = 1/(1 + abs(exp)) if exp < 0 else exp + 1
+        return math.copysign((abs(demand)**exp), demand)
 
     def joystick_handler(self, button):
         if button['r1']:
@@ -453,6 +463,12 @@ class Golf(BaseChallenge):
                     self.joystick_handler(self.joystick.check_presses())
                 if self.processor.finished:
                     self.stop()
+                if not self.processor.tracking:
+                    rx, ry = self.joystick['rx', 'ry']
+                    logger.debug("joystick L/R: %s, %s" % (rx, ry))
+                    rx = self.exp(rx, self.exponential)
+                    ry = self.exp(ry, self.exponential)
+                    self.drive.move(rx, ry)
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives
