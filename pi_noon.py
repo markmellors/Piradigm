@@ -2,6 +2,7 @@ from img_base_class import *
 import random
 import cv2.aruco as aruco
 from approxeng.input.selectbinder import ControllerResource
+import math
 
 # Image stream processing thread
 class StreamProcessor(threading.Thread):
@@ -23,18 +24,18 @@ class StreamProcessor(threading.Thread):
         self.SETTLE_TIME = 0.05
         self.MIN_BALLOON_SIZE = 50
         self.TURN_AREA = 5000  #6000 turns right at edge, 9000 too high
-        self.TURN_HEIGHT = 18
+        self.TURN_HEIGHT = 20
         self.BACK_AWAY_START = 2000
         self.BACK_AWAY_STOP = 1500
         self.back_away = False
         self.edge = False
         self.BLUR = 3
         self.colour_limits = ((0, 50, 70), (180, 250, 230))
-        self.FLOOR_LIMITS  =  ((100, 150, 80), (130, 255, 220))#<red, yellow>  ((85, 190, 80), (115, 255, 220))
+        self.FLOOR_LIMITS  =  ((98, 69, 100), (180, 250, 255)) #indoor lighting, my arena> ((100, 150, 80), (130, 255, 220)), yellow>  ((85, 190, 80), (115, 255, 220))
         self.calibrating = False
         self.tracking = False
         self.last_t_error = 0
-        self.STRAIGHT_SPEED = 0.4
+        self.STRAIGHT_SPEED = 1
         self.TURN_AROUND_SPEED = 1
         self.TURN_AROUND_TIME = 0.4
         self.TURN_P = 2 * self.STRAIGHT_SPEED
@@ -86,7 +87,7 @@ class StreamProcessor(threading.Thread):
         return mask
 
     def turn_around(self):
-        print "turning around"
+        logger.info("turning around")
         if random.choice([True, False]):
             self.drive.move(self.TURN_AROUND_SPEED, 0)
         else:
@@ -177,13 +178,13 @@ class StreamProcessor(threading.Thread):
             pygame.mouse.set_pos(balloon_y+self.FLOOR_CROP_HEIGHT-self.FLOOR_CROP_START, self.BALL_CROP_WIDTH - balloon_x)
         if balloon_a > self.MIN_BALLOON_SIZE:
                 #opponent is disrupting countour shape, making it concave
-                print ("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
+                logger.info("found balloon: position %d, %d, area %d" % (balloon_x, balloon_y, balloon_a))
                 self.found = True
                 t_error = (self.image_centre_x - balloon_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
                 if balloon_a > self.BACK_AWAY_START or (balloon_a > self.BACK_AWAY_STOP and self.back_away):
                     #we're probably close, back off
-                    print "backing off"
+                    logger.info("backing off")
                     self.back_away = True
                     if self.DRIVING and self.tracking:
                         self.drive.move(turn/2, -self.STRAIGHT_SPEED/2)
@@ -198,17 +199,17 @@ class StreamProcessor(threading.Thread):
             floor_x, floor_y, floor_a = self.find_largest_contour(floor_range)
             if floor_y < self.TURN_HEIGHT:
                 self.edge = True
-                print ("no opponent found and close to edge, turning %s" % (floor_y))
+                logger.info("no opponent found and close to edge, turning %s" % (floor_y))
                 if self.DRIVING and self.tracking:
                     self.seek()
             else:
                 self.edge = False
-                print "no opponent found, ambling"
+                logger.info("no opponent found, ambling")
                 t_error = (self.image_centre_x - floor_x) / self.image_centre_x
                 turn = self.TURN_P * t_error
                 if self.DRIVING and self.tracking:
                     #turn around one time in 5. is there a better way to do this?
-                    if random.choice([True, False, False, False, False]):
+                    if random.choice([True, False, False, False, False, False, False, False, False, False, False, False, False, False, False]):
                         self.turn_around()
                     else:
                         self.drive.move(turn, self.STRAIGHT_SPEED)
@@ -234,6 +235,7 @@ class PiNoon(BaseChallenge):
         self.frame_rate = 40  # Camera image capture frame rate
         self.screen = screen
         time.sleep(0.01)
+        self.exponential = 2
         self.joystick=joystick
         super(PiNoon, self).__init__(name='PiNoon', timeout=timeout, logger=logger)
 
@@ -252,6 +254,15 @@ class PiNoon(BaseChallenge):
             self.processor.tracking = False
             self.processor.calibrating = True
             print "calibrating"
+
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
+
+    def exp(self, demand, exp):
+        # function takes a demand speed from -1 to 1 and converts it to a response value
+        # with an exponential function. exponential is -inf to +inf, 0 is linear
+        exp = 1/(1 + abs(exp)) if exp < 0 else exp + 1
+        return math.copysign((abs(demand)**exp), demand)
 
     def run(self):
         # Startup sequence
@@ -286,6 +297,12 @@ class PiNoon(BaseChallenge):
                     self.joystick_handler(self.joystick.check_presses())
                 if self.processor.finished:
                     self.stop()
+                if not self.processor.tracking:
+                    rx, ry = self.joystick['rx', 'ry']
+                    logger.debug("joystick L/R: %s, %s" % (rx, ry))
+                    rx = self.exp(rx, self.exponential)
+                    ry = self.exp(ry, self.exponential)
+                    self.drive.move(rx, ry)
 
         except KeyboardInterrupt:
             # CTRL+C exit, disable all drives

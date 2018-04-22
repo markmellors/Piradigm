@@ -5,6 +5,7 @@ import json
 from my_button import MyScale
 # Load all standard tools for image processing challenges
 from img_base_class import *
+import math
 
 
 # Image stream processing thread
@@ -19,10 +20,10 @@ class StreamProcessor(threading.Thread):
         self.stream = picamera.array.PiRGBArray(camera)
         self.event = threading.Event()
         self.terminated = False
-        self.MAX_AREA = 2000  # Largest target to shoot at
-        self.MIN_CONTOUR_AREA = 400
+        self.MAX_AREA = 1000  # Largest target to shoot at
+        self.MIN_CONTOUR_AREA = 200
         self.MAX_TARGET_SIZE = 2000
-        self.MAX_TARGET_WIDTH = 80
+        self.MAX_TARGET_WIDTH = 70
         self.AIM_OFFSET = 45
         self._colour = colour
         self.found = False
@@ -38,7 +39,9 @@ class StreamProcessor(threading.Thread):
         self.image_centre_y = self.CROP_HEIGHT / 2.0
         self.CROP_H_OFFSET = 160
         self.CROP_V_OFFSET = 180
-        with open('duckshoot.json') as json_file:
+        file_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(file_dir, 'duckshoot.json')
+        with open(file_path) as json_file:
             self.colour_bounds = json.load(json_file)
         self.hsv_lower = (0, 0, 0)
         self.hsv_upper = (0, 0, 0)
@@ -158,9 +161,6 @@ class StreamProcessor(threading.Thread):
         self.found = False
         self.target_number += 1
         logger.info('target %s fired at', self.target_number)
-        if self.target_number > 5:
-            self.running = False
-            logger.info('last target found')
 
     def turn_toward_target(self, target):
         turn = 0.0
@@ -177,7 +177,7 @@ class StreamProcessor(threading.Thread):
                 forward = -0.01
                 turn = self.TURN_P * t_error - self.TURN_D *(self.last_t_error - t_error)
                 turn = min(max(-0.25, turn), 0.25)
-                self.drive.move(turn, forward)
+                if self.tracking: self.drive.move(turn, forward)
                 self.last_t_error = t_error
                 logger.info('hunting %s', t_error)
         else:
@@ -195,11 +195,21 @@ class Duckshoot(BaseChallenge):
         self.image_width = 640  # Camera image width
         self.image_height = 480  # Camera image height
         self.frame_rate = Fraction(20)  # Camera image capture frame rate
+        self.exponential = 2
         self.screen = screen
         time.sleep(0.01)
         self.menu = False
         self.joystick=joystick
         super(Duckshoot, self).__init__(name='Duckshoot', timeout=timeout, logger=logger)
+
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
+
+    def exp(self, demand, exp):
+        # function takes a demand speed from -1 to 1 and converts it to a response value
+        # with an exponential function. exponential is -inf to +inf, 0 is linear
+        exp = 1/(1 + abs(exp)) if exp < 0 else exp + 1
+        return math.copysign((abs(demand)**exp), demand)
 
     def setup_controls(self):
         # colours
@@ -263,6 +273,8 @@ class Duckshoot(BaseChallenge):
             self.processor.tracking = False
             self.drive.move(0,0)
             logger.info("Stopping")
+        if button['l2']:
+            self.processor.fire()
    
 
     def run(self):
@@ -312,6 +324,12 @@ class Duckshoot(BaseChallenge):
                     for ctrl in self.controls:
                         if ctrl['ctrl'].active():
                             ctrl['ctrl'].remove(fade=False)
+                if not self.processor.tracking:
+                    rx, ry = self.joystick['rx', 'ry']
+                    logger.debug("joystick L/R: %s, %s" % (rx, ry))
+                    rx = self.exp(rx, self.exponential)
+                    ry = self.exp(ry, self.exponential)
+                    self.drive.move(rx, ry)
                 sgc.update(time)
 
         except KeyboardInterrupt:

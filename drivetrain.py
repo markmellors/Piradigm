@@ -25,19 +25,28 @@ class DriveTrain():
         time.sleep(0.5)
         self.pz.setOutputConfig(0,2)
         self.motor_max = 100
-        self.FULL_WHITE = (255, 255, 255)
+        self.colours = {    #rgb  or GRB
+            'FULL_WHITE': (180, 255, 100),
+            'PINKISH': (0, 255, 220),
+            'YELLOWISH': (200, 255, 75),
+            'GREEN': (255, 0, 0),  #green?  line black
+            'YELLOW':(255, 255, 0), #yellowish, line black
+            'RED': (0, 255, 0), #red, line black
+            'MAGENTA': (0, 255, 255), #magenta, line shows up ok
+            'BLUE': (0, 0, 255), #blue, terrible everything shows up
+            'CYAN':(255, 0, 255), #everything shows up
+        }
         self.OFF = (0, 0, 0)
         # battery voltage check constants
         self.BATT_CONSTANTS = {
-            "adc_gain": 0.02909,
-            "adc_offset": -15.06,
+            "adc_gain": 0.0096,
             "adc_pin": 3,
             "min_v": 7.45
         }
         self.pz.setInputConfig(self.BATT_CONSTANTS['adc_pin'], 1)
         self.pz.setOutputConfig(5, 3)    # set output 5 to WS2812
         time.sleep(0.01)
-        self.pz.setBrightness(255)
+        self.pz.setBrightness(155)
         self.slow_speed = 20
         self.deadband = 1
         self.boost_cycles = 1
@@ -57,6 +66,7 @@ class DriveTrain():
         self.safe_trigger = self.trigger_angle.get('safe')
         # Initialise self.average_batt_v with current_batt_v
         self.average_batt_v = self.current_batt_v
+        logging.info("Current battery voltage is %.2f" % self.current_batt_v)
 
     def move(self, forward, turn):
         steering_left, steering_right = self.steering(forward, turn)
@@ -117,7 +127,7 @@ class DriveTrain():
     def current_batt_v(self):
         """uses an ADC channel to read battery voltage"""
         voltage_at_pin = float(self.pz.readInput(self.BATT_CONSTANTS['adc_pin']))
-        return self.BATT_CONSTANTS['adc_gain'] * voltage_at_pin + self.BATT_CONSTANTS['adc_offset']
+        return self.BATT_CONSTANTS['adc_gain'] * voltage_at_pin
 
     def get_motor_values(self, steering_left, steering_right):
         motor_left = int(steering_left * self.motor_max) * -1
@@ -136,7 +146,7 @@ class DriveTrain():
 
 
     def lights(self, on):
-        rgb_values = self.FULL_WHITE if on else self.OFF
+        rgb_values = self.colours.get('YELLOWISH') if on else self.OFF
         self.pz.setAllPixels(*rgb_values)
 
     def dither(self, counter, speed):
