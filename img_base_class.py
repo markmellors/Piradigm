@@ -159,35 +159,6 @@ def rgb2hsv(r, g, b):
     h = h * 180 / 360 #to covnert to opencv equivalent hue (0-180)
     return h, s, v
 
-def wrapping_inRange(image, lower_limit, upper_limit):
-    '''function to behave like opencv imrange, but allow hue to wrap around
-    if hue in lower limit is higher than hue in upper limit, then it will use the wrapped range''' 
-    h_lower, s_lower, v_lower = lower_limit
-    h_upper, s_upper, v_upper = upper_limit
-    if h_lower > h_upper:
-        hsv_lower = (0, s_lower, v_lower)
-        hsv_upper = (h_upper, s_upper, v_upper)
-        imrange1 = cv2.inRange(
-            image,
-            numpy.array(hsv_lower),
-            numpy.array(hsv_upper)
-        )
-        hsv_lower = (h_lower, s_lower, v_lower)
-        hsv_upper = (180, s_upper, v_upper)
-        imrange2 = cv2.inRange(
-            image,
-            numpy.array(hsv_lower),
-            numpy.array(hsv_upper)
-        )
-        imrange =  cv2.bitwise_or(imrange1, imrange2)
-    else:
-        imrange = cv2.inRange(
-            image,
-            numpy.array(lower_limit),
-            numpy.array(upper_limit)
-        )
-    return imrange
-
 def marker_angle(corners, marker_length, marker=0):
     ''' takes just the x&y coordinates of the corners of the marker, the marker size and returns the roll angle in radians'''
     rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, marker_length, CAMERA_MATRIX, DIST_COEFFS)
